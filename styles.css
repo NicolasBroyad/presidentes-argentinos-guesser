@@ -1,0 +1,35 @@
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@300..700&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    font-family: "Fredoka";
+}
+
+body {
+    background-image: url("images/background-image.png");
+    background-size: contain;       /* Ajusta la imagen para cubrir toda la pantalla */
+    background-position: center;  /* Centra la imagen */
+    background-repeat: no-repeat; /* Evita que se repita */
+    height: 200vh;
+}
+
+header {
+    display: flex;
+    justify-content: center;
+}
+
+h1 {
+    display: flex;
+    font-size: 3rem;
+    color: white;
+    font-weight: bold;
+    text-shadow: 
+      2px 2px 0 #2986CA,
+     -2px 2px 0 #2986CA,
+      2px -2px 0 #2986CA,
+     -2px -2px 0 #2986CA;
+     width: 200px;
+     justify-content: center;
+}
+
