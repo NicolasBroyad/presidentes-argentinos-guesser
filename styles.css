@@ -78,11 +78,16 @@ h1 {
 
 .rules-section {
     display: flex;
-    height: 400px;
+    height: 350px;
     background-color: rgba(255, 255, 255, 0.5);
     justify-content: center;
     align-items: center;
-    gap: 80px;
+}
+
+.rules-container {
+    display: flex;
+    align-items: baseline;
+    gap: 100px;
 }
 
 svg {
@@ -93,14 +98,12 @@ svg {
 
 .rule-container {
     display: flex;
-    align-items: center;
-    gap: 20px;
+    gap: 35px;
 }
 
 .rule-text-container {
     display: flex;
     flex-direction: column;
-
     width: 200px;
 }
 
