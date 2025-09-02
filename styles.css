@@ -87,7 +87,10 @@ h1 {
 .rules-container {
     display: flex;
     align-items: baseline;
-    gap: 100px;
+}
+
+.rule-container:nth-child(1) {
+    border-right: 1px solid #2986CA;
 }
 
 svg {
@@ -99,6 +102,7 @@ svg {
 .rule-container {
     display: flex;
     gap: 35px;
+    padding: 0 50px;
 }
 
 .rule-text-container {
