@@ -126,7 +126,31 @@ p {
 }
 
 table {
-    background-color: white;
+    background-color: white ;
     width: 700px;
+    color: black;
     align-self: center;
+}
+
+th, td {
+    padding: 1rem;
+}
+
+.imagen-presidente-desconocido-container {
+    border-radius: 50%;
+    overflow: hidden;
+    height: 40px;
+    width: 40px;
+}
+
+.bernardino {
+    gap: 1rem;
+    display: flex;
+    align-items: center;
+}
+
+img {
+    object-fit: cover;
+    height: 100%;
+    width: 100%;
 }
