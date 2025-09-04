@@ -42,11 +42,20 @@ let tableContent = `
 `;
 
 
-
+let header = document.querySelector(".header");
 let buttonSection = document.querySelector(".button-section");
+let rulesSection = document.querySelector(".rules-section");
 let body = document.querySelector("body");
 body.addEventListener("click", function(event){
     if(event.target.className === "iniciar-juego-button"){
-        buttonSection.innerHTML = tableContent;
+        buttonSection.remove();
+        rulesSection.remove();
+        body.style.height = "150vh";
+        body.style.justifyContent = "flex-start";
+        body.style.gap = "10rem";
+        body.insertAdjacentHTML("beforeend", tableContent);
+        
+        let tabla = document.querySelector("table");
+        tabla.scrollIntoView({ behavior: "smooth", block: "center" });
     }
 });
