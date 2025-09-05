@@ -106,15 +106,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 </tbody>
             </table>
             <div class="input-container">
+              <div class="input-container-first-row">
                 <!-- 🔹 Contador agregado -->
                 <div id="contador-presidentes" class="contador">
                     0 / ${listaPresidentes.length}
                 </div>
 
-                <input type="text" id="input-presidente" placeholder="Ingrese el apellido y presione Enter...">
+                <input type="text" id="input-presidente" placeholder="Ingrese el apellido...">
                 <div class="pluma-image-container">
                     <img src="images/pluma-oligarca.png" alt="" class="pluma-image">
                 </div>
+              </div>
+              <button class="rendirse-button" type="button">RENDIRSE</button>
             </div>
         </div>
     `;
