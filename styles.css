@@ -194,10 +194,10 @@ td {
 
 .nombre-presidente-cell {
     border: 1px solid white;
-    width: 100%;
     height: 35%;
     display: flex;
     align-items: center;
+    min-width: 300px;
 }
 
 .input-container {
@@ -222,4 +222,14 @@ input {
     width: 400px;
     border-radius: 30px;
     padding: 0 2rem;
+}
+
+.tabla tbody tr {
+    background-color: none; /* Ejemplo: un gris muy claro. Puedes usar 'white' si lo prefieres */
+    transition: background-color 0.5s ease-in-out; /* ¡IMPORTANTE! Añade la transición aquí también. */
+}
+
+/* Estilo para la animación de acierto */
+.acierto-animacion {
+    background-color: #64dd17 !important; /* Verde brillante */
 }
