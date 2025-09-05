@@ -130,7 +130,7 @@ p {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    gap: 4rem;
+    gap: 3rem;
 }
 
 table {
@@ -202,6 +202,13 @@ td {
 
 .input-container {
     display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.input-container-first-row{
+    display: flex;
     align-items: center;
     gap: 1rem;
 }
@@ -234,6 +241,19 @@ input {
     padding: 0 2rem;
     font-size: 1.2rem;
     font-weight: bold;
+}
+
+.rendirse-button {
+    color: white;
+    background: none;   /* elimina el fondo */
+    border: none;       /* elimina el borde (si no lo querés) */
+    cursor: pointer;
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.rendirse-button:hover {
+    text-decoration: underline;
 }
 
 .tabla tbody tr {
