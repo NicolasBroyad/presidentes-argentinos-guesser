@@ -11,14 +11,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const listaPresidentes = [
     new Presidente("Bernardino", "Rivadavia", "1826 - 1827", "images/presidentes/rivadavia.jpg"),
     new Presidente("Vicente", "López", "1827 - 1827", "images/presidentes/vicentelopez.jpg"),
-    new Presidente("Justo José", "de Urquiza", "1854 - 1860", "images/presidentes/urquiza.jpg"),
+    new Presidente("Justo José de", "Urquiza", "1854 - 1860", "images/presidentes/urquiza.jpg"),
     new Presidente("Santiago", "Derqui", "1860 - 1861", "images/presidentes/derqui.jpg"),
     new Presidente("Juan Esteban", "Pedernera", "1861 - 1861", "images/presidentes/pedernera.jpg"),
     new Presidente("Bartolomé", "Mitre", "1862 - 1868", "images/presidentes/mitre.jpg"),
     new Presidente("Domingo Faustino", "Sarmiento", "1868 - 1874", "images/presidentes/sarmiento.jpg"),
     new Presidente("Nicolás", "Avellaneda", "1874 - 1880", "images/presidentes/avellaneda.jpg"),
     new Presidente("Julio Argentino", "Roca", "1880 - 1886", "images/presidentes/roca1.jpg"),
-    new Presidente("Miguel", "Juárez Celman", "1886 - 1890", "images/presidentes/juarezcelman.jpg"),
+    new Presidente("Miguel Juárez", "Celman", "1886 - 1890", "images/presidentes/juarezcelman.jpg"),
     new Presidente("Carlos", "Pellegrini", "1890 - 1892", "images/presidentes/pellegrini.jpg"),
     new Presidente("Luis", "Sáenz Peña", "1892 - 1895", "images/presidentes/luissaenzpena.jpg"),
     new Presidente("José Evaristo", "Uriburu", "1895 - 1898", "images/presidentes/uriburu.jpg"),
@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
     new Presidente("Roque", "Sáenz Peña", "1910 - 1914", "images/presidentes/roquesaenzpena.jpg"),
     new Presidente("Victorino", "de la Plaza", "1914 - 1916", "images/presidentes/delaplaza.jpg"),
     new Presidente("Hipólito", "Yrigoyen", "1916 - 1922", "images/presidentes/yrigoyen1.jpg"),
-    new Presidente("Marcelo T.", "de Alvear", "1922 - 1928", "images/presidentes/alvear.jpg"),
+    new Presidente("Marcelo T. de", "Alvear", "1922 - 1928", "images/presidentes/alvear.jpg"),
     new Presidente("Hipólito", "Yrigoyen", "1928 - 1930", "images/presidentes/yrigoyen2.jpg"),
     new Presidente("José Félix", "Uriburu", "1930 - 1932", "images/presidentes/uriburu.jpg"),
     new Presidente("Agustín P.", "Justo", "1932 - 1938", "images/presidentes/justo.jpg"),
@@ -61,7 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
     new Presidente("Carlos Saúl", "Menem", "1995 - 1999", "images/presidentes/menem2.jpg"),
     new Presidente("Fernando", "De La Rúa", "1999 - 2001", "images/presidentes/delarua.jpeg"),
     new Presidente("Federico Ramón", "Puerta", "2001 - 2001", "images/presidentes/puerta.jpg"),
-    new Presidente("Adolfo Rodríguez", "Saá", "2001 - 2001", "images/presidentes/rodriguezsaa.jpg"),
+    new Presidente("Adolfo", "Rodríguez Saá", "2001 - 2001", "images/presidentes/rodriguezsaa.jpg"),
     new Presidente("Eduardo O.", "Camaño", "2001 - 2002", "images/presidentes/camano.jpg"),
     new Presidente("Eduardo A.", "Duhalde", "2002 - 2003", "images/presidentes/duhalde.jpg"),
     new Presidente("Néstor C.", "Kirchner", "2003 - 2007", "images/presidentes/kirchner.jpg"),
@@ -186,6 +186,26 @@ function verificarRespuestaTiempoReal(inputElement) {
     // Si hubo al menos un acierto, limpiar el input
     if (acierto) {
         inputElement.value = "";
+    }
+    
+     // ✅ Cuando se completa la tabla
+    if (aciertos === listaPresidentes.length) {
+        // 1. Reemplazar input por mensaje
+        const inputContainer = document.querySelector(".input-container");
+        if (inputContainer) {
+            inputContainer.innerHTML = `
+                <div class="felicitaciones">
+                    🎉 FELICITACIONES 🎉<br>
+                    ERES UN VERDADERO CONOCEDOR DE LOS PRESIDENTES ARGENTINOS
+                </div>
+            `;
+        }
+
+        // 2. Hacer destello verde en todos los casilleros
+        document.querySelectorAll("tr").forEach(fila => {
+            fila.classList.add("destello-verde");
+            setTimeout(() => fila.classList.remove("destello-verde"), 2000);
+        });
     }
 }
 

@@ -245,3 +245,23 @@ input {
 .acierto-animacion {
     background-color: #64dd17 !important; /* Verde brillante */
 }
+
+.felicitaciones {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: green;
+    text-align: center;
+    padding: 1rem;
+}
+
+.destello-verde {
+    animation: destelloVerde 2s ease;
+}
+
+@keyframes destelloVerde {
+    0%   { background-color: transparent; }
+    25%  { background-color: #90ee90; } /* verde claro */
+    50%  { background-color: #32cd32; } /* verde más fuerte */
+    75%  { background-color: #90ee90; }
+    100% { background-color: transparent; }
+}
