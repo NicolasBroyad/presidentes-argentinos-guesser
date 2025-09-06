@@ -23,8 +23,9 @@ body {
 }
 
 header {
-    display: flex;
-    justify-content: center;
+    position: absolute;
+    right: 4rem;
+    top: 2rem;
 }
 
 h1 {
@@ -50,6 +51,72 @@ h1 {
 .presidentes, .argentinos {
     font-size: 3rem;
 }
+
+.header {
+    position: absolute;
+    top: 2rem;
+    right: 4rem;
+    display: flex;
+    align-items: center;
+}
+
+.header-nav ul {
+    list-style: none;
+    display: flex;
+    gap: 2rem;
+    margin: 0;
+    padding: 0;
+}
+
+.header-nav a {
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 1rem;
+}
+
+.header-nav a:hover {
+    color: #FFD700;
+    text-decoration: underline;
+}
+
+/* Botón hamburguesa oculto en desktop */
+.nav-toggle {
+    display: none;
+    font-size: 2rem;
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+}
+
+/* --- Responsive --- */
+@media (max-width: 992px) {
+    .nav-toggle {
+        display: block; /* mostramos el botón */
+    }
+
+    .header-nav {
+        display: none; /* ocultamos nav */
+        position: absolute;
+        top: 3rem;
+        right: 0;
+        background-color: rgba(0,0,0,0.9);
+        padding: 1rem 2rem;
+        border-radius: 0 0 10px 10px;
+    }
+
+    .header-nav ul {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .header-nav.active {
+        display: block; /* se muestra al presionar el botón */
+    }
+}
+
+
 
 .button-section {
     display: flex;
@@ -283,5 +350,17 @@ input {
     25%  { background-color: #90ee90; } /* verde claro */
     50%  { background-color: #32cd32; } /* verde más fuerte */
     75%  { background-color: #90ee90; }
+    100% { background-color: transparent; }
+}
+
+.ya-adivinado {
+    animation: destelloGris 2s ease;
+}
+
+@keyframes destelloGris {
+    0%   { background-color: transparent; }
+    25%  { background-color: #d3d3d3; }
+    50%  { background-color: #a9a9a9; }
+    75%  { background-color: #d3d3d3; }
     100% { background-color: transparent; }
 }

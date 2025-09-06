@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
         new Presidente("Domingo Faustino", "Sarmiento", "1868 - 1874", "images/presidentes/sarmiento.jpg"),
         new Presidente("Nicolás", "Avellaneda", "1874 - 1880", "images/presidentes/avellaneda.jpg"),
         new Presidente("Julio Argentino", "Roca", "1880 - 1886", "images/presidentes/roca1.jpg"),
-        new Presidente("Miguel Juárez", "Celman", "1886 - 1890", "images/presidentes/juarezcelman.jpg"),
+        new Presidente("Miguel", "Juárez Celman", "1886 - 1890", "images/presidentes/juarezcelman.jpg"),
         new Presidente("Carlos", "Pellegrini", "1890 - 1892", "images/presidentes/pellegrini.jpg"),
         new Presidente("Luis", "Sáenz Peña", "1892 - 1895", "images/presidentes/luissaenzpena.jpg"),
         new Presidente("José Evaristo", "Uriburu", "1895 - 1898", "images/presidentes/uriburu.jpg"),
@@ -120,64 +120,73 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Verificar respuesta ---
-    let aciertos = 0;
-    function verificarRespuestaTiempoReal(inputElement) {
-        const apellidoIngresado = normalizarTexto(inputElement.value);
+let aciertos = 0;
 
-        if (apellidoIngresado.length < 3) return;
+function verificarRespuestaTiempoReal(inputElement) {
+    const apellidoIngresado = normalizarTexto(inputElement.value);
 
-        let acierto = false;
+    if (apellidoIngresado.length < 3) return;
 
-        listaPresidentes.forEach((presidente, index) => {
-            if (normalizarTexto(presidente.apellido) === apellidoIngresado) {
-                const fila = document.querySelector(`tr[data-id="${index}"]`);
+    let acierto = false;
 
-                if (fila) {
-                    const celdaNombre = fila.querySelector('.nombre-presidente-cell');
+    listaPresidentes.forEach((presidente, index) => {
+        if (normalizarTexto(presidente.apellido) === apellidoIngresado) {
+            const fila = document.querySelector(`tr[data-id="${index}"]`);
 
-                    if (celdaNombre && celdaNombre.textContent === "") {
-                        const imagen = fila.querySelector('img');
+            if (fila) {
+                const celdaNombre = fila.querySelector('.nombre-presidente-cell');
+                const imagen = fila.querySelector('img');
 
-                        imagen.src = presidente.imagen;
-                        imagen.alt = `${presidente.nombre} ${presidente.apellido}`;
-                        celdaNombre.textContent = `${presidente.nombre} ${presidente.apellido}`;
+                if (celdaNombre.textContent === "") {
+                    // --- Primer acierto ---
+                    imagen.src = presidente.imagen;
+                    imagen.alt = `${presidente.nombre} ${presidente.apellido}`;
+                    celdaNombre.textContent = `${presidente.nombre} ${presidente.apellido}`;
 
-                        aciertos++;
-                        const contador = document.getElementById("contador-presidentes");
-                        if (contador) {
-                            contador.textContent = `${aciertos} / ${listaPresidentes.length}`;
-                        }
-
-                        fila.classList.add('acierto-animacion');
-                        setTimeout(() => fila.classList.remove('acierto-animacion'), 2000);
-
-                        acierto = true;
-                        inputElement.value = "";
-                        fila.scrollIntoView({ behavior: 'auto', block: 'center' });
+                    aciertos++;
+                    const contador = document.getElementById("contador-presidentes");
+                    if (contador) {
+                        contador.textContent = `${aciertos} / ${listaPresidentes.length}`;
                     }
+
+                    fila.classList.add('acierto-animacion');
+                    setTimeout(() => fila.classList.remove('acierto-animacion'), 2000);
+
+                    acierto = true;
+                    inputElement.value = "";
+                    fila.scrollIntoView({ behavior: 'auto', block: 'center' });
+                } else {
+                    // --- Ya fue adivinado ---
+                    inputElement.value = "";
+                    fila.scrollIntoView({ behavior: 'auto', block: 'center' });
+
+                    // Animación de "ya adivinado" con fade gris
+                    fila.classList.add('ya-adivinado');
+                    setTimeout(() => fila.classList.remove('ya-adivinado'), 2000);
                 }
             }
-        });
-
-        if (acierto) inputElement.value = "";
-
-        if (aciertos === listaPresidentes.length) {
-            const inputContainer = document.querySelector(".input-container");
-            if (inputContainer) {
-                inputContainer.innerHTML = `
-                    <div class="felicitaciones">
-                        🎉 FELICITACIONES 🎉<br>
-                        ERES UN VERDADERO CONOCEDOR DE LOS PRESIDENTES ARGENTINOS
-                    </div>
-                `;
-            }
-
-            document.querySelectorAll("tr").forEach(fila => {
-                fila.classList.add("destello-verde");
-                setTimeout(() => fila.classList.remove("destello-verde"), 2000);
-            });
         }
+    });
+
+    // Cuando se completa la tabla
+    if (aciertos === listaPresidentes.length) {
+        const inputContainer = document.querySelector(".input-container");
+        if (inputContainer) {
+            inputContainer.innerHTML = `
+                <div class="felicitaciones">
+                    🎉 FELICITACIONES 🎉<br>
+                    ERES UN VERDADERO CONOCEDOR DE LOS PRESIDENTES ARGENTINOS
+                </div>
+            `;
+        }
+
+        document.querySelectorAll("tr").forEach(fila => {
+            fila.classList.add("destello-verde");
+            setTimeout(() => fila.classList.remove("destello-verde"), 2000);
+        });
     }
+}
+
 
     // --- Iniciar juego ---
     function iniciarJuego() {
@@ -206,36 +215,42 @@ document.addEventListener('DOMContentLoaded', () => {
     botonIniciar.addEventListener("click", iniciarJuego);
 
     // --- Función Rendirse ---
-  function rendirse() {
-    listaPresidentes.forEach((presidente, index) => {
-        const fila = document.querySelector(`tr[data-id="${index}"]`);
-        if (fila) {
-            const celdaNombre = fila.querySelector('.nombre-presidente-cell');
-            const imagen = fila.querySelector('img');
+    function rendirse() {
+        listaPresidentes.forEach((presidente, index) => {
+            const fila = document.querySelector(`tr[data-id="${index}"]`);
+            if (fila) {
+                const celdaNombre = fila.querySelector('.nombre-presidente-cell');
+                const imagen = fila.querySelector('img');
 
-            if (celdaNombre && celdaNombre.textContent === "") {
-                // ❌ No adivinado → mostrar y marcar en rojo
-                imagen.src = presidente.imagen;
-                imagen.alt = `${presidente.nombre} ${presidente.apellido}`;
-                celdaNombre.textContent = `${presidente.nombre} ${presidente.apellido}`;
-                fila.style.backgroundColor = "rgba(255, 0, 0, 0.3)";
+                if (celdaNombre && celdaNombre.textContent === "") {
+                    // ❌ No adivinado → mostrar y marcar en rojo
+                    imagen.src = presidente.imagen;
+                    imagen.alt = `${presidente.nombre} ${presidente.apellido}`;
+                    celdaNombre.textContent = `${presidente.nombre} ${presidente.apellido}`;
+                    fila.style.backgroundColor = "rgba(255, 0, 0, 0.3)";
+                }
             }
+        });
+
+        // Bloquear input
+        const inputPresidente = document.getElementById("input-presidente");
+        if (inputPresidente) {
+            inputPresidente.disabled = true;
+            inputPresidente.placeholder = "Juego terminado";
         }
+
+        // Cambiar botón a "JUEGO TERMINADO"
+        const botonRendirse = document.querySelector(".rendirse-button");
+        if (botonRendirse) {
+            botonRendirse.disabled = true;
+            botonRendirse.textContent = "JUEGO TERMINADO";
+        }
+    }
+
+    const toggleButton = document.querySelector('.nav-toggle');
+    const nav = document.querySelector('.header-nav');
+
+    toggleButton.addEventListener('click', () => {
+        nav.classList.toggle('active');
     });
-
-    // Bloquear input
-    const inputPresidente = document.getElementById("input-presidente");
-    if (inputPresidente) {
-        inputPresidente.disabled = true;
-        inputPresidente.placeholder = "Juego terminado";
-    }
-
-    // Cambiar botón a "JUEGO TERMINADO"
-    const botonRendirse = document.querySelector(".rendirse-button");
-    if (botonRendirse) {
-        botonRendirse.disabled = true;
-        botonRendirse.textContent = "JUEGO TERMINADO";
-    }
-}
-
 });
