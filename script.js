@@ -197,7 +197,45 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             inputPresidente.focus();
         }
+
+        const botonRendirse = document.querySelector(".rendirse-button");
+        if (botonRendirse) {
+          botonRendirse.addEventListener("click", rendirse);
+        }
+    }
+    botonIniciar.addEventListener("click", iniciarJuego);
+
+    // --- Función Rendirse ---
+  function rendirse() {
+    listaPresidentes.forEach((presidente, index) => {
+        const fila = document.querySelector(`tr[data-id="${index}"]`);
+        if (fila) {
+            const celdaNombre = fila.querySelector('.nombre-presidente-cell');
+            const imagen = fila.querySelector('img');
+
+            if (celdaNombre && celdaNombre.textContent === "") {
+                // ❌ No adivinado → mostrar y marcar en rojo
+                imagen.src = presidente.imagen;
+                imagen.alt = `${presidente.nombre} ${presidente.apellido}`;
+                celdaNombre.textContent = `${presidente.nombre} ${presidente.apellido}`;
+                fila.style.backgroundColor = "rgba(255, 0, 0, 0.3)";
+            }
+        }
+    });
+
+    // Bloquear input
+    const inputPresidente = document.getElementById("input-presidente");
+    if (inputPresidente) {
+        inputPresidente.disabled = true;
+        inputPresidente.placeholder = "Juego terminado";
     }
 
-    botonIniciar.addEventListener("click", iniciarJuego);
+    // Cambiar botón a "JUEGO TERMINADO"
+    const botonRendirse = document.querySelector(".rendirse-button");
+    if (botonRendirse) {
+        botonRendirse.disabled = true;
+        botonRendirse.textContent = "JUEGO TERMINADO";
+    }
+}
+
 });
