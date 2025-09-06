@@ -103,6 +103,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     </tbody>
                 </table>
                 <div class="input-container">
+                <div id="temporizador" class="temporizador">10:00</div>
                   <div class="input-container-first-row">
                     <div id="contador-presidentes" class="contador">
                         0 / ${listaPresidentes.length}
@@ -170,6 +171,7 @@ function verificarRespuestaTiempoReal(inputElement) {
 
     // Cuando se completa la tabla
     if (aciertos === listaPresidentes.length) {
+        clearInterval(window.temporizadorInterval); // Detiene el temporizador
         const inputContainer = document.querySelector(".input-container");
         if (inputContainer) {
             inputContainer.innerHTML = `
@@ -211,11 +213,33 @@ function verificarRespuestaTiempoReal(inputElement) {
         if (botonRendirse) {
           botonRendirse.addEventListener("click", rendirse);
         }
+
+        // --- TEMPORIZADOR REGRESIVO ---
+        let tiempoRestante = 10 * 60; // 10 minutos en segundos
+        const temporizadorDiv = document.getElementById("temporizador");
+
+        const temporizadorInterval = setInterval(() => {
+            const minutos = String(Math.floor(tiempoRestante / 60)).padStart(2, '0');
+            const segundos = String(tiempoRestante % 60).padStart(2, '0');
+            temporizadorDiv.textContent = `${minutos}:${segundos}`;
+
+            if (tiempoRestante <= 0) {
+                clearInterval(temporizadorInterval);
+                rendirse(); // Llama automáticamente a rendirse cuando llega a 0
+            }
+
+            tiempoRestante--;
+        }, 1000);
+
+        // Guardamos el interval para poder cancelarlo desde rendirse o al terminar el juego
+        window.temporizadorInterval = temporizadorInterval;
+
     }
     botonIniciar.addEventListener("click", iniciarJuego);
 
     // --- Función Rendirse ---
     function rendirse() {
+         clearInterval(window.temporizadorInterval); // Detiene el temporizador
         listaPresidentes.forEach((presidente, index) => {
             const fila = document.querySelector(`tr[data-id="${index}"]`);
             if (fila) {
