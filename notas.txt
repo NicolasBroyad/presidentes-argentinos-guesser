@@ -1,0 +1,17 @@
+- Hay dos uriburu (padre e hijo) con misma foto.
+
+Para que Google AdSense te apruebe:
+
+Agregá páginas extra:
+
+/acerca.html
+
+/contacto.html
+
+/privacidad.html (indispensable, con un texto estándar de cookies + AdSense).
+
+Sumá aunque sea 2–3 artículos escritos relacionados (ej: “Historia de los presidentes argentinos”, “Curiosidades de los presidentes”, etc.).
+
+Corregí el idioma en el HTML (lang="es").
+
+Revisá que no falten imágenes (vi que lacoste.jpg está sin carpeta, ojo con 404).
