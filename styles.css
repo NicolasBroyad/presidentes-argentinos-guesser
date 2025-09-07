@@ -12,9 +12,9 @@ body {
     background-image: url("images/background-oligarca-extended.jpg");
     background-color: #c0bda1;
     background-blend-mode: multiply;
-    background-size: contain;       /* Ajusta la imagen para cubrir toda la pantalla */
+    background-size: cover;       /* Ajusta la imagen para cubrir toda la pantalla */
     background-position: center;  /* Centra la imagen */
-    background-repeat: repeat; /* Evita que se repita */
+    background-repeat: no-repeat; /* Evita que se repita */
     background-attachment: fixed; /* Fija la imagen para efecto "parallax" */
     height: 100vh;
     display: flex;
@@ -32,7 +32,7 @@ h1 {
     display: flex;
     flex-direction: column;
     align-items: center;
-    font-size: 3rem;
+    font-size: clamp(1.5rem, 5vw, 3rem);
     color: white;
     font-weight: 800;
     padding-top: 30px;
@@ -40,22 +40,15 @@ h1 {
     justify-content: center;
 }
 
-.adivina {
-    font-size: 2.5rem;
-}
+.adivina { font-size: clamp(1.2rem, 4vw, 2.5rem); }
+.los { font-size: clamp(1rem, 3.5vw, 2rem); }
+.presidentes, .argentinos { font-size: clamp(1.5rem, 5vw, 3rem); }
 
-.los {
-    font-size: 2rem;
-}
-
-.presidentes, .argentinos {
-    font-size: 3rem;
-}
 
 .header {
     position: absolute;
-    top: 2rem;
-    right: 4rem;
+    top: clamp(1rem, 3vw, 2rem);   /* separación superior flexible */
+    right: clamp(0.5rem, 4vw, 4rem); /* separación derecha flexible */
     display: flex;
     align-items: center;
 }
@@ -63,7 +56,7 @@ h1 {
 .header-nav ul {
     list-style: none;
     display: flex;
-    gap: 2rem;
+    gap: clamp(0.8rem, 2vw, 2rem); /* mínimo 0.8rem, máximo 2rem, se adapta con el ancho */
     margin: 0;
     padding: 0;
 }
@@ -104,6 +97,8 @@ h1 {
         background-color: rgba(0,0,0,0.9);
         padding: 1rem 2rem;
         border-radius: 0 0 10px 10px;
+
+
     }
 
     .header-nav ul {
@@ -128,14 +123,15 @@ h1 {
 .iniciar-juego-button {
     font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
     background-color: #1E6BA8;
-    height: 65px;
-    width: 250px;
+    height: clamp(50px, 10vw, 65px);
+    width: min(80%, 250px);
+    font-size: clamp(1rem, 3vw, 1.2rem);
     border-radius: 30px;
     border: 2px solid #1E6BA8;
-    font-size: 1.2rem;
     color: white;
     font-weight: 900;
     cursor: pointer;
+    text-align: center;
 }
 
 .iniciar-juego-button:hover {
@@ -148,8 +144,9 @@ h1 {
 
 .rules-section {
     display: flex;
-    height: 300px;
-    background-color: rgb(0, 0, 0, 0.7);
+    padding: clamp(1rem, 5vw, 5rem);
+    min-height: fit-content;
+    background-color: rgba(0,0,0,0.7);
     justify-content: center;
     align-items: center;
 }
@@ -157,6 +154,13 @@ h1 {
 .rules-container {
     display: flex;
     align-items: baseline;
+    gap: clamp(1.5rem, 4vw, 3rem);
+}
+
+.rule-container {
+    display: flex;
+    gap: clamp(1rem, 3vw, 2rem);
+    padding: 0 clamp(1rem, 5vw, 50px);
 }
 
 .rule-container:nth-child(1) {
@@ -165,8 +169,9 @@ h1 {
 
 svg {
     fill: white;
-    height: 80px;
-    width: 80px;
+    width: clamp(40px, 8vw, 80px);
+    height: clamp(40px, 8vw, 80px);
+    flex-shrink: 0;
 }
 
 .rule-container {
@@ -178,19 +183,49 @@ svg {
 .rule-text-container {
     display: flex;
     flex-direction: column;
-    width: 200px;
+    width: min(90%, 200px); /* máximo 200px, pero adaptable */
 }
 
 h3 {
     color: white;
     font-weight: 750;
-    font-size: 1.2rem;
+    font-size: clamp(1rem, 3vw, 1.2rem);
+    margin-bottom: 0.5rem;
 }
 
 p {
-    font-size: 1rem;
-    color: white
+    font-size: clamp(0.9rem, 2.5vw, 1rem);
+    color: white;
+    line-height: 1.4;
 }
+
+@media (max-width: 768px) {
+
+    .rules-section {
+        padding: 1rem;
+    }
+
+    .rules-container {
+        flex-direction: column;
+        gap: 2rem;
+        align-items: center;
+    }
+
+    .rule-container {
+        padding: 2rem 0;
+    }
+
+    .rule-container:nth-child(1) {
+        border-right: none;
+        border-bottom: 1px solid white;
+    }
+
+    .rule-text-container {
+        width: 100%;
+        text-align: center;
+    }
+}
+
 
 .tabla-container {
     display: flex;
@@ -198,16 +233,19 @@ p {
     justify-content: center;
     align-items: center;
     gap: 3rem;
+    margin: 0 1rem;
 }
 
 table {
-    width: minmax(700px, 100%);
+    width: 100%; /* ocupa el ancho del contenedor */
+    max-width: 800px; /* no se estira más de 700px en desktop */
     color: white;
     font-weight: bold;
     align-self: center;
     background-color: rgb(10, 34, 53);
     border-radius: 30px;
     border: 6px rgb(127, 190, 241) solid;
+    overflow-x: auto; /* permite scroll si algo se pasa */
 }
 
 th, td {
@@ -217,14 +255,8 @@ th, td {
 .imagen-presidente-desconocido-container {
     border-radius: 50%;
     overflow: hidden;
-    height: 40px;
-    width: 40px;
-}
-
-.bernardino {
-    gap: 1rem;
-    display: flex;
-    align-items: center;
+    width: clamp(40px, 6vw, 60px);
+    height: clamp(40px, 6vw, 60px);
 }
 
 img {
@@ -261,10 +293,13 @@ td {
 
 .nombre-presidente-cell {
     border: 1px solid white;
-    height: 35%;
+    min-height: 40px;   /* alto mínimo consistente */
     display: flex;
     align-items: center;
-    min-width: 300px;
+    min-width: unset;
+    width: 100%;
+    padding: 0.5rem;
+    word-break: break-word; /* evita overflow de texto */
 }
 
 .input-container {
@@ -272,19 +307,37 @@ td {
     flex-direction: column;
     align-items: center;
     gap: 1rem;
+    padding: 0 1rem;  /* respiro en móviles */
 }
 
 .input-container-first-row{
     display: flex;
     align-items: center;
     gap: 1rem;
+    justify-content: center;
+}
+
+@media (max-width: 768px) {
+    .input-container-first-row {
+        flex-wrap: wrap;
+    }
+
+    .pluma-image {
+        display: none;
+    }
+
+    .pluma-image-container {
+        display: none;
+    }
 }
 
 #contador-presidentes {
+    display: flex;
+    justify-content: center;
     font-weight: bold;
-    font-size: 2.5rem;
+    font-size: clamp(1.5rem, 5vw, 2.5rem);
     color: white;
-    min-width: 80px; /* para que no se mueva */
+    min-width: fit-content;
     text-align: right;
 }
 
@@ -302,11 +355,12 @@ td {
 }
 
 input {
-    height: 70px;
-    width: 400px;
+    height: clamp(50px, 8vw, 70px);
     border-radius: 30px;
-    padding: 0 2rem;
-    font-size: 1.2rem;
+    padding: 0 1rem;
+    width: 100%; /* ocupa todo el ancho disponible del container */
+    max-width: 400px; /* no más de 400px en desktop */
+    font-size: clamp(1rem, 4vw, 1.2rem);
     font-weight: bold;
 }
 
@@ -366,7 +420,7 @@ input {
 }
 
 .temporizador {
-    font-size: 1.5rem;
+    font-size: clamp(1rem, 4vw, 1.5rem);
     font-weight: bold;
     color: white;
     margin-bottom: 1rem;
