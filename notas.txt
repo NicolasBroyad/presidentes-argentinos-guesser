@@ -1,18 +1,25 @@
+ERRORES A CORREGIR
 - Hay dos uriburu (padre e hijo) con misma foto.
 - falta foto de lacoste
+- corregir periodo de Rawson, solo estuvo en 1943
+
+
+PARA AGREGAR
+-Agregar modos de juego. Ej: Jugar desde la vuelta de la democracia o un modo que te vayan pasando la foto y periodo de un presidente y tenes que ingresar el nombre
+
+-Agregar opcion de configurar el juego. Ej: Seleccionar el tiempo del temporizador, eliminar regimenes de facto o eliminar gobiernos de menos de 1 año.
+
+-Agregar una pagina informativa que muestre todos los gobiernos con sus fotos, sus periodos (con fecha exacta), que tipo de gobierno fueron y una breve descripcion. 
+Que se ofrezca un link a esta pagina informativa al finalizar el juego (ya sea por rendirse o por tiempo).
+
+-Un boton de reiniciar (timer y tabla) y un boton de pausar (se frena el tiempo y no se puede ingresar) mientras se esta jugando.
+
 
 Para que Google AdSense te apruebe:
-
 Agregá páginas extra:
-
 /acerca.html
-
 /contacto.html
-
 /privacidad.html (indispensable, con un texto estándar de cookies + AdSense).
-
 Sumá aunque sea 2–3 artículos escritos relacionados (ej: “Historia de los presidentes argentinos”, “Curiosidades de los presidentes”, etc.).
-
 Corregí el idioma en el HTML (lang="es").
-
 Revisá que no falten imágenes (vi que lacoste.jpg está sin carpeta, ojo con 404).
