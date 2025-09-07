@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
         new Presidente("Domingo Faustino", "Sarmiento", "1868 - 1874", "images/presidentes/sarmiento.jpg"),
         new Presidente("Nicolás", "Avellaneda", "1874 - 1880", "images/presidentes/avellaneda.jpg"),
         new Presidente("Julio Argentino", "Roca", "1880 - 1886", "images/presidentes/roca1.jpg"),
-        new Presidente("Miguel Juárez", "Celman", "1886 - 1890", "images/presidentes/juarezcelman.jpg"),
+        new Presidente("Miguel", "Juárez Celman", "1886 - 1890", "images/presidentes/juarezcelman.jpg"),
         new Presidente("Carlos", "Pellegrini", "1890 - 1892", "images/presidentes/pellegrini.jpg"),
         new Presidente("Luis", "Sáenz Peña", "1892 - 1895", "images/presidentes/luissaenzpena.jpg"),
         new Presidente("José Evaristo", "Uriburu", "1895 - 1898", "images/presidentes/uriburu.jpg"),
