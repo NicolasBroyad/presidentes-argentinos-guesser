@@ -160,7 +160,7 @@ h1 {
 .rule-container {
     display: flex;
     gap: clamp(1rem, 3vw, 2rem);
-    padding: 0 clamp(1rem, 5vw, 50px);
+    justify-content: center;
 }
 
 .rule-container:nth-child(1) {
@@ -172,12 +172,6 @@ svg {
     width: clamp(40px, 8vw, 80px);
     height: clamp(40px, 8vw, 80px);
     flex-shrink: 0;
-}
-
-.rule-container {
-    display: flex;
-    gap: 35px;
-    padding: 0 50px;
 }
 
 .rule-text-container {
