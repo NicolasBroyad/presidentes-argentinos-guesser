@@ -16,7 +16,7 @@ body {
     background-position: center;  /* Centra la imagen */
     background-repeat: no-repeat; /* Evita que se repita */
     background-attachment: fixed; /* Fija la imagen para efecto "parallax" */
-    height: 100vh;
+    height: 100dvh;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
