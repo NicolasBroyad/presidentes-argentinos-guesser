@@ -1,0 +1,30 @@
+
+ERRORES A CORREGIR
+- Hay dos uriburu(padre e hijo) con misma foto. HECHO
+- corregir periodo de Rawson, solo estuvo en 1943 HECHO
+- Poner nombre completo toma como correcto HECHO
+
+
+PARA AGREGAR
+-Agregar modos de juego. Ej: Jugar desde la vuelta de la democracia o un modo que te vayan pasando la foto y periodo de un presidente y tenes que ingresar el nombre
+
+-Agregar opcion de configurar el juego. Ej: Seleccionar el tiempo del temporizador, eliminar regimenes de facto o eliminar gobiernos de menos de 1 año.
+
+-Agregar dificultad (respecto a presidentes mas famosos o longevos, sacando presidentes que duraron horas o dias...)
+
+-Agregar una pagina informativa que muestre todos los gobiernos con sus fotos, sus periodos (con fecha exacta), que tipo de gobierno fueron y una breve descripcion. 
+Que se ofrezca un link a esta pagina informativa al finalizar el juego (ya sea por rendirse o por tiempo).
+
+-Un boton de reiniciar (timer y tabla) y un boton de pausar (se frena el tiempo y no se puede ingresar) mientras se esta jugando.
+
+-Agregar modo de juego trivia, donde te dicen una pista sobre el presidente y el usuario tiene que adivinar de quien se esta hablando
+
+-Agregar una tabla de presidentes mas ingresados y menos ingresados respecto a las partidas de los usuarios
+
+-Hacer quizas un modo de juego donde se puedan ingresar gobernadores... (para un futuro)
+
+-Agregar modo de juego de que solo se puedan ingresar en orden cronologico (puede haber un sistema de vidas para que la persona siga jugando)
+
+-Agregar modo de juego donde se te presenten ciertos nombres y tengas que elegir quien fue presidente y quien no (multiple choice)
+
+-Agregar modo de juego donde se te muestra la foto del presidente y el usuario tenga que poner el nombre (sistema de vidas aca tambien)
