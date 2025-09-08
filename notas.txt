@@ -1,6 +1,5 @@
 ERRORES A CORREGIR
-- Hay dos uriburu (padre e hijo) con misma foto.
-- falta foto de lacoste
+- Hay dos uriburu(fpadre e hijo) con misma foto.
 - corregir periodo de Rawson, solo estuvo en 1943
 
 
@@ -14,6 +13,13 @@ Que se ofrezca un link a esta pagina informativa al finalizar el juego (ya sea p
 
 -Un boton de reiniciar (timer y tabla) y un boton de pausar (se frena el tiempo y no se puede ingresar) mientras se esta jugando.
 
+-Agregar modo de juego trivia, donde te dicen una pista sobre el presidente y el usuario tiene que adivinar de quien se esta hablando
+
+-Agregar una tabla de presidentes mas ingresados y menos ingresados respecto a las partidas de los usuarios
+
+-Hacer quizas un modo de juego donde se puedan ingresar gobernadores... (para un futuro)
+
+-Poner nombre completo toma como correcto
 
 Para que Google AdSense te apruebe:
 Agregá páginas extra:
