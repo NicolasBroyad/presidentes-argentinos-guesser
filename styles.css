@@ -6,9 +6,10 @@
     padding: 0;
     font-family: "Cinzel";
     box-sizing: border-box;
+    color: white;
 }
 
-body {
+.index-body {
     background-image: url("images/background-oligarca-extended.jpg");
     background-color: #c0bda1;
     background-blend-mode: multiply;
@@ -30,6 +31,12 @@ header {
 
 h1 {
     display: flex;
+    justify-content: center;
+}
+
+h1 a {
+    width: fit-content;
+    display: flex;
     flex-direction: column;
     align-items: center;
     font-size: clamp(1.5rem, 5vw, 3rem);
@@ -38,6 +45,7 @@ h1 {
     padding-top: 30px;
     line-height: 0.8;
     justify-content: center;
+    text-decoration: none;
 }
 
 .adivina { font-size: clamp(1.2rem, 4vw, 2.5rem); }
@@ -349,6 +357,7 @@ td {
 }
 
 input {
+    color: black;
     height: clamp(50px, 8vw, 70px);
     border-radius: 30px;
     padding: 0 1rem;
@@ -419,4 +428,21 @@ input {
     color: white;
     margin-bottom: 1rem;
     text-align: center;
+}
+
+
+/* Otras paginas (Acerca de, contacto, body)*/
+
+.acerca-body, .contacto-body, .privacidad-body {
+    background-image: url("images/background-oligarca-sin-personas-sin-banderas.png");
+    background-color: #a3a086;
+    background-blend-mode: multiply;
+    background-size: cover;       /* Ajusta la imagen para cubrir toda la pantalla */
+    background-position: center;  /* Centra la imagen */
+    background-repeat: no-repeat; /* Evita que se repita */
+    background-attachment: fixed; /* Fija la imagen para efecto "parallax" */
+}
+
+.acerca-paragraph, .contacto-paragraph, .contacto-list {
+    color: white;
 }
