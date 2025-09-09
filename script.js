@@ -27,9 +27,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const listaPresidentes = [
         new Presidente("Bernardino", "", "Rivadavia", new Periodo(new Date("1826-02-08"), new Date("1827-06-27")), false, "images/presidentes/rivadavia.jpg"),
         new Presidente("Vicente", "", "López", new Periodo(new Date("1827-07-07"), new Date("1827-08-18")), false, "images/presidentes/vicentelopez.jpg"),
-        new Presidente("Justo", "José", "de Urquiza", new Periodo(new Date("1854-03-05"), new Date("1860-03-05")), false, "images/presidentes/urquiza.jpg"),
-        new Presidente("Santiago", "", "Derqui", new Periodo(new Date("1860-03-05"), new Date("1861-11-05")), false, "images/presidentes/derqui.jpg"),
-        new Presidente("Juan", "Esteban", "Pedernera", new Periodo(new Date("1861-11-05"), new Date("1861-12-12")), false, "images/presidentes/pedernera.jpg"),
         new Presidente("Bartolomé", "", "Mitre", new Periodo(new Date("1862-10-12"), new Date("1868-10-12")), false, "images/presidentes/mitre.jpg"),
         new Presidente("Domingo", "Faustino", "Sarmiento", new Periodo(new Date("1868-10-12"), new Date("1874-10-12")), false, "images/presidentes/sarmiento.jpg"),
         new Presidente("Nicolás", "Remigio Aurelio", "Avellaneda", new Periodo(new Date("1874-10-12"), new Date("1880-10-12")), false, "images/presidentes/avellaneda.jpg"),

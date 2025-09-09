@@ -133,7 +133,7 @@ h1 a {
     justify-content: center;
     align-items: center;
     padding: 1rem;
-    background-color: #1E6BA8;
+    background-color: rgba(10, 34, 53);
     height: clamp(50px, 10vw, 65px);
     color: white;
     border-radius: 30px;
@@ -151,8 +151,7 @@ h1 a {
 }
 
 .iniciar-juego-button:hover {
-    color: #FFD700;
-    background-color: #1E6BA8; /* Azul más oscuro */
+    color: rgb(127, 190, 241);
     transition: all 0.3s ease; /* Animación suave */
 }
 
@@ -168,7 +167,7 @@ h1 a {
 }
 
 .configuracion-icon:hover {
-    fill: #FFD700;
+    fill: rgb(127, 190, 241);
     cursor: pointer;
 }
 
