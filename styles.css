@@ -244,9 +244,13 @@ table {
     color: white;
     font-weight: bold;
     align-self: center;
-    background-color: rgb(10, 34, 53);
+     background-color: rgba(10, 34, 53, 0.75); 
+    /* background-color: rgba(0, 0, 0, 0.75); */
+    backdrop-filter: blur(10px); /* El efecto de vidrio borroso */
+    -webkit-backdrop-filter: blur(10px); /* Para Safari */
     border-radius: 30px;
-    border: 6px rgb(127, 190, 241) solid;
+    border: 3px rgb(127, 190, 241) solid; 
+    /* border: 6px solid rgb(209, 182, 92); */
     overflow-x: auto; /* permite scroll si algo se pasa */
 }
 
@@ -270,7 +274,7 @@ img {
 tbody {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 2rem;
+    gap: 3rem;
     height: 500px;
     overflow: scroll;
     scrollbar-width: none;
@@ -287,21 +291,37 @@ tr {
     display: flex;
     border-radius: 20px;
     align-items: center;
+    gap: 0.5em;
 }
 
 td {
     border: none;
 }
 
+.presidente-card {
+    background-color: rgb(127, 190, 241);
+    width: 100%;
+    border-radius: 10px;
+    padding: 0.25em;
+}
+
 .nombre-presidente-cell {
-    border: 1px solid white;
-    min-height: 40px;   /* alto mínimo consistente */
-    display: flex;
-    align-items: center;
+    color: rgb(10, 34, 53);
+    min-height: 30px;   /* alto mínimo consistente */
+    font-weight: 700;
+    font-size: 1.1rem;
+    text-align: center;
     min-width: unset;
     width: 100%;
-    padding: 0.5rem;
     word-break: break-word; /* evita overflow de texto */
+}
+
+.periodo-presidente-cell {
+    text-align: center;
+    background-color: rgba(10, 34, 53, 0.75);
+    backdrop-filter: blur(10px); /* El efecto de vidrio borroso */
+    border-radius: 0 0 10px 10px;
+    padding: 0.25em 0;
 }
 
 .input-container {

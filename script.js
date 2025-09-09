@@ -5,6 +5,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const buttonSection = document.querySelector(".button-section");
     const rulesSection = document.querySelector(".rules-section");
     const botonIniciar = document.querySelector(".iniciar-juego-button");
+    const botonConfiguracion = document.querySelector(".configuracion-button");
+    const botonGuardar = document.querySelector(".guardar");
+    const botonCancelar = document.querySelector(".cancelar");
 
     // --- DATOS DE PRESIDENTES ---
     // (Se asume que la clase Presidente ya está cargada desde Presidente.js)
@@ -72,7 +75,6 @@ document.addEventListener('DOMContentLoaded', () => {
     new Presidente("Javier", "Gerardo", "Milei", "2023 - ...........", "images/presidentes/milei.jpg")
 ];
 
-
     function normalizarTexto(texto) {
         return texto
             .normalize("NFD")
@@ -89,9 +91,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="imagen-presidente-desconocido-container">
                         <img src="images/presidente-desconocido.png" alt="Presidente desconocido">
                     </div>
-                    ${presidente.periodo}
                 </td>
-                <td class="nombre-presidente-cell"></td>
+                <td class="presidente-card">
+                    <div class="nombre-presidente-cell"></div>
+                    <div class="periodo-presidente-cell">${presidente.periodo}</div>
+                </td>
             </tr>
         `).join('');
 
@@ -254,6 +258,28 @@ function verificarRespuestaTiempoReal(inputElement) {
 
     }
     botonIniciar.addEventListener("click", iniciarJuego);
+
+    function abrirConfig() {
+        document.getElementById("configOverlay").style.display = "flex";
+    }
+    botonConfiguracion.addEventListener("click", abrirConfig);
+
+    const slider = document.getElementById("sliderTiempo");
+    const valorRango = document.getElementById("valorRango");
+
+    // Mostrar el valor inicial
+    valorRango.textContent = slider.value + " minutos";
+
+    // Actualizar al mover el slider
+    slider.addEventListener("input", function() {
+        valorRango.textContent = slider.value + " minutos";
+    });
+
+    function cerrarConfig() {
+        document.getElementById("configOverlay").style.display = "none";
+    }
+    botonGuardar.addEventListener("click", cerrarConfig);
+    botonCancelar.addEventListener("click", cerrarConfig);
 
     // --- Función Rendirse ---
     function rendirse() {
