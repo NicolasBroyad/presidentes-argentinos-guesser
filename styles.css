@@ -267,10 +267,10 @@ p {
 .modal {
     display: flex;
     flex-direction: column;
-    background: rgba(0, 0, 0, 0.75); /* doradito translúcido */
+    background-color: rgba(10, 34, 53, 0.75);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(212, 175, 55, 0.7);
+    border: 3px rgb(127, 190, 241) solid;
     border-radius: 12px;
     padding: 20px 30px;
     max-width: 400px;
@@ -306,7 +306,7 @@ p {
 
 .checkbox-input {
     width: 20px;
-    accent-color: goldenrod; /* el doradito que veníamos usando */
+    accent-color: rgb(127, 190, 241); /* el doradito que veníamos usando */
 }
 
 .checkbox-label {
@@ -358,8 +358,7 @@ table {
     color: white;
     font-weight: bold;
     align-self: center;
-    /* background-color: rgb(10, 34, 53); */
-    background-color: rgba(0, 0, 0, 0.75);
+    background-color: rgba(10, 34, 53, 0.75);
     backdrop-filter: blur(10px); /* El efecto de vidrio borroso */
     -webkit-backdrop-filter: blur(10px); /* Para Safari */
     border-radius: 30px;
