@@ -113,7 +113,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="imagen-presidente-desconocido-container">
                         <img src="images/presidente-desconocido.png" alt="Presidente desconocido">
                     </div>
-                    ${presidente.periodo.toString()}
                 </td>
                 <td class="presidente-card">
                     <div class="nombre-presidente-cell"></div>
