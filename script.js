@@ -239,7 +239,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const botonRendirse = document.querySelector(".rendirse-button");
-        if (botonRendirse) botonRendirse.addEventListener("click", rendirse);
+        if (botonRendirse){
+            botonRendirse.addEventListener("click", rendirse);
+        }
 
         // --- Temporizador ---
         let tiempoRestante = configuracionJuego.tiempo * 60;
@@ -317,17 +319,25 @@ document.addEventListener('DOMContentLoaded', () => {
                         .filter(Boolean).join(" ");
                     fila.querySelector('img').src = presidente.imagen;
                     fila.querySelector('img').alt = celdaNombre.textContent;
+                    fila.style.backgroundColor = "rgba(255,0,0,0.3)";
                 }
             }
         });
 
-        const inputContainer = document.querySelector(".input-container");
-        if (inputContainer) inputContainer.innerHTML = `
-            <div class="game-over">
-                ⏰ EL TIEMPO TERMINÓ ⏰<br>
-                SE HAN MOSTRADO TODOS LOS PRESIDENTES
-            </div>
-        `;
+        //Bloquear input
+        const inputPresidente = document.getElementById("input-presidente");
+        if (inputPresidente) { 
+            inputPresidente.disabled = true;
+            inputPresidente.placeholder = "Juego terminado";
+        }
+
+        // Cambiar boton a  "JUEGO TERMINADO"
+        if (botonRendirse) {
+            botonRendirse.textContent = "JUEGO TERMINADO";
+            botonRendirse.disabled = true;
+            botonRendirse.style.backgroundColor = "gray";
+            botonRendirse.style.cursor = "not-allowed";
+        }
     }
 
 });
