@@ -128,25 +128,48 @@ h1 a {
     height: 440px;
 }
 
-.iniciar-juego-button {
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+.button-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 1rem;
     background-color: #1E6BA8;
     height: clamp(50px, 10vw, 65px);
-    width: min(80%, 250px);
-    font-size: clamp(1rem, 3vw, 1.2rem);
-    border-radius: 30px;
-    border: 2px solid #1E6BA8;
     color: white;
+    border-radius: 30px;
+}
+
+.iniciar-juego-button {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    font-size: clamp(1rem, 3vw, 1.2rem);
     font-weight: 900;
-    cursor: pointer;
+    background: none;
+    border-radius: 0;
     text-align: center;
+    border-right: 1px solid white;
+    padding: 0 1em;
 }
 
 .iniciar-juego-button:hover {
-    border-color: #FFD700;
     color: #FFD700;
     background-color: #1E6BA8; /* Azul más oscuro */
     transition: all 0.3s ease; /* Animación suave */
+}
+
+.configuracion-button {
+    background: none;
+    border: none;
+    padding: 0 1em;
+}
+
+.configuracion-icon {
+    height: 32px;
+    width: 32px;
+}
+
+.configuracion-icon:hover {
+    fill: #FFD700;
+    cursor: pointer;
 }
 
 
@@ -228,6 +251,97 @@ p {
     }
 }
 
+/* Fondo oscuro semitransparente */
+.overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000; /* Asegura que quede arriba */
+}
+
+/* Ventana modal */
+.modal {
+    display: flex;
+    flex-direction: column;
+    background: rgba(0, 0, 0, 0.75); /* doradito translúcido */
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(212, 175, 55, 0.7);
+    border-radius: 12px;
+    padding: 20px 30px;
+    max-width: 400px;
+    color: #fff;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    text-align: center;
+}
+
+.configuracion-temporizador-container {
+    border-bottom: 1px solid white;
+    padding: 2em 0;
+}
+
+.slider-container {
+  display: flex;
+  align-items: center;
+  gap: 10px; /* espacio entre el número y el slider */
+}
+
+.slider-container input[type="range"] {
+  flex: 1; /* hace que la barra ocupe todo el espacio */
+  height: fit-content;
+}
+
+.filtros-container {
+    padding: 2em 0;
+}
+
+.filtrar-gobiernos-heading {
+    display: flex;
+    font-size: 1.25rem;
+}
+
+.checkbox-input {
+    width: 20px;
+    accent-color: goldenrod; /* el doradito que veníamos usando */
+}
+
+.checkbox-label {
+    display: flex;
+    gap: 1em;
+    width: fit-content;
+    align-items: center;
+}
+
+/* Botones */
+.buttons {
+  margin-top: 20px;
+  display: flex;
+  justify-content: space-between;
+}
+
+button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.guardar {
+  background: #2ecc71;
+  color: #fff;
+}
+
+.cancelar {
+  background: #e74c3c;
+  color: #fff;
+}
+
+
 
 .tabla-container {
     display: flex;
@@ -244,13 +358,13 @@ table {
     color: white;
     font-weight: bold;
     align-self: center;
-     background-color: rgba(10, 34, 53, 0.75); 
-    /* background-color: rgba(0, 0, 0, 0.75); */
+    /* background-color: rgb(10, 34, 53); */
+    background-color: rgba(0, 0, 0, 0.75);
     backdrop-filter: blur(10px); /* El efecto de vidrio borroso */
     -webkit-backdrop-filter: blur(10px); /* Para Safari */
     border-radius: 30px;
-    border: 3px rgb(127, 190, 241) solid; 
-    /* border: 6px solid rgb(209, 182, 92); */
+    /* border: 6px rgb(127, 190, 241) solid; */
+    border: 6px solid rgb(209, 182, 92);
     overflow-x: auto; /* permite scroll si algo se pasa */
 }
 
