@@ -21,6 +21,12 @@ Que se ofrezca un link a esta pagina informativa al finalizar el juego (ya sea p
 
 -Poner nombre completo toma como correcto
 
+DE DISEÑO
+-Rosquita de configuracion en index. Container de configuracion que se abre al tocarla.
+
+-Cambiar estilo de la tabla.
+
+
 Para que Google AdSense te apruebe:
 Agregá páginas extra:
 /acerca.html

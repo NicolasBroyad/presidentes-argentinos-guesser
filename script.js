@@ -6,6 +6,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const rulesSection = document.querySelector(".rules-section");
     const botonIniciar = document.querySelector(".iniciar-juego-button");
     const botonConfiguracion = document.querySelector(".configuracion-button");
+    const botonGuardar = document.querySelector(".guardar");
+    const botonCancelar = document.querySelector(".cancelar");
 
     // --- DATOS DE PRESIDENTES ---
     // (Se asume que la clase Presidente ya está cargada desde Presidente.js)
@@ -72,12 +74,6 @@ document.addEventListener('DOMContentLoaded', () => {
     new Presidente("Alberto", "Ángel", "Fernández", "2019 - 2023", "images/presidentes/albertofernandez.jpg"),
     new Presidente("Javier", "Gerardo", "Milei", "2023 - ...........", "images/presidentes/milei.jpg")
 ];
-
-
-    
-    function cerrarConfig() {
-        document.getElementById("configOverlay").style.display = "none";
-    }
 
     function normalizarTexto(texto) {
         return texto
@@ -276,6 +272,12 @@ function verificarRespuestaTiempoReal(inputElement) {
     slider.addEventListener("input", function() {
         valorRango.textContent = slider.value + " minutos";
     });
+
+    function cerrarConfig() {
+        document.getElementById("configOverlay").style.display = "none";
+    }
+    botonGuardar.addEventListener("click", cerrarConfig);
+    botonCancelar.addEventListener("click", cerrarConfig);
 
     // --- Función Rendirse ---
     function rendirse() {

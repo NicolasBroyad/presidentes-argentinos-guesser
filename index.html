@@ -62,13 +62,15 @@
     <div id="configOverlay" class="overlay" style="display:none;">
     <div class="modal">
         <h2>CONFIGURACIÓN DEL JUEGO</h2>
-        <label for="sliderTiempo">Tiempo del Temporizador:</label>
-        <div class="slider-container">
-            <span class="min">1 min</span>
-            <input type="range" id="sliderTiempo" min="1" max="30" step="1" value="10">
-            <span class="max">30 min</span>
+            <div class="configuracion-temporizador-container">
+            <label for="sliderTiempo">Tiempo del Temporizador:</label>
+            <div class="slider-container">
+                <span class="min">1 min</span>
+                <input type="range" id="sliderTiempo" min="1" max="30" step="1" value="10">
+                <span class="max">30 min</span>
+            </div>
+            <p>Seleccionado: <span id="valorRango"></span></p>
         </div>
-        <p>Seleccionado: <span id="valorRango"></span></p>
         
         <div class="filtros-container">
             <h4 class="filtrar-gobiernos-heading">FILTRAR GOBIERNOS</h4>
@@ -77,8 +79,8 @@
         </div>
         
         <div class="buttons">
-        <button class="guardar" onclick="cerrarConfig()">GUARDAR</button>
-        <button class="cancelar" onclick="cerrarConfig()">CANCELAR</button>
+            <button class="cancelar" onclick="cerrarConfig()">CANCELAR</button>
+            <button class="guardar" onclick="cerrarConfig()">GUARDAR</button>
         </div>
     </div>
     </div>

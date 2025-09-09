@@ -265,6 +265,8 @@ p {
 
 /* Ventana modal */
 .modal {
+    display: flex;
+    flex-direction: column;
     background: rgba(0, 0, 0, 0.75); /* doradito translúcido */
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
@@ -277,6 +279,11 @@ p {
     text-align: center;
 }
 
+.configuracion-temporizador-container {
+    border-bottom: 1px solid white;
+    padding: 2em 0;
+}
+
 .slider-container {
   display: flex;
   align-items: center;
@@ -285,6 +292,11 @@ p {
 
 .slider-container input[type="range"] {
   flex: 1; /* hace que la barra ocupe todo el espacio */
+  height: fit-content;
+}
+
+.filtros-container {
+    padding: 2em 0;
 }
 
 .filtrar-gobiernos-heading {
@@ -294,6 +306,7 @@ p {
 
 .checkbox-input {
     width: 20px;
+    accent-color: goldenrod; /* el doradito que veníamos usando */
 }
 
 .checkbox-label {
