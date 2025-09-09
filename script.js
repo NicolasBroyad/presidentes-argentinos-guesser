@@ -339,4 +339,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    const toggleButton = document.querySelector('.nav-toggle');
+    const nav = document.querySelector('.header-nav');
+
+    toggleButton.addEventListener('click', () => {
+        nav.classList.toggle('active');
+    });
+
 });
