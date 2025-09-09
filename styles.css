@@ -128,25 +128,49 @@ h1 a {
     height: 440px;
 }
 
-.iniciar-juego-button {
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+.button-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 1rem;
     background-color: #1E6BA8;
     height: clamp(50px, 10vw, 65px);
-    width: min(80%, 250px);
-    font-size: clamp(1rem, 3vw, 1.2rem);
-    border-radius: 30px;
-    border: 2px solid #1E6BA8;
     color: white;
+    border-radius: 30px;
+}
+
+.iniciar-juego-button {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    font-size: clamp(1rem, 3vw, 1.2rem);
     font-weight: 900;
-    cursor: pointer;
+    background: none;
+    border: none;
+    
     text-align: center;
+    border-right: 1px solid white;
+    padding: 0 1em;
 }
 
 .iniciar-juego-button:hover {
-    border-color: #FFD700;
     color: #FFD700;
     background-color: #1E6BA8; /* Azul más oscuro */
     transition: all 0.3s ease; /* Animación suave */
+}
+
+.configuracion-button {
+    background: none;
+    border: none;
+    padding: 0 1em;
+}
+
+.configuracion-icon {
+    height: 32px;
+    width: 32px;
+}
+
+.configuracion-icon:hover {
+    fill: #FFD700;
+    cursor: pointer;
 }
 
 
