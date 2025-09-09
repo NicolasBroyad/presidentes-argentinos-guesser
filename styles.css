@@ -244,9 +244,13 @@ table {
     color: white;
     font-weight: bold;
     align-self: center;
-    background-color: rgb(10, 34, 53);
+    /* background-color: rgb(10, 34, 53); */
+    background-color: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(10px); /* El efecto de vidrio borroso */
+    -webkit-backdrop-filter: blur(10px); /* Para Safari */
     border-radius: 30px;
-    border: 6px rgb(127, 190, 241) solid;
+    /* border: 6px rgb(127, 190, 241) solid; */
+    border: 6px solid rgb(209, 182, 92);
     overflow-x: auto; /* permite scroll si algo se pasa */
 }
 
