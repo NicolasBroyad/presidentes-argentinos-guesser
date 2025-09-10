@@ -388,7 +388,6 @@ tbody {
     gap: 3rem;
     height: 500px;
     overflow: scroll;
-    scrollbar-width: none;
     padding: 1rem;
 }
 
