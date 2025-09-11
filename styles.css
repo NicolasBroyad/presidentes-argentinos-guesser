@@ -441,6 +441,7 @@ td {
 
 .nombre-presidente-texto {
     text-align: center;
+    width: 100%;
     color: rgb(10, 34, 53);
     font-weight: 700;
     font-size: 1.1rem;
