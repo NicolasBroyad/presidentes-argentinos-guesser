@@ -406,11 +406,14 @@ tr {
     display: flex;
     border-radius: 20px;
     align-items: center;
-    gap: 0.5em;
 }
 
 td {
     border: none;
+}
+
+.imagen-presidente-cell {
+    padding: 0 1em;
 }
 
 .presidente-card {

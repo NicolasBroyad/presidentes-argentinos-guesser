@@ -106,7 +106,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function generarTablaHTML(presidentesFiltrados) {
         const filasTabla = presidentesFiltrados.map((presidente, index) => `
             <tr data-id="${index}" data-periodo="${presidente.periodo.toString()}">
-                <td>
+                <td class="imagen-presidente-cell">
                     <div class="imagen-presidente-desconocido-container">
                         <img src="images/presidente-desconocido.png" alt="Presidente desconocido">
                     </div>
