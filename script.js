@@ -320,12 +320,24 @@ document.addEventListener('DOMContentLoaded', () => {
             const fila = document.querySelector(`tr[data-id="${index}"]`);
             if (fila) {
                 const celdaNombre = fila.querySelector('.nombre-presidente-cell');
-                if (celdaNombre.textContent === "") {
-                    celdaNombre.textContent = [presidente.nombre, presidente.segundoNombre, presidente.apellido]
+                // Si NO fue adivinado (tiene el ?)
+                if (celdaNombre.textContent.trim() === "?") {
+                    // Mostrar nombre en celeste, fondo negro, animación roja
+                    const nombreParaMostrar = [presidente.nombre, presidente.segundoNombre, presidente.apellido]
                         .filter(Boolean).join(" ");
+                    celdaNombre.innerHTML = `<span class="nombre-presidente-texto rendido">${nombreParaMostrar}</span>`;
                     fila.querySelector('img').src = presidente.imagen;
-                    fila.querySelector('img').alt = celdaNombre.textContent;
-                    fila.style.backgroundColor = "rgba(255,0,0,0.3)";
+                    fila.querySelector('img').alt = nombreParaMostrar;
+                    fila.style.backgroundColor = "#111"; // fondo negro
+                    const presidenteCard = fila.querySelector('.presidente-card');
+                    presidenteCard.style.backgroundColor = "#111";
+                    const nombreTexto = fila.querySelector('.nombre-presidente-texto');
+                    nombreTexto.style.color = "#1bbeff"; // celeste
+                    nombreTexto.style.borderBottom = "none";
+                    nombreTexto.style.marginBottom = "0";
+                    // animación en rojo
+                    fila.classList.add('rendicion-animacion');
+                    setTimeout(() => fila.classList.remove('rendicion-animacion'), 2000);
                 }
             }
         });
