@@ -173,6 +173,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (opcionesValidas.has(textoIngresado)) {
                 const celdaNombre = fila.querySelector('.nombre-presidente-cell');
                 const imagen = fila.querySelector('img');
+                const checkIcon = "<svg class='check-icon' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><title>check-bold</title><path d='M9,20.42L2.79,14.21L5.62,11.38L9,14.77L18.88,4.88L21.71,7.71L9,20.42Z' /></svg>"
 
                 const nombreParaMostrar = [presidente.nombre, presidente.segundoNombre, presidente.apellido]
                     .filter(Boolean).join(" ");
@@ -180,7 +181,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (celdaNombre.textContent === "") {
                     imagen.src = presidente.imagen;
                     imagen.alt = nombreParaMostrar;
-                    celdaNombre.textContent = nombreParaMostrar;
+                    celdaNombre.innerHTML = `${checkIcon} <span class="nombre-presidente-texto">${nombreParaMostrar}</span>`;
 
                     aciertos++;
                     const contador = document.getElementById("contador-presidentes");

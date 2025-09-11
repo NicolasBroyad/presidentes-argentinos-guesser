@@ -363,6 +363,7 @@ table {
     border-radius: 30px;
     border: 3px rgb(127, 190, 241) solid;
     overflow-x: auto; /* permite scroll si algo se pasa */
+    padding-bottom: 1em;
 }
 
 th, td {
@@ -419,14 +420,30 @@ td {
 }
 
 .nombre-presidente-cell {
-    color: rgb(10, 34, 53);
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    padding: 0 0.5em;
     min-height: 30px;   /* alto mínimo consistente */
-    font-weight: 700;
-    font-size: 1.1rem;
-    text-align: center;
     min-width: unset;
     width: 100%;
     word-break: break-word; /* evita overflow de texto */
+}
+
+.check-icon {
+    height: 1.2em;
+    width: 1.2em;
+    background-color: rgba(10, 34, 53, 0.75);
+    backdrop-filter: blur(10px); /* El efecto de vidrio borroso */
+    fill: rgb(127, 190, 241);
+    border-radius: 50%;
+}
+
+.nombre-presidente-texto {
+    text-align: center;
+    color: rgb(10, 34, 53);
+    font-weight: 700;
+    font-size: 1.1rem;
 }
 
 .periodo-presidente-cell {
