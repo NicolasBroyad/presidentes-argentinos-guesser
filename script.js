@@ -112,7 +112,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 </td>
                 <td class="presidente-card">
-                    <div class="nombre-presidente-cell"></div>
+                    <div class="nombre-presidente-cell"><span class="nombre-presidente-texto">?</span></div>
                     <div class="periodo-presidente-cell">${presidente.periodo}</div>
                 </td>
             </tr>
@@ -174,14 +174,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 const celdaNombre = fila.querySelector('.nombre-presidente-cell');
                 const imagen = fila.querySelector('img');
                 const checkIcon = "<svg class='check-icon' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><title>check-bold</title><path d='M9,20.42L2.79,14.21L5.62,11.38L9,14.77L18.88,4.88L21.71,7.71L9,20.42Z' /></svg>"
+                const presidenteCard = fila.querySelector('.presidente-card');
 
                 const nombreParaMostrar = [presidente.nombre, presidente.segundoNombre, presidente.apellido]
                     .filter(Boolean).join(" ");
 
-                if (celdaNombre.textContent === "") {
+                if (celdaNombre.textContent === "?") {
                     imagen.src = presidente.imagen;
                     imagen.alt = nombreParaMostrar;
                     celdaNombre.innerHTML = `${checkIcon} <span class="nombre-presidente-texto">${nombreParaMostrar}</span>`;
+                    presidenteCard.style.backgroundColor = "rgb(27, 190, 241)";
+                    const presidenteTexto = fila.querySelector('.nombre-presidente-texto');
+                    presidenteTexto.style.border = "none";
+                    presidenteTexto.style.marginBottom = "0";
+                    presidenteTexto.style.color = "rgb(10, 34, 53)";
 
                     aciertos++;
                     const contador = document.getElementById("contador-presidentes");

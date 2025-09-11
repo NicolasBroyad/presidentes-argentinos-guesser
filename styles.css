@@ -413,17 +413,20 @@ td {
 }
 
 .presidente-card {
-    background-color: rgb(127, 190, 241);
+    background-color: rgba(10, 34, 53, 0.75);
+    backdrop-filter: blur(10px); /* El efecto de vidrio borroso */
+    border: 2px solid rgb(127, 190, 241);
     width: 100%;
     border-radius: 10px;
-    padding: 0.25em;
+    padding: 0;
 }
 
 .nombre-presidente-cell {
     display: flex;
+    justify-content: center;
     align-items: center;
-    gap: 0.5em;
-    padding: 0 0.5em;
+    gap: 1em;
+    padding: 0.5em;
     min-height: 30px;   /* alto mínimo consistente */
     min-width: unset;
     width: 100%;
@@ -440,15 +443,22 @@ td {
 }
 
 .nombre-presidente-texto {
+    min-height: 30px;   /* alto mínimo consistente */
     text-align: center;
-    width: 100%;
-    color: rgb(10, 34, 53);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 75%;
+    margin-bottom: 0.25em;
+    color: white;
+    border-bottom: 2px solid white;
     font-weight: 700;
     font-size: 1.1rem;
 }
 
 .periodo-presidente-cell {
     text-align: center;
+    border-top: 2px solid rgb(127, 190, 241);
     background-color: rgba(10, 34, 53, 0.75);
     backdrop-filter: blur(10px); /* El efecto de vidrio borroso */
     border-radius: 0 0 10px 10px;
