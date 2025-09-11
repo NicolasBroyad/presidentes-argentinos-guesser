@@ -176,7 +176,8 @@ h1 a {
     display: flex;
     padding: clamp(1rem, 5vw, 5rem);
     min-height: fit-content;
-    background-color: rgba(0,0,0,0.7);
+    background-color: rgba(0,0,0,0.75);
+    backdrop-filter: blur(10px); /* El efecto de vidrio borroso */
     justify-content: center;
     align-items: center;
 }
