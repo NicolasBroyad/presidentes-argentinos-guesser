@@ -149,10 +149,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const textoIngresado = normalizarTexto(inputElement.value);
         if (textoIngresado.length < 3) return;
 
+        // Buscar todos los índices que coincidan
+        let indicesCoincidentes = [];
         window.listaFiltrada.forEach((presidente, index) => {
-            const fila = document.querySelector(`tr[data-id="${index}"]`);
-            if (!fila) return;
-
             const apellido = normalizarTexto(presidente.apellido);
             const primerNombre = normalizarTexto(presidente.nombre);
             const segundosNombres = (presidente.segundoNombre || "")
@@ -171,6 +170,17 @@ document.addEventListener('DOMContentLoaded', () => {
             opcionesValidas.add(nombreCompleto);
 
             if (opcionesValidas.has(textoIngresado)) {
+                indicesCoincidentes.push(index);
+            }
+        });
+
+        if (indicesCoincidentes.length > 0) {
+            let hizoScroll = false;
+            indicesCoincidentes.forEach((indice, i) => {
+                const presidente = window.listaFiltrada[indice];
+                const fila = document.querySelector(`tr[data-id="${indice}"]`);
+                if (!fila) return;
+
                 const celdaNombre = fila.querySelector('.nombre-presidente-cell');
                 const imagen = fila.querySelector('img');
                 const checkIcon = "<svg class='check-icon' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><title>check-bold</title><path d='M9,20.42L2.79,14.21L5.62,11.38L9,14.77L18.88,4.88L21.71,7.71L9,20.42Z' /></svg>"
@@ -196,16 +206,22 @@ document.addEventListener('DOMContentLoaded', () => {
                     fila.classList.add('acierto-animacion');
                     setTimeout(() => fila.classList.remove('acierto-animacion'), 2000);
 
-                    inputElement.value = "";
-                    fila.scrollIntoView({ behavior: 'auto', block: 'center' });
-                } else {
-                    inputElement.value = "";
-                    fila.scrollIntoView({ behavior: 'auto', block: 'center' });
+                    // Solo hacer scroll en el primer mandato encontrado
+                    if (!hizoScroll) {
+                        fila.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        hizoScroll = true;
+                    }
+                } else if (!hizoScroll) {
+                    // Si ya estaba adivinado, igual hacemos scroll solo al primero
+                    fila.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     fila.classList.add('ya-adivinado');
                     setTimeout(() => fila.classList.remove('ya-adivinado'), 2000);
+                    hizoScroll = true;
                 }
-            }
-        });
+            });
+
+            inputElement.value = "";
+        }
 
         if (aciertos === window.listaFiltrada.length) {
             clearInterval(window.temporizadorInterval);
