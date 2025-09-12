@@ -345,8 +345,6 @@ button {
   color: #fff;
 }
 
-
-
 .tabla-container {
     display: flex;
     flex-direction: column;
@@ -354,6 +352,12 @@ button {
     align-items: center;
     gap: 3rem;
     margin: 0 2rem;
+}
+
+@media (max-width: 768px) {
+    .tabla-container {
+        gap: 1rem;
+    }
 }
 
 table {
@@ -489,17 +493,37 @@ td {
 }
 
 @media (max-width: 768px) {
-    .input-container-first-row {
-        flex-wrap: wrap;
-    }
-
-    .pluma-image {
-        display: none;
-    }
-
-    .pluma-image-container {
-        display: none;
-    }
+  .input-container {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .input-container-first-row {
+    display: flex;
+    flex-direction: column;
+    order: 2;
+    gap: 0.25rem;
+  }
+  #input-presidente {
+    order: 0;
+    margin-bottom: 1rem;
+    width: 100%;
+    max-width: 100%;
+    align-self: stretch;
+  }
+  #temporizador {
+    order: 3;
+    margin: 0;
+  }
+  .rendirse-button {
+    order: 4;
+  }
+  #contador-presidentes {
+    order: 1;
+  }
+  .pluma-image-container {
+    display: none;
+  }
 }
 
 #contador-presidentes {
