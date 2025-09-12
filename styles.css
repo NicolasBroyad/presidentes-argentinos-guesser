@@ -61,6 +61,10 @@ h1 a {
     align-items: center;
 }
 
+.header-nav {
+    display: none; /* oculto en desktop */
+}
+
 .header-nav ul {
     list-style: none;
     display: flex;
@@ -94,7 +98,7 @@ h1 a {
 /* --- Responsive --- */
 @media (max-width: 992px) {
     .nav-toggle {
-        display: block; /* mostramos el botón */
+        display: none; /* mostramos el botón (display: block) */
     }
 
     .header-nav {
