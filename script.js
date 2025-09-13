@@ -106,13 +106,13 @@ document.addEventListener('DOMContentLoaded', () => {
     function generarTablaHTML(presidentesFiltrados) {
         const filasTabla = presidentesFiltrados.map((presidente, index) => `
             <tr data-id="${index}" data-periodo="${presidente.periodo.toString()}">
-                <td>
+                <td class="imagen-presidente-cell">
                     <div class="imagen-presidente-desconocido-container">
                         <img src="images/presidente-desconocido.png" alt="Presidente desconocido">
                     </div>
                 </td>
                 <td class="presidente-card">
-                    <div class="nombre-presidente-cell"></div>
+                    <div class="nombre-presidente-cell"><span class="nombre-presidente-texto">?</span></div>
                     <div class="periodo-presidente-cell">${presidente.periodo}</div>
                 </td>
             </tr>
@@ -149,10 +149,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const textoIngresado = normalizarTexto(inputElement.value);
         if (textoIngresado.length < 3) return;
 
+        // Buscar todos los índices que coincidan
+        let indicesCoincidentes = [];
         window.listaFiltrada.forEach((presidente, index) => {
-            const fila = document.querySelector(`tr[data-id="${index}"]`);
-            if (!fila) return;
-
             const apellido = normalizarTexto(presidente.apellido);
             const primerNombre = normalizarTexto(presidente.nombre);
             const segundosNombres = (presidente.segundoNombre || "")
@@ -171,16 +170,34 @@ document.addEventListener('DOMContentLoaded', () => {
             opcionesValidas.add(nombreCompleto);
 
             if (opcionesValidas.has(textoIngresado)) {
+                indicesCoincidentes.push(index);
+            }
+        });
+
+        if (indicesCoincidentes.length > 0) {
+            let hizoScroll = false;
+            indicesCoincidentes.forEach((indice, i) => {
+                const presidente = window.listaFiltrada[indice];
+                const fila = document.querySelector(`tr[data-id="${indice}"]`);
+                if (!fila) return;
+
                 const celdaNombre = fila.querySelector('.nombre-presidente-cell');
                 const imagen = fila.querySelector('img');
+                const checkIcon = "<svg class='check-icon' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><title>check-bold</title><path d='M9,20.42L2.79,14.21L5.62,11.38L9,14.77L18.88,4.88L21.71,7.71L9,20.42Z' /></svg>"
+                const presidenteCard = fila.querySelector('.presidente-card');
 
                 const nombreParaMostrar = [presidente.nombre, presidente.segundoNombre, presidente.apellido]
                     .filter(Boolean).join(" ");
 
-                if (celdaNombre.textContent === "") {
+                if (celdaNombre.textContent === "?") {
                     imagen.src = presidente.imagen;
                     imagen.alt = nombreParaMostrar;
-                    celdaNombre.textContent = nombreParaMostrar;
+                    celdaNombre.innerHTML = `${checkIcon} <span class="nombre-presidente-texto">${nombreParaMostrar}</span>`;
+                    presidenteCard.style.backgroundColor = "rgb(27, 190, 241)";
+                    const presidenteTexto = fila.querySelector('.nombre-presidente-texto');
+                    presidenteTexto.style.border = "none";
+                    presidenteTexto.style.marginBottom = "0";
+                    presidenteTexto.style.color = "rgb(10, 34, 53)";
 
                     aciertos++;
                     const contador = document.getElementById("contador-presidentes");
@@ -189,16 +206,22 @@ document.addEventListener('DOMContentLoaded', () => {
                     fila.classList.add('acierto-animacion');
                     setTimeout(() => fila.classList.remove('acierto-animacion'), 2000);
 
-                    inputElement.value = "";
-                    fila.scrollIntoView({ behavior: 'auto', block: 'center' });
-                } else {
-                    inputElement.value = "";
-                    fila.scrollIntoView({ behavior: 'auto', block: 'center' });
+                    // Solo hacer scroll en el primer mandato encontrado
+                    if (!hizoScroll) {
+                        fila.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        hizoScroll = true;
+                    }
+                } else if (!hizoScroll) {
+                    // Si ya estaba adivinado, igual hacemos scroll solo al primero
+                    fila.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     fila.classList.add('ya-adivinado');
                     setTimeout(() => fila.classList.remove('ya-adivinado'), 2000);
+                    hizoScroll = true;
                 }
-            }
-        });
+            });
+
+            inputElement.value = "";
+        }
 
         if (aciertos === window.listaFiltrada.length) {
             clearInterval(window.temporizadorInterval);
@@ -313,12 +336,24 @@ document.addEventListener('DOMContentLoaded', () => {
             const fila = document.querySelector(`tr[data-id="${index}"]`);
             if (fila) {
                 const celdaNombre = fila.querySelector('.nombre-presidente-cell');
-                if (celdaNombre.textContent === "") {
-                    celdaNombre.textContent = [presidente.nombre, presidente.segundoNombre, presidente.apellido]
+                // Si NO fue adivinado (tiene el ?)
+                if (celdaNombre.textContent.trim() === "?") {
+                    // Mostrar nombre en celeste, fondo negro, animación roja
+                    const nombreParaMostrar = [presidente.nombre, presidente.segundoNombre, presidente.apellido]
                         .filter(Boolean).join(" ");
+                    celdaNombre.innerHTML = `<span class="nombre-presidente-texto rendido">${nombreParaMostrar}</span>`;
                     fila.querySelector('img').src = presidente.imagen;
-                    fila.querySelector('img').alt = celdaNombre.textContent;
-                    fila.style.backgroundColor = "rgba(255,0,0,0.3)";
+                    fila.querySelector('img').alt = nombreParaMostrar;
+                    fila.style.backgroundColor = "#111"; // fondo negro
+                    const presidenteCard = fila.querySelector('.presidente-card');
+                    presidenteCard.style.backgroundColor = "#111";
+                    const nombreTexto = fila.querySelector('.nombre-presidente-texto');
+                    nombreTexto.style.color = "#1bbeff"; // celeste
+                    nombreTexto.style.borderBottom = "none";
+                    nombreTexto.style.marginBottom = "0";
+                    // animación en rojo
+                    fila.classList.add('rendicion-animacion');
+                    setTimeout(() => fila.classList.remove('rendicion-animacion'), 2000);
                 }
             }
         });

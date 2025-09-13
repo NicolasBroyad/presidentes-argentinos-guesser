@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://presidentes-argentinos-guesser.vercel.app/sitemap.xml
