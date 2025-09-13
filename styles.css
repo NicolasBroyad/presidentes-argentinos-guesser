@@ -163,6 +163,7 @@ h1 a {
     background: none;
     border: none;
     padding: 0 1em;
+    display: flex;
 }
 
 .configuracion-icon {
