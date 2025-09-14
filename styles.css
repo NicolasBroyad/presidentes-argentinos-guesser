@@ -39,7 +39,7 @@ h1 a {
     display: flex;
     flex-direction: column;
     align-items: center;
-    font-size: clamp(1.5rem, 5vw, 3rem);
+    font-size: min(clamp(1.5rem, 5vw, 3rem),clamp(1.5rem, 5vh, 3rem));
     color: white;
     font-weight: 800;
     padding-top: 30px;
@@ -48,15 +48,15 @@ h1 a {
     text-decoration: none;
 }
 
-.adivina { font-size: clamp(1.2rem, 4vw, 2.5rem); }
-.los { font-size: clamp(1rem, 3.5vw, 2rem); }
-.presidentes, .argentinos { font-size: clamp(1.5rem, 5vw, 3rem); }
+.adivina { font-size: min(clamp(1.2rem, 4vw, 2.5rem),clamp(1.2rem, 4vh, 2.5rem)); }
+.los { font-size: min(clamp(1rem, 3.5vw, 2rem),clamp(1rem, 3.5vh, 2rem)); }
+.presidentes, .argentinos { font-size: min(clamp(1.5rem, 5vw, 3rem),clamp(1.5rem, 5vh, 3rem)); }
 
 
 .header {
     position: absolute;
-    top: clamp(1rem, 3vw, 2rem);   /* separación superior flexible */
-    right: clamp(0.5rem, 4vw, 4rem); /* separación derecha flexible */
+    top: min(clamp(1rem, 3vw, 2rem), clamp(1rem, 3vh, 2rem));   /* separación superior flexible */
+    right: min(clamp(0.5rem, 4vw, 4rem), clamp(0.5rem, 4vh, 4rem)); /* separación derecha flexible */
     display: flex;
     align-items: center;
 }
@@ -68,7 +68,7 @@ h1 a {
 .header-nav ul {
     list-style: none;
     display: flex;
-    gap: clamp(0.8rem, 2vw, 2rem); /* mínimo 0.8rem, máximo 2rem, se adapta con el ancho */
+    gap: min(clamp(0.8rem, 2vw, 2rem), clamp(0.8rem, 2vh, 2rem)); /* mínimo 0.8rem, máximo 2rem, se adapta con el ancho */
     margin: 0;
     padding: 0;
 }
@@ -138,14 +138,14 @@ h1 a {
     align-items: center;
     padding: 1rem;
     background-color: rgba(10, 34, 53);
-    height: clamp(50px, 10vw, 65px);
+    height: min(clamp(50px, 10vw, 65px), clamp(50px, 10vh, 65px));
     color: white;
     border-radius: 30px;
 }
 
 .iniciar-juego-button {
     font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-    font-size: clamp(1rem, 3vw, 1.2rem);
+    font-size: min(clamp(1rem, 3vw, 1.2rem), clamp(1rem, 3vh, 1.2rem));
     font-weight: 900;
     background: none;
     border-radius: 0;
@@ -179,7 +179,7 @@ h1 a {
 
 .rules-section {
     display: flex;
-    padding: clamp(1rem, 5vw, 5rem);
+    padding: min(clamp(1rem, 5vw, 5rem), clamp(1rem, 5vh, 5rem));
     min-height: fit-content;
     background-color: rgba(0,0,0,0.75);
     backdrop-filter: blur(10px); /* El efecto de vidrio borroso */
@@ -190,12 +190,12 @@ h1 a {
 .rules-container {
     display: flex;
     align-items: baseline;
-    gap: clamp(1.5rem, 4vw, 3rem);
+    gap: min(clamp(1.5rem, 4vw, 3rem), clamp(1.5rem, 4vh, 3rem));
 }
 
 .rule-container {
     display: flex;
-    gap: clamp(1rem, 3vw, 2rem);
+    gap: min(clamp(1rem, 3vw, 2rem), clamp(1rem, 3vh, 2rem));
     justify-content: center;
 }
 
@@ -205,8 +205,8 @@ h1 a {
 
 svg {
     fill: white;
-    width: clamp(40px, 8vw, 80px);
-    height: clamp(40px, 8vw, 80px);
+    width: min(clamp(40px, 8vw, 80px), clamp(40px, 8vh, 80px));
+    height: min(clamp(40px, 8vw, 80px), clamp(40px, 8vh, 80px));
     flex-shrink: 0;
 }
 
@@ -219,12 +219,12 @@ svg {
 h3 {
     color: white;
     font-weight: 750;
-    font-size: clamp(1rem, 3vw, 1.2rem);
+    font-size: min(clamp(1rem, 3vw, 1.2rem), clamp(1rem, 3vh, 1.2rem));
     margin-bottom: 0.5rem;
 }
 
 p {
-    font-size: clamp(0.9rem, 2.5vw, 1rem);
+    font-size: min(clamp(0.9rem, 2.5vw, 1rem), clamp(0.9rem, 2.5vh, 1rem));
     color: white;
     line-height: 1.4;
 }
@@ -383,8 +383,8 @@ th, td {
 .imagen-presidente-desconocido-container {
     border-radius: 50%;
     overflow: hidden;
-    width: clamp(40px, 6vw, 60px);
-    height: clamp(40px, 6vw, 60px);
+    width: min(clamp(40px, 6vw, 60px),clamp(40px, 6vh, 60px));
+    height: min(clamp(40px, 6vw, 60px),clamp(40px, 6vh, 60px));
 }
 
 img {
@@ -531,7 +531,7 @@ td {
     display: flex;
     justify-content: center;
     font-weight: bold;
-    font-size: clamp(1.5rem, 5vw, 2.5rem);
+    font-size: min(clamp(1rem, 3vw, 1.5rem), clamp(1rem, 3vh, 1.5rem));
     color: white;
     min-width: fit-content;
     text-align: right;
@@ -552,12 +552,12 @@ td {
 
 input {
     color: black;
-    height: clamp(50px, 8vw, 70px);
+    height: min(clamp(50px, 8vw, 70px), clamp(50px, 8vh, 70px));
     border-radius: 30px;
     padding: 0 1rem;
     width: 100%; /* ocupa todo el ancho disponible del container */
     max-width: 400px; /* no más de 400px en desktop */
-    font-size: clamp(1rem, 4vw, 1.2rem);
+    font-size: min(clamp(1rem, 4vw, 1.2rem), clamp(1rem, 4vh, 1.2rem));
     font-weight: bold;
 }
 
@@ -617,7 +617,7 @@ input {
 }
 
 .temporizador {
-    font-size: clamp(1rem, 4vw, 1.5rem);
+    font-size: min(clamp(1rem, 4vw, 1.5rem), clamp(1rem, 4vh, 1.5rem));
     font-weight: bold;
     color: white;
     margin-bottom: 1rem;
