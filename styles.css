@@ -362,6 +362,7 @@ button {
 }
 
 table {
+    position: relative;
     width: 100%; /* ocupa el ancho del contenedor */
     max-width: 800px; /* no se estira más de 700px en desktop */
     color: white;
@@ -374,6 +375,29 @@ table {
     border: 3px rgb(127, 190, 241) solid;
     overflow-x: auto; /* permite scroll si algo se pasa */
     padding-bottom: 1em;
+}
+
+.tabla-wrapper {
+    position: relative;
+    width: 100%;
+    max-width: 800px;
+}
+
+.tabla-paused-overlay {
+    position: absolute;
+    top: 3px; left: 3px; right: 3px; bottom: 3px; /* deja ver el borde de la tabla */
+    background: rgba(10, 10, 10, 0.7);
+    backdrop-filter: blur(10px);
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 1.5rem;
+    font-weight: bold;
+    pointer-events: all;
+    border-radius: 27px; /* igual al de la tabla menos el inset */
+    transition: opacity 0.3s;
 }
 
 th, td {
