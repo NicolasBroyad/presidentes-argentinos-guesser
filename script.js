@@ -24,11 +24,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const checkboxes = document.querySelectorAll('.checkbox-input');
     // --- Íconos ---
     const iconoPausa = `
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>Pausar</title>
+        <svg class="pause-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="rgb(10, 34, 53)"><title>Pausar</title>
         <path d="M14,19H18V5H14M6,19H10V5H6V19Z" /></svg>`;
 
     const iconoPlay = `
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>Activar</title>
+        <svg class="pause-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="rgb(10, 34, 53)"><title>Activar</title>
         <path d="M8,5.14V19.14L19,12.14L8,5.14Z" /></svg>`;
 
 
