@@ -351,7 +351,7 @@ button {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    gap: 3rem;
+    gap: 1rem;
     margin: 0 2rem;
 }
 
@@ -487,6 +487,11 @@ td {
 }
 
 .input-container-first-row{
+    border: 1px solid rgb(10, 34, 53);
+    border-radius: 10px;
+    padding: 1rem;
+    background-color: rgba(127, 190, 241, 0.75);
+    backdrop-filter: blur(10px); /* El efecto de vidrio borroso */
     display: flex;
     align-items: center;
     gap: 1rem;
@@ -496,21 +501,21 @@ td {
 .restart-icon {
     height: 32px;
     width: 32px;
-    fill: white;
+    fill: rgb(10, 34, 53);
     cursor: pointer;
 }
 
 .pause-icon {
     height: 32px;
     width: 32px;
-    fill: white;
+    fill: rgb(10, 34, 53);
     cursor: pointer;
 }
 
 .input-container-second-row{
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: 0.5rem;
     justify-content: center;
 }
 
@@ -545,13 +550,21 @@ td {
 }
 
 #contador-presidentes {
+    height: min(clamp(50px, 8vw, 70px), clamp(50px, 8vh, 70px));
+    padding: 1.1rem;
+    background-color: rgba(10, 34, 53, 0.75);
+    backdrop-filter: blur(10px); /* El efecto de vidrio borroso */
     display: flex;
     justify-content: center;
     font-weight: bold;
-    font-size: min(clamp(1rem, 3vw, 1.5rem), clamp(1rem, 3vh, 1.5rem));
+    font-size: min(clamp(1rem, 4vw, 1.2rem), clamp(1rem, 4vh, 1.2rem));
     color: white;
     min-width: fit-content;
     text-align: right;
+    border-radius: 20px 0 0 20px;
+
+    border: 2px solid #ccc;
+    border-color: #75AADB; box-shadow: 0 0 12px #75AADB; 
 }
 
 .pluma-image-container {
@@ -567,24 +580,41 @@ td {
     width: 100%;
 }
 
-input {
-    color: black;
+.input-presidente {
+    background-color: rgba(10, 34, 53, 0.75);
+    backdrop-filter: blur(10px); /* El efecto de vidrio borroso */
+    color: white;
     height: min(clamp(50px, 8vw, 70px), clamp(50px, 8vh, 70px));
-    border-radius: 30px;
+    border-radius: 0 20px 20px 0;
     padding: 0 1rem;
     width: 100%; /* ocupa todo el ancho disponible del container */
     max-width: 400px; /* no más de 400px en desktop */
     font-size: min(clamp(1rem, 4vw, 1.2rem), clamp(1rem, 4vh, 1.2rem));
     font-weight: bold;
+    border: 2px solid #ccc;
+    transition: border 0.3s ease;
 }
+
+.input-presidente:focus {
+  outline: none;
+  border-color: #75AADB; box-shadow: 0 0 12px #75AADB; 
+}
+
 
 .rendirse-button {
     color: white;
-    background: none;   /* elimina el fondo */
+    background: rgb(141, 3, 3) ;   /* elimina el fondo */
     border: none;       /* elimina el borde (si no lo querés) */
+    border-radius: 15px;
     cursor: pointer;
-    font-size: 1.2rem;
+    font-size: 1.1rem;
     font-weight: bold;
+}
+
+.rendirse-button:hover{
+    border: 1px solid white;
+    background: rgb(200, 0, 0);
+    transition: all 0.3s ease; /* Animación suave */
 }
 
 .rendirse-button:hover {
@@ -636,7 +666,7 @@ input {
 .temporizador {
     font-size: min(clamp(1rem, 4vw, 1.5rem), clamp(1rem, 4vh, 1.5rem));
     font-weight: bold;
-    color: white;
+    color: rgb(10, 34, 53);
     text-align: center;
 }
 
