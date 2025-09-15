@@ -493,13 +493,34 @@ td {
     justify-content: center;
 }
 
+.restart-icon {
+    height: 32px;
+    width: 32px;
+    fill: white;
+    cursor: pointer;
+}
+
+.pause-icon {
+    height: 32px;
+    width: 32px;
+    fill: white;
+    cursor: pointer;
+}
+
+.input-container-second-row{
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    justify-content: center;
+}
+
 @media (max-width: 768px) {
   .input-container {
     display: flex;
     flex-direction: column;
     align-items: stretch;
   }
-  .input-container-first-row {
+  .input-container-second-row {
     display: flex;
     flex-direction: column;
     order: 2;
@@ -511,10 +532,6 @@ td {
     width: 100%;
     max-width: 100%;
     align-self: stretch;
-  }
-  #temporizador {
-    order: 3;
-    margin: 0;
   }
   .rendirse-button {
     order: 4;
@@ -620,7 +637,6 @@ input {
     font-size: min(clamp(1rem, 4vw, 1.5rem), clamp(1rem, 4vh, 1.5rem));
     font-weight: bold;
     color: white;
-    margin-bottom: 1rem;
     text-align: center;
 }
 
