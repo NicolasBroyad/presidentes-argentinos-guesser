@@ -270,25 +270,73 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // --- Temporizador ---
-        let tiempoRestante = configuracionJuego.tiempo * 60;
-        const temporizadorDiv = document.getElementById("temporizador");
+        iniciarTemporizador(configuracionJuego.tiempo * 60);
 
-        const temporizadorInterval = setInterval(() => {
-            const minutos = String(Math.floor(tiempoRestante / 60)).padStart(2, '0');
-            const segundos = String(tiempoRestante % 60).padStart(2, '0');
-            temporizadorDiv.textContent = `${minutos}:${segundos}`;
+        // --- Botones Pausa y Reiniciar ---
+        const botonPausa = document.querySelector(".pause-icon");
+        const botonReiniciar = document.querySelector(".restart-icon");
 
-            if (tiempoRestante <= 0) {
-                clearInterval(temporizadorInterval);
-                rendirse();
-            }
+        if (botonPausa) {
+            botonPausa.addEventListener("click", togglePausa);
+        }
+        if (botonReiniciar) {
+            botonReiniciar.addEventListener("click", reiniciarJuego);
+        }
 
-            tiempoRestante--;
-        }, 1000);
 
         window.temporizadorInterval = temporizadorInterval;
     }
     botonIniciar.addEventListener("click", iniciarJuego);
+
+
+    // --- Estado de pausa ---
+    let pausado = false;
+    let tiempoRestanteGlobal; // lo usamos para guardar segundos restantes
+
+    // --- Función Pausar / Reanudar ---
+    function togglePausa() {
+        if (!pausado) {
+            clearInterval(window.temporizadorInterval);
+            pausado = true;
+        } else {
+            iniciarTemporizador(tiempoRestanteGlobal);
+            pausado = false;
+        }
+    }
+
+    // --- Función Reiniciar ---
+    function reiniciarJuego() {
+        clearInterval(window.temporizadorInterval);
+        aciertos = 0;
+        pausado = false;
+
+        // Eliminar tabla anterior
+        const tabla = document.querySelector(".tabla-container");
+        if (tabla) tabla.remove();
+
+        // Volver a iniciar
+        iniciarJuego();
+    }
+
+    // --- Función separada de temporizador ---
+    function iniciarTemporizador(segundosIniciales) {
+        tiempoRestanteGlobal = segundosIniciales;
+        const temporizadorDiv = document.getElementById("temporizador");
+
+        window.temporizadorInterval = setInterval(() => {
+            const minutos = String(Math.floor(tiempoRestanteGlobal / 60)).padStart(2, '0');
+            const segundos = String(tiempoRestanteGlobal % 60).padStart(2, '0');
+            temporizadorDiv.textContent = `${minutos}:${segundos}`;
+
+            if (tiempoRestanteGlobal <= 0) {
+                clearInterval(window.temporizadorInterval);
+                rendirse();
+            }
+
+            tiempoRestanteGlobal--;
+        }, 1000);
+    }
+
 
     // --- Botón Configuración ---
     function abrirConfig() {
