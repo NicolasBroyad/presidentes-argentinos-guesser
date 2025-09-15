@@ -304,18 +304,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Función Pausar / Reanudar ---
     function togglePausa() {
-        const botonPausa = document.querySelector(".pause-icon");
+    const botonPausa = document.querySelector(".pause-icon");
+    const inputPresidente = document.getElementById("input-presidente");
 
-        if (!pausado) {
-            clearInterval(window.temporizadorInterval);
-            pausado = true;
-            if (botonPausa) botonPausa.innerHTML = iconoPlay;
-        } else {
-            iniciarTemporizador(tiempoRestanteGlobal);
-            pausado = false;
-            if (botonPausa) botonPausa.innerHTML = iconoPausa;
+    if (!pausado) {
+        // Pausar juego
+        clearInterval(window.temporizadorInterval);
+        pausado = true;
+        if (botonPausa) botonPausa.innerHTML = iconoPlay;
+        if (inputPresidente) {
+            inputPresidente.disabled = true;   // Deshabilitar input
+            inputPresidente.placeholder = "Juego en pausa";
+        }
+    } else {
+        // Reanudar juego
+        iniciarTemporizador(tiempoRestanteGlobal);
+        pausado = false;
+        if (botonPausa) botonPausa.innerHTML = iconoPausa;
+        if (inputPresidente) {
+            inputPresidente.disabled = false;  // Habilitar input
+            inputPresidente.placeholder = "Ingrese el apellido...";
+            inputPresidente.focus();
         }
     }
+}
 
 
     // --- Función Reiniciar ---
