@@ -144,10 +144,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <div id="contador-presidentes" class="contador">
                             0 / ${presidentesFiltrados.length}
                         </div>
-                        <input type="text" id="input-presidente" placeholder="Ingrese el apellido...">
-                        <div class="pluma-image-container">
-                            <img src="images/pluma-oligarca.png" alt="" class="pluma-image">
-                        </div>
+                        <input class="input-presidente" type="text" id="input-presidente" placeholder="Ingrese el apellido...">
                     </div>
                     <button class="rendirse-button" type="button">RENDIRSE</button>
                 </div>
