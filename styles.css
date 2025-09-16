@@ -544,38 +544,37 @@ td {
 }
 
 @media (max-width: 768px) {
-  .input-container {
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-  }
-  .input-container-second-row {
-    display: flex;
-    flex-direction: column;
-    order: 2;
-    gap: 0.25rem;
-  }
-  #input-presidente {
-    order: 0;
-    margin-bottom: 1rem;
-    width: 100%;
-    max-width: 100%;
-    align-self: stretch;
-  }
-  .rendirse-button {
-    order: 4;
-  }
-  #contador-presidentes {
-    order: 1;
-  }
-  .pluma-image-container {
-    display: none;
-  }
+    .input-container-first-row {
+        order: 2;
+    }
+    .input-container {
+        display: flex;
+        flex-direction: column;
+    }
+    .input-container-second-row {
+        order: 1;
+        gap: 0.25rem;
+    }
+    #input-presidente {
+        order: 0;
+        width: 100%;
+        max-width: 100%;
+        align-self: stretch;
+    }
+    .rendirse-button {
+        order: 4;
+    }
+    #contador-presidentes {
+        order:0;
+    }
+    .pluma-image-container {
+        display: none;
+    }
 }
 
 #contador-presidentes {
     height: min(clamp(50px, 8vw, 70px), clamp(50px, 8vh, 70px));
-    padding: 1.1rem;
+    padding: 1rem;
     background-color: rgba(10, 34, 53, 0.75);
     backdrop-filter: blur(10px); /* El efecto de vidrio borroso */
     display: flex;
