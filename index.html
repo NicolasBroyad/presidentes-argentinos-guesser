@@ -25,48 +25,6 @@
 </script>
 <script defer src="/_vercel/insights/script.js"></script>
 
-<script type="module">
-  // IMPORT: usa el paquete web-vitals desde un CDN (moderno)
-  // Si por alguna razón falla, luego te doy alternativa.
-  import { getCLS, getFID, getLCP, getFCP, getTTFB } from 'https://unpkg.com/web-vitals?module';
-
-  function sendMetricToServer(metric) {
-    const payload = {
-      name: metric.name,
-      value: metric.value,
-      id: metric.id,
-      page: location.pathname,
-      href: location.href,
-      userAgent: navigator.userAgent,
-      timestamp: Date.now()
-    };
-    const url = '/api/collect-web-vitals';
-
-    // Preferir sendBeacon para no perder datos al navegar fuera de la página
-    if (navigator.sendBeacon) {
-      const blob = new Blob([JSON.stringify(payload)], { type: 'application/json' });
-      navigator.sendBeacon(url, blob);
-    } else {
-      // fallback con fetch (keepalive para que funcione en unload)
-      fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-        keepalive: true
-      }).catch(() => {/* silenciar errores */});
-    }
-  }
-
-  // Registra las métricas principales
-  getCLS(sendMetricToServer);
-  getFID(sendMetricToServer);
-  getLCP(sendMetricToServer);
-  getFCP(sendMetricToServer);
-  getTTFB(sendMetricToServer);
-</script>
-<!-- END: Web Vitals collection -->
-
-
 <body class="index-body">
     <header class="header">
         <button class="nav-toggle" aria-label="Abrir menú">
