@@ -514,7 +514,7 @@ td {
     border: 1px solid rgb(10, 34, 53);
     border-radius: 10px;
     padding: 1rem;
-    background-color: rgba(127, 190, 241, 0.75);
+    background-color: rgb(27, 190, 241);
     backdrop-filter: blur(10px); /* El efecto de vidrio borroso */
     display: flex;
     align-items: center;
