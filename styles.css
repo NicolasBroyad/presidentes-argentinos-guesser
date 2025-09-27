@@ -17,6 +17,12 @@
     background-position: center;  /* Centra la imagen */
     background-repeat: no-repeat; /* Evita que se repita */
     background-attachment: fixed; /* Fija la imagen para efecto "parallax" */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.main {
     height: 100dvh;
     display: flex;
     flex-direction: column;
@@ -179,6 +185,8 @@ h1 a {
 
 .rules-section {
     display: flex;
+    flex-direction: column;
+    gap: 2rem;
     padding: min(clamp(1rem, 5vw, 5rem), clamp(1rem, 5vh, 5rem));
     min-height: fit-content;
     background-color: rgba(0,0,0,0.75);
@@ -203,8 +211,23 @@ h1 a {
     border-right: 1px solid white;
 }
 
+.modos-scroll-container a {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 0;
+}
+
+.scroll-icon {
+    height: fit-content;
+}
+
 svg {
     fill: white;
+}
+
+.rules-icons {
     width: min(clamp(40px, 8vw, 80px), clamp(40px, 8vh, 80px));
     height: min(clamp(40px, 8vw, 80px), clamp(40px, 8vh, 80px));
     flex-shrink: 0;
@@ -227,6 +250,18 @@ p {
     font-size: min(clamp(0.9rem, 2.5vw, 1rem), clamp(0.9rem, 2.5vh, 1rem));
     color: white;
     line-height: 1.4;
+}
+
+.modos-de-juego-container {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    padding: min(clamp(1rem, 5vw, 5rem), clamp(1rem, 5vh, 5rem));
+    min-height: fit-content;
+    background-color: rgba(0,0,0,0.75);
+    backdrop-filter: blur(10px); /* El efecto de vidrio borroso */
+    justify-content: center;
+    align-items: center;
 }
 
 @media (max-width: 768px) {
