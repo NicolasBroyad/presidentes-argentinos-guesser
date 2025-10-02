@@ -282,6 +282,7 @@ p {
 }
 
 .modo-de-juego-button {
+    border-radius: 10px;
     background-color: rgb(127, 190, 241);
     color: white;
     font-size: 1.25rem;
