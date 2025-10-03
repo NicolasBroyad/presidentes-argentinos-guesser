@@ -198,6 +198,21 @@ h1 a {
     align-items: center;
 }
 
+.modo-de-juego-seleccionado-heading {
+    font-weight: 800;
+    font-size: 1.2rem;
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.modo-de-juego-seleccionado {
+    padding: 0.2rem 0.4rem;
+    background-color: goldenrod;
+    border-radius: 5px;
+    color: black;
+}
+
 .rules-container {
     display: flex;
     align-items: baseline;
