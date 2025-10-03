@@ -1,9 +1,50 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <!-- Página principal -->
   <url>
     <loc>https://presidentes-argentinos-guesser.vercel.app/</loc>
-    <lastmod>2025-09-15</lastmod>
+    <lastmod>2025-10-03</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
+  </url>
+  
+  <!-- Página de inicio (index.html) -->
+  <url>
+    <loc>https://presidentes-argentinos-guesser.vercel.app/index.html</loc>
+    <lastmod>2025-10-03</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+  
+  <!-- Acerca de -->
+  <url>
+    <loc>https://presidentes-argentinos-guesser.vercel.app/acerca.html</loc>
+    <lastmod>2025-10-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <!-- Contacto -->
+  <url>
+    <loc>https://presidentes-argentinos-guesser.vercel.app/contacto.html</loc>
+    <lastmod>2025-10-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <!-- Política de privacidad -->
+  <url>
+    <loc>https://presidentes-argentinos-guesser.vercel.app/privacidad.html</loc>
+    <lastmod>2025-10-03</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.4</priority>
+  </url>
+  
+  <!-- Ver presidencias -->
+  <url>
+    <loc>https://presidentes-argentinos-guesser.vercel.app/presidencias.html</loc>
+    <lastmod>2025-10-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
   </url>
 </urlset>

@@ -201,8 +201,8 @@ h1 a {
 .rules-section {
     display: flex;
     flex-direction: column;
-    gap: 2rem;
-    padding: min(clamp(1rem, 5vw, 5rem), clamp(1rem, 5vh, 5rem));
+    gap: 1.2rem;
+    padding: 1.2rem;
     padding-bottom: 0;
     min-height: fit-content;
     background-color: rgba(0,0,0,0.75);
@@ -217,12 +217,14 @@ h1 a {
     display: flex;
     gap: 1rem;
     align-items: center;
+    text-align: center;
 }
 
 .jugando-modo-heading{
     display: flex;
     background-color: rgba(0,0,0,0.75);
-    backdrop-filter: blur(10px); /* El efecto de vidrio borroso */
+    backdrop-filter: blur(50px); /* El efecto de vidrio borroso */
+    -webkit-backdrop-filter: blur(10px);
     justify-content: center;
     align-items: center;
     gap: 0.5rem;
@@ -299,7 +301,8 @@ h3 {
 }
 
 .modos-de-juego-heading {
-    font-weight: 800;
+    font-weight: 600;
+    font-size: 1.2rem;
 }
 
 .modos-de-juego-section {
@@ -342,8 +345,13 @@ h3 {
 
 @media (max-width: 768px) {
 
+    .modo-de-juego-seleccionado-heading {
+        font-size: 1rem;
+    }
+
     .rules-section {
-        padding: 0;
+        gap: 0;
+        padding: 1rem;
     }
 
     .rules-container {
