@@ -800,7 +800,7 @@ td {
     100% { transform: translateX(0); box-shadow: 0 0 0 0 #ff2d2d; }
 }
 
-/* Otras paginas (Acerca de, contacto, body)*/
+/* ACERCA HTML */
 
 .acerca-body {
     background-image: url("images/background-oligarca-sin-personas-sin-banderas.png");
@@ -845,7 +845,52 @@ td {
     color: white;
 }
 
-/*PRESIDENCIAS HTML*/
+/* CONTACTO HTML */
+
+.contacto-body {
+    background-image: url("images/background-oligarca-sin-personas-sin-banderas.png");
+    background-color: #a3a086;
+    background-blend-mode: multiply;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    min-height: 100vh; /* Cambiá de height a min-height */
+    display: flex; /* Agregá flexbox */
+    flex-direction: column; /* Dirección vertical */
+    padding: 1rem;
+    gap: 1rem;
+}
+
+.contacto-body main {
+    background-color: rgba(10, 34, 53, 0.75);
+    backdrop-filter: blur(25px);
+    max-width: 700px;
+    margin: 0 auto;
+    border-radius: 10px;
+    border: 2px solid rgb(127, 190, 241);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 2rem;
+    flex: 1; /* Esto hace que main crezca para ocupar todo el espacio disponible */
+}
+
+.contacto-body h2 {
+    margin: 1rem 0;
+    text-align: center;
+    color: white;
+    font-size: 2.5rem;
+}
+
+.contacto-body p {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    font-weight: 500;
+    color: white;
+}
+
+/* PRESIDENCIAS HTML */
 
 .presidencias-body {
     background-image: url("images/background-oligarca-sin-personas-sin-banderas.png");
