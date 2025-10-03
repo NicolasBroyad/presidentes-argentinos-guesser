@@ -140,6 +140,7 @@ const listaPresidentes = [
         `).join('');
 
         return `
+            <h4 class="jugando-modo-heading">JUGANDO MODO <span class="modo-de-juego-seleccionado">CLÁSICO</span></h4>
             <div class="tabla-container">
                 <div class="tabla-wrapper" style="position:relative;">
                     <table class="tabla" border="1" cellspacing="0" cellpadding="5">
@@ -260,9 +261,6 @@ const listaPresidentes = [
         rulesSection.remove();
         modosDeJuegoSection.remove();
         h1.remove();
-
-        main.style.justifyContent = "flex-start";
-        main.style.gap = "2rem";
 
         const presidentesFiltrados = filtrarPresidentes();
         const contenidoDelJuego = generarTablaHTML(presidentesFiltrados);

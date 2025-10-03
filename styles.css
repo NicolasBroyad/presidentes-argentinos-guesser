@@ -26,6 +26,7 @@
     height: 100dvh;
     display: flex;
     flex-direction: column;
+    gap: 0;
 }
 
 h1 {
@@ -199,11 +200,21 @@ h1 a {
 }
 
 .modo-de-juego-seleccionado-heading {
-    font-weight: 800;
+    font-weight: 700;
     font-size: 1.2rem;
     display: flex;
     gap: 1rem;
     align-items: center;
+}
+
+.jugando-modo-heading{
+    display: flex;
+    background-color: rgba(0,0,0,0.75);
+    backdrop-filter: blur(10px); /* El efecto de vidrio borroso */
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    padding-bottom: 0.5rem;
 }
 
 .modo-de-juego-seleccionado {
@@ -211,6 +222,7 @@ h1 a {
     background-color: goldenrod;
     border-radius: 5px;
     color: black;
+    font-weight: 800;
 }
 
 .rules-container {
@@ -470,6 +482,7 @@ button {
     justify-content: center;
     gap: 1rem;
     margin: 0 2rem;
+    flex: 1;
 }
 
 @media (max-width: 768px) {
@@ -1035,9 +1048,14 @@ td {
 }
 
 footer {
-    text-align: center;
-    margin: 2rem 0;
-    font-weight: 500;
+    display: flex;
+    min-height: fit-content;
+    background-color: rgba(0,0,0,0.75);
+    backdrop-filter: blur(10px); /* El efecto de vidrio borroso */
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    padding: 1rem 0;
 }
 
 /* Dialog de fin de juego */
