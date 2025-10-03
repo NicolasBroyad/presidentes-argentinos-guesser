@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const botonIniciar = document.querySelector(".iniciar-juego-button");
     const botonConfiguracion = document.querySelector(".configuracion-button");
     const main = document.querySelector(".main");
+    const h1 = document.querySelector("h1");
 
     // --- Estado de configuración por defecto ---
     let configuracionJuego = {
@@ -261,6 +262,7 @@ const listaPresidentes = [
         buttonSection.remove();
         rulesSection.remove();
         modosDeJuegoSection.remove();
+        h1.remove();
 
         main.style.justifyContent = "flex-start";
         main.style.gap = "2rem";

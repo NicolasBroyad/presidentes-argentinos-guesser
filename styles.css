@@ -421,8 +421,8 @@ button {
 .tabla-container {
     display: flex;
     flex-direction: column;
-    justify-content: center;
     align-items: center;
+    justify-content: center;
     gap: 1rem;
     margin: 0 2rem;
 }
@@ -439,7 +439,6 @@ table {
     max-width: 800px; /* no se estira más de 700px en desktop */
     color: white;
     font-weight: bold;
-    align-self: center;
     background-color: rgba(10, 34, 53, 0.75);
     backdrop-filter: blur(10px); /* El efecto de vidrio borroso */
     -webkit-backdrop-filter: blur(10px); /* Para Safari */
@@ -493,7 +492,7 @@ tbody {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 2rem;                 /* un poco menos de espacio para que encaje */
-    max-height: 50dvh;    /* altura máxima del tbody */
+    max-height: 60dvh;    /* altura máxima del tbody */
     overflow-y: auto;          /* solo scroll vertical */
     overflow-x: hidden;        /* oculta horizontal si sobra */
     padding: 1rem 1rem 0 1rem; /* sin padding abajo */
