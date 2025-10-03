@@ -26,13 +26,6 @@
     height: 100dvh;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
-}
-
-header {
-    position: absolute;
-    right: 4rem;
-    top: 2rem;
 }
 
 h1 {
@@ -58,17 +51,21 @@ h1 a {
 .los { font-size: min(clamp(1rem, 3.5vw, 2rem),clamp(1rem, 3.5vh, 2rem)); }
 .presidentes, .argentinos { font-size: min(clamp(1.5rem, 5vw, 3rem),clamp(1.5rem, 5vh, 3rem)); }
 
-
 .header {
-    position: absolute;
-    top: min(clamp(1rem, 3vw, 2rem), clamp(1rem, 3vh, 2rem));   /* separación superior flexible */
-    right: min(clamp(0.5rem, 4vw, 4rem), clamp(0.5rem, 4vh, 4rem)); /* separación derecha flexible */
+    position: sticky;
+    top: 0;
     display: flex;
     align-items: center;
+    background-color: rgba(0,0,0,0.75);
+    backdrop-filter: blur(50px); /* El efecto de vidrio borroso */
+    -webkit-backdrop-filter: blur(10px);
+    padding: 1rem 0;
+    justify-content: center;
+    z-index: 100; /* para que quede arriba del contenido */
 }
 
 .header-nav {
-    display: none; /* oculto en desktop */
+    
 }
 
 .header-nav ul {
@@ -103,8 +100,13 @@ h1 a {
 
 /* --- Responsive --- */
 @media (max-width: 992px) {
+    .header {
+        justify-content: space-between;
+        padding: 0 1rem;
+    }
+
     .nav-toggle {
-        display: none; /* mostramos el botón (display: block) */
+        display: block; /* mostramos el botón (display: block) */
     }
 
     .header-nav {
@@ -135,7 +137,7 @@ h1 a {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 440px;
+    flex: 1;
 }
 
 .button-container {
@@ -813,7 +815,6 @@ td {
     min-height: 100vh; /* Cambiá de height a min-height */
     display: flex; /* Agregá flexbox */
     flex-direction: column; /* Dirección vertical */
-    padding: 1rem;
     gap: 1rem;
 }
 
@@ -835,7 +836,7 @@ td {
     margin: 1rem 0;
     text-align: center;
     color: white;
-    font-size: 2.5rem;
+    font-size: rem;
 }
 
 .acerca-body p {
@@ -858,7 +859,6 @@ td {
     min-height: 100vh; /* Cambiá de height a min-height */
     display: flex; /* Agregá flexbox */
     flex-direction: column; /* Dirección vertical */
-    padding: 1rem;
     gap: 1rem;
 }
 
@@ -877,10 +877,9 @@ td {
 }
 
 .contacto-body h2 {
-    margin: 1rem 0;
     text-align: center;
     color: white;
-    font-size: 2.5rem;
+    font-size: 2rem;
 }
 
 .contacto-body p {
@@ -901,7 +900,6 @@ td {
     background-repeat: no-repeat; /* Evita que se repita */
     background-attachment: fixed; /* Fija la imagen para efecto "parallax" */
     min-height: 100vh;
-    padding: 2rem 1rem;
     display: flex;
     flex-direction: column;
     gap: 3rem;
@@ -919,7 +917,7 @@ td {
 .presidencias-body h2 {
     text-align: center;
     color: white;
-    font-size: 2.5rem;
+    font-size: 2rem;
 }
 
 .presidencias-container {
