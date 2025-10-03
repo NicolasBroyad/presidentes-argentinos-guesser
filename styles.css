@@ -328,6 +328,36 @@ p {
     }
 }
 
+/* Reemplazar las reglas .overlay y .modal por estas: */
+#configDialog {
+    background-color: rgba(10, 34, 53, 0.75);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 3px rgb(127, 190, 241) solid;
+    border-radius: 12px;
+    padding: 20px 30px;
+    max-width: 400px;
+    color: #fff;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    text-align: center;
+    
+    /* AGREGAR ESTAS LÍNEAS PARA CENTRARLO */
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    margin: 0; /* quitar margin automático del dialog */
+}
+
+#configDialog:not([open]) {
+    display: none;
+}
+
+#configDialog::backdrop {
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(2px);
+}
+
 /* Fondo oscuro semitransparente */
 .overlay {
   position: fixed;
@@ -993,4 +1023,105 @@ footer {
     text-align: center;
     margin: 2rem 0;
     font-weight: 500;
+}
+
+/* Dialog de fin de juego */
+#finJuegoDialog {
+    background-color: rgba(10, 34, 53, 0.75);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 3px rgb(127, 190, 241) solid;
+    border-radius: 12px;
+    padding: 30px;
+    max-width: 450px;
+    color: #fff;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    text-align: center;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    margin: 0;
+}
+
+#finJuegoDialog:not([open]) {
+    display: none;
+}
+
+#finJuegoDialog::backdrop {
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(2px);
+}
+
+#tituloFinJuego {
+    font-size: 1.8rem;
+    margin-bottom: 1.5rem;
+    color: #fff;
+}
+
+.resultado-container {
+    margin: 2rem 0;
+    padding: 1.5rem;
+    background-color: rgba(127, 190, 241, 0.1);
+    border-radius: 10px;
+    border: 1px solid rgb(127, 190, 241);
+}
+
+#mensajeResultado {
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+    line-height: 1.4;
+}
+
+#aciertosFinales, #totalPresidentes {
+    font-weight: bold;
+    color: rgb(127, 190, 241);
+    font-size: 1.3rem;
+}
+
+#finJuegoDialog .buttons {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+#porcentajeContainer {
+    margin-top: 1rem;
+}
+
+#porcentaje {
+    font-size: 2rem;
+    font-weight: bold;
+    color: rgb(127, 190, 241);
+    text-shadow: 0 0 10px rgba(127, 190, 241, 0.5);
+}
+
+.jugar-otra-vez {
+    background: #2ecc71;
+    color: #fff;
+    font-size: 0.9rem;
+}
+
+.volver-inicio {
+    background: #3498db;
+    color: #fff;
+    font-size: 0.9rem;
+}
+
+.jugar-otra-vez:hover {
+    background: #27ae60;
+}
+
+.volver-inicio:hover {
+    background: #2980b9;
+}
+
+.cerrar-modal {
+    background: #e74c3c;
+    color: #fff;
+    font-size: 0.9rem;
+}
+
+.cerrar-modal:hover {
+    background: #c0392b;
 }

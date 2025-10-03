@@ -25,6 +25,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const botonGuardar = document.querySelector(".guardar");
     const botonCancelar = document.querySelector(".cancelar");
     const checkboxes = document.querySelectorAll('.checkbox-input');
+
+    // Inicializar valor del rango inmediatamente
+    if (valorRango && slider) {
+        valorRango.textContent = slider.value + " minutos";
+    }
+
     // --- Íconos ---
     const iconoPausa = `
         <svg class="pause-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="rgb(10, 34, 53)"><title>Pausar</title>
@@ -33,7 +39,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const iconoPlay = `
         <svg class="pause-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="rgb(10, 34, 53)"><title>Activar</title>
         <path d="M8,5.14V19.14L19,12.14L8,5.14Z" /></svg>`;
-
 
     // --- DATOS DE PRESIDENTES ---
 const listaPresidentes = [
@@ -245,15 +250,7 @@ const listaPresidentes = [
 
         if (aciertos === window.listaFiltrada.length) {
             clearInterval(window.temporizadorInterval);
-            const inputContainer = document.querySelector(".input-container");
-            if (inputContainer) {
-                inputContainer.innerHTML = `
-                    <div class="felicitaciones">
-                        🎉 FELICITACIONES 🎉<br>
-                        ERES UN VERDADERO CONOCEDOR DE LOS PRESIDENTES ARGENTINOS
-                    </div>
-                `;
-            }
+            mostrarFinJuego('victoria');
         }
     }
 
@@ -375,7 +372,12 @@ const listaPresidentes = [
 
             if (tiempoRestanteGlobal <= 0) {
                 clearInterval(window.temporizadorInterval);
-                rendirse();
+                rendirse(); // Esto ya maneja todo
+                // Cambiar el motivo en rendirse para tiempo agotado
+                setTimeout(() => {
+                    cerrarFinJuego();
+                    mostrarFinJuego('tiempo');
+                }, 100);
             }
 
             tiempoRestanteGlobal--;
@@ -393,11 +395,11 @@ const listaPresidentes = [
         checkboxes[0].checked = configuracionJuego.eliminarDeFacto;
         checkboxes[1].checked = configuracionJuego.eliminarMenosDeUnAnio;
 
-        document.getElementById("configOverlay").style.display = "flex";
+        document.getElementById("configDialog").showModal(); // Cambio aquí
     }
 
     function cerrarConfig() {
-        document.getElementById("configOverlay").style.display = "none";
+        document.getElementById("configDialog").close(); // Cambio aquí
     }
 
     function guardarConfig() {
@@ -424,6 +426,16 @@ const listaPresidentes = [
     slider.addEventListener("input", () => {
         valorRango.textContent = slider.value + " minutos";
     });
+
+    // Agregar este event listener DENTRO del DOMContentLoaded
+    const configDialog = document.getElementById("configDialog");
+    if (configDialog) {
+        configDialog.addEventListener("click", (e) => {
+            if (e.target === configDialog) {
+                cerrarConfig(); // Cerrar al hacer clic en el backdrop
+            }
+        });
+    }
 
     // --- Función rendirse ---
     function rendirse() {
@@ -463,14 +475,145 @@ const listaPresidentes = [
         }
 
         // Cambiar boton a  "JUEGO TERMINADO"
+        const botonRendirse = document.querySelector(".rendirse-button");
         if (botonRendirse) {
             botonRendirse.textContent = "JUEGO TERMINADO";
             botonRendirse.disabled = true;
             botonRendirse.style.backgroundColor = "gray";
             botonRendirse.style.cursor = "not-allowed";
         }
+
+        // Mostrar dialog de fin de juego
+        setTimeout(() => {
+            mostrarFinJuego('rendicion');
+        }, 500); // Pequeña pausa para que se vea la animación
     }
 
+    // --- Función para mostrar dialog de fin de juego ---
+function mostrarFinJuego(motivo) {
+    const dialog = document.getElementById("finJuegoDialog");
+    const titulo = document.getElementById("tituloFinJuego");
+    const aciertosSpan = document.getElementById("aciertosFinales");
+    const totalSpan = document.getElementById("totalPresidentes");
+    const porcentajeSpan = document.getElementById("porcentaje");
+    
+    const total = window.listaFiltrada.length;
+    const porcentaje = Math.round((aciertos / total) * 100);
+    
+    // Personalizar mensaje según el motivo
+    switch(motivo) {
+        case 'victoria':
+            titulo.textContent = "🎉 ¡FELICITACIONES! 🎉";
+            titulo.style.color = "#2ecc71";
+            break;
+        case 'tiempo':
+            titulo.textContent = "⏰ ¡SE ACABÓ EL TIEMPO!";
+            titulo.style.color = "#f39c12";
+            break;
+        case 'rendicion':
+            titulo.textContent = "😔 TE RENDISTE";
+            titulo.style.color = "#e74c3c";
+            break;
+    }
+    
+    aciertosSpan.textContent = aciertos;
+    totalSpan.textContent = total;
+    porcentajeSpan.textContent = `${porcentaje}%`;
+    
+    // Cambiar color del porcentaje según el resultado
+    if (porcentaje >= 80) {
+        porcentajeSpan.style.color = "#2ecc71"; // Verde
+    } else if (porcentaje >= 50) {
+        porcentajeSpan.style.color = "#f39c12"; // Naranja
+    } else {
+        porcentajeSpan.style.color = "#e74c3c"; // Rojo
+    }
+    
+    dialog.showModal();
+}
+
+// --- Función para cerrar dialog de fin de juego ---
+function cerrarFinJuego() {
+    document.getElementById("finJuegoDialog").close();
+}
+
+// --- Event listeners para los botones del dialog ---
+// Agregar después de cerrarFinJuego()
+function agregarEventListenersModalFinJuego() {
+    const botonJugarOtraVez = document.querySelector(".jugar-otra-vez");
+    const botonVolverInicio = document.querySelector(".volver-inicio");
+    const botonCerrarModal = document.querySelector(".cerrar-modal"); // AGREGAR ESTA LÍNEA
+
+    if (botonJugarOtraVez) {
+        botonJugarOtraVez.addEventListener("click", () => {
+            cerrarFinJuego();
+            reiniciarJuego();
+        });
+    }
+
+    if (botonVolverInicio) {
+        botonVolverInicio.addEventListener("click", () => {
+            location.reload(); // Recarga la página completa
+        });
+    }
+
+    // AGREGAR ESTE BLOQUE
+    if (botonCerrarModal) {
+        botonCerrarModal.addEventListener("click", () => {
+            cerrarFinJuego();
+        });
+    }
+}
+
+// Llamar a esta función cuando se inicia el juego
+
+// --- Hamburger menu toggle - FUERA del DOMContentLoaded del juego ---
+document.addEventListener('DOMContentLoaded', () => {
+    const toggleButton = document.querySelector('.nav-toggle');
+    const nav = document.querySelector('.header-nav');
+
+    if (toggleButton && nav) {
+        toggleButton.addEventListener('click', () => {
+            nav.classList.toggle('active');
+        });
+    }
+});
+
+// --- Función para cargar presidencias en presidencias.html ---
+document.addEventListener('DOMContentLoaded', () => {
+    const presidenciasContainer = document.querySelector('.presidencias-container');
+    if (!presidenciasContainer) return; // Solo ejecutar si estamos en presidencias.html
+
+    // Esperar un poco para asegurar que todas las clases estén cargadas
+    setTimeout(() => {
+        const presidenciasHTML = window.listaPresidentes.map(presidente => {
+            const nombreCompleto = [presidente.nombre, presidente.segundoNombre, presidente.apellido]
+                .filter(Boolean).join(" ");
+            
+            const tipoGobierno = presidente.esDeFacto() ? "De facto" : "Constitucional";
+            const claseTipo = presidente.esDeFacto() ? "de-facto" : "constitucional";
+            
+            return `
+                <div class="presidencia-card ${claseTipo}">
+                    <div class="presidencia-imagen">
+                        <img src="${presidente.imagen}" alt="${nombreCompleto}" loading="lazy">
+                    </div>
+                    <div class="presidencia-info">
+                        <h3 class="presidencia-nombre">${nombreCompleto}</h3>
+                        <p class="presidencia-descripcion">${presidente.descripcion}</p>
+                        <p class="presidencia-periodo">${presidente.periodo.toString()}</p>
+                        <span class="presidencia-tipo ${claseTipo}">${tipoGobierno}</span>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        presidenciasContainer.innerHTML = presidenciasHTML;
+    }, 100);
+});
+
+// Configurar event listeners del modal de fin de juego
+agregarEventListenersModalFinJuego();
 }); // ← Este es el cierre del primer DOMContentLoaded
 
 // --- Hamburger menu toggle - FUERA del DOMContentLoaded del juego ---
@@ -506,7 +649,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                     <div class="presidencia-info">
                         <h3 class="presidencia-nombre">${nombreCompleto}</h3>
-                        <p class="presidencia-descripcion">${presidente.descripcion}</p> <!-- Nueva línea para la descripción -->
+                        <p class="presidencia-descripcion">${presidente.descripcion}</p>
                         <p class="presidencia-periodo">${presidente.periodo.toString()}</p>
                         <span class="presidencia-tipo ${claseTipo}">${tipoGobierno}</span>
                     </div>
