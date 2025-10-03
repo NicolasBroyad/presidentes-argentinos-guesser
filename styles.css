@@ -766,23 +766,6 @@ td {
     text-align: center;
 }
 
-
-/* Otras paginas (Acerca de, contacto, body)*/
-
-.acerca-body, .contacto-body, .privacidad-body {
-    background-image: url("images/background-oligarca-sin-personas-sin-banderas.png");
-    background-color: #a3a086;
-    background-blend-mode: multiply;
-    background-size: cover;       /* Ajusta la imagen para cubrir toda la pantalla */
-    background-position: center;  /* Centra la imagen */
-    background-repeat: no-repeat; /* Evita que se repita */
-    background-attachment: fixed; /* Fija la imagen para efecto "parallax" */
-}
-
-.acerca-paragraph, .contacto-paragraph, .contacto-list {
-    color: white;
-}
-
 /* ==== Scroll personalizado ==== */
 ::-webkit-scrollbar {
   width: 12px;
@@ -815,6 +798,51 @@ td {
     60% { transform: translateX(-4px); }
     80% { transform: translateX(4px); }
     100% { transform: translateX(0); box-shadow: 0 0 0 0 #ff2d2d; }
+}
+
+/* Otras paginas (Acerca de, contacto, body)*/
+
+.acerca-body {
+    background-image: url("images/background-oligarca-sin-personas-sin-banderas.png");
+    background-color: #a3a086;
+    background-blend-mode: multiply;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    min-height: 100vh; /* Cambiá de height a min-height */
+    display: flex; /* Agregá flexbox */
+    flex-direction: column; /* Dirección vertical */
+    padding: 1rem;
+    gap: 1rem;
+}
+
+.acerca-body main {
+    background-color: rgba(10, 34, 53, 0.75);
+    backdrop-filter: blur(25px);
+    max-width: 700px;
+    margin: 0 auto;
+    border-radius: 10px;
+    border: 2px solid rgb(127, 190, 241);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 2rem;
+    flex: 1; /* Esto hace que main crezca para ocupar todo el espacio disponible */
+}
+
+.acerca-body h2 {
+    margin: 1rem 0;
+    text-align: center;
+    color: white;
+    font-size: 2.5rem;
+}
+
+.acerca-body p {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    font-weight: 500;
+    color: white;
 }
 
 /*PRESIDENCIAS HTML*/
