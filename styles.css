@@ -311,10 +311,14 @@ p {
 }
 
 .modo-de-juego-button {
+    font-size: 1.1rem;
     border-radius: 10px;
+    background-color: gray;
+    color: rgb(5, 20, 35)
+}
+
+.modo-de-juego-clasico-button {
     background-color: rgb(127, 190, 241);
-    color: rgb(10, 34, 53);
-    font-size: 1.25rem;
 }
 
 .modo-de-juego-button:hover {
