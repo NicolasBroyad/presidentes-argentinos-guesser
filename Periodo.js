@@ -15,6 +15,6 @@ const Periodo = function(inicio, fin) {
         const opciones = { year: "numeric" };
         const inicioStr = this.inicio ? this.inicio.toLocaleDateString("es-AR", opciones) : "En curso";
         const finStr = this.fin ? this.fin.toLocaleDateString("es-AR", opciones) : "En curso";
-        return `${inicioStr} – ${finStr}`;
+        return `${inicioStr} - ${finStr}`;
     }
 }

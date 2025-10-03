@@ -806,3 +806,105 @@ td {
     80% { transform: translateX(4px); }
     100% { transform: translateX(0); box-shadow: 0 0 0 0 #ff2d2d; }
 }
+
+/*PRESIDENCIAS HTML*/
+
+.presidencias-body {
+    background-image: url("images/background-oligarca-extended.jpg");
+    background-color: #c0bda1;
+    background-blend-mode: multiply;
+    background-size: cover;       /* Ajusta la imagen para cubrir toda la pantalla */
+    background-position: center;  /* Centra la imagen */
+    background-repeat: no-repeat; /* Evita que se repita */
+    background-attachment: fixed; /* Fija la imagen para efecto "parallax" */
+    min-height: 100vh;
+    padding: 2rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 3rem;
+}
+
+.presidencias-body main {
+    background-color: rgba(10, 34, 53, 0.75);
+    backdrop-filter: blur(25px);
+    max-width: 700px;
+    margin: 0 auto;
+    border-radius: 10px;
+    border: 2px solid rgb(127, 190, 241);
+}
+
+.presidencias-body h2 {
+    text-align: center;
+    color: white;
+    font-size: 2.5rem;
+}
+
+.presidencias-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.presidencia-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    width: 75%;
+    border-bottom: 2px solid rgb(127, 190, 241);
+    padding: 4rem 1rem;
+}
+
+.presidencia-imagen {
+    flex-shrink: 0;
+    height: 96px;
+    width: 96px;
+    border-radius: 50%;
+    overflow: hidden;
+}
+
+.presidencia-nombre {
+    text-align: center;
+}
+
+.presidencia-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 60%;
+}
+
+.presidencia-descripcion {
+    font-size: 0.9rem;
+    font-weight: 500;
+    line-height: 1.4;
+}
+
+.presidencia-periodo {
+    margin-top: 0.5rem;
+    font-size: 1.2rem;
+    text-align: center;
+}
+
+.presidencia-tipo {
+    text-align: center;
+    font-weight: bold;
+    width: fit-content;
+    padding: 0.25rem 0.5rem;
+}
+
+.presidencia-tipo.constitucional {
+    background-color: rgba(127, 190, 241);
+    color: rgb(10, 34, 53);
+    border-radius: 10px;
+}
+
+.presidencia-tipo.de-facto {
+    background-color: rgba(218, 17, 17);
+    color: rgb(10, 34, 53);
+    border-radius: 10px;
+}
+
+footer {
+    text-align: center;
+}
