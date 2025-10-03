@@ -75,15 +75,28 @@ h1 a {
 }
 
 .header-nav a {
-    color: white;
     text-decoration: none;
     font-weight: bold;
-    font-size: 1rem;
+    font-size: 0.9rem;
+    padding: 0.5rem;
+    border-radius: 5px;
 }
 
 .header-nav a:hover {
     color: rgb(127, 190, 241);
+    border: 1px solid rgb(127, 190, 241);
+    font-weight: 900;
+    background-color: rgba(53, 53, 53, 0.75);
+    transition: all 0.3s ease; /* Animación suave */
+    transform: scale(1.1);
+}
+
+.pagina-actual {
+    color: rgb(127, 190, 241);
+    border: 1px solid rgb(127, 190, 241);
     text-decoration: underline;
+    font-weight: 900;
+    background-color: rgba(53, 53, 53, 0.75);
 }
 
 /* Botón hamburguesa oculto en desktop */
@@ -276,7 +289,7 @@ h3 {
     margin-bottom: 0.5rem;
 }
 
-p {
+.rules-section p {
     font-size: min(clamp(0.9rem, 2.5vw, 1rem), clamp(0.9rem, 2.5vh, 1rem));
     color: white;
     line-height: 1.4;
@@ -951,6 +964,52 @@ td {
     color: white;
 }
 
+/* PRIVACIDAD HTML */
+
+.privacidad-body {
+    background-image: url("images/background-oligarca-sin-personas-sin-banderas.png");
+    background-color: #a3a086;
+    background-blend-mode: multiply;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    min-height: 100vh; /* Cambiá de height a min-height */
+    display: flex; /* Agregá flexbox */
+    flex-direction: column; /* Dirección vertical */
+    gap: 1rem;
+    align-items: center;
+}
+
+.privacidad-body main {
+    background-color: rgba(10, 34, 53, 0.75);
+    backdrop-filter: blur(25px);
+    max-width: 700px;
+    margin: 0 auto;
+    border-radius: 10px;
+    border: 2px solid rgb(127, 190, 241);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 2rem;
+    flex: 1; /* Esto hace que main crezca para ocupar todo el espacio disponible */
+    margin: 0 1rem;
+}
+
+.privacidad-body h2 {
+    margin: 1rem 0;
+    text-align: center;
+    color: white;
+    font-size: rem;
+}
+
+.privacidad-body p {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    font-weight: 500;
+    color: white;
+}
+
 /* PRESIDENCIAS HTML */
 
 .presidencias-body {
@@ -1060,6 +1119,7 @@ footer {
     align-items: center;
     width: 100%;
     padding: 1rem 0;
+    font-size: 1rem;
 }
 
 /* Dialog de fin de juego */
