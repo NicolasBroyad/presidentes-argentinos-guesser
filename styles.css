@@ -213,9 +213,13 @@ h1 a {
 
 .modo-de-juego-seleccionado-heading {
     font-weight: 700;
-    font-size: 1.2rem;
+    font-size: 1.1rem;
     display: flex;
     gap: 1rem;
+    padding: 0.5rem;
+    background-color: rgba(53, 53, 53, 0.75);
+    backdrop-filter: blur(10px); /* El efecto de vidrio borroso */
+    border-radius: 10px;
     align-items: center;
     text-align: center;
 }
