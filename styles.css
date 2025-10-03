@@ -62,10 +62,7 @@ h1 a {
     padding: 1rem 0;
     justify-content: center;
     z-index: 100; /* para que quede arriba del contenido */
-}
-
-.header-nav {
-    
+    width: 100%;
 }
 
 .header-nav ul {
@@ -84,7 +81,7 @@ h1 a {
 }
 
 .header-nav a:hover {
-    color: #FFD700;
+    color: rgb(127, 190, 241);
     text-decoration: underline;
 }
 
@@ -113,7 +110,7 @@ h1 a {
         display: none; /* ocultamos nav */
         position: absolute;
         top: 3rem;
-        right: 0;
+        left: 0;
         background-color: rgba(0,0,0,0.9);
         padding: 1rem 2rem;
         border-radius: 0 0 10px 10px;
@@ -816,6 +813,7 @@ td {
     display: flex; /* Agregá flexbox */
     flex-direction: column; /* Dirección vertical */
     gap: 1rem;
+    align-items: center;
 }
 
 .acerca-body main {
@@ -830,6 +828,7 @@ td {
     gap: 1rem;
     padding: 2rem;
     flex: 1; /* Esto hace que main crezca para ocupar todo el espacio disponible */
+    margin: 0 1rem;
 }
 
 .acerca-body h2 {
@@ -860,6 +859,7 @@ td {
     display: flex; /* Agregá flexbox */
     flex-direction: column; /* Dirección vertical */
     gap: 1rem;
+    align-items: center;
 }
 
 .contacto-body main {
@@ -874,6 +874,7 @@ td {
     gap: 1rem;
     padding: 2rem;
     flex: 1; /* Esto hace que main crezca para ocupar todo el espacio disponible */
+    margin: 0 1rem;
 }
 
 .contacto-body h2 {
@@ -902,7 +903,8 @@ td {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
-    gap: 3rem;
+    align-items: center;
+    gap: 1rem;
 }
 
 .presidencias-body main {
@@ -912,6 +914,7 @@ td {
     margin: 0 auto;
     border-radius: 10px;
     border: 2px solid rgb(127, 190, 241);
+    margin: 0 1rem;
 }
 
 .presidencias-body h2 {
@@ -989,4 +992,6 @@ td {
 
 footer {
     text-align: center;
+    margin: 2rem 0;
+    font-weight: 500;
 }
