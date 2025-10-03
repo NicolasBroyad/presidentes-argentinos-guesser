@@ -163,6 +163,7 @@ h1 a {
 .iniciar-juego-button:hover {
     color: rgb(127, 190, 241);
     transition: all 0.3s ease; /* Animación suave */
+    transform: translateY(-3px);
 }
 
 .configuracion-button {
@@ -180,6 +181,8 @@ h1 a {
 .configuracion-icon:hover {
     fill: rgb(127, 190, 241);
     cursor: pointer;
+    transition: all 0.3s ease; /* Animación suave */
+    transform: translateY(-3px);
 }
 
 
@@ -284,8 +287,15 @@ p {
 .modo-de-juego-button {
     border-radius: 10px;
     background-color: rgb(127, 190, 241);
-    color: white;
+    color: rgb(10, 34, 53);
     font-size: 1.25rem;
+}
+
+.modo-de-juego-button:hover {
+    background-color: rgb(150, 210, 255);
+    cursor: pointer;
+    transition: all 0.3s ease; /* Animación suave */
+    transform: translateY(-3px);
 }
 
 @media (max-width: 768px) {
@@ -810,7 +820,7 @@ td {
 /*PRESIDENCIAS HTML*/
 
 .presidencias-body {
-    background-image: url("images/background-oligarca-extended.jpg");
+    background-image: url("images/background-oligarca-sin-personas-sin-banderas.png");
     background-color: #c0bda1;
     background-blend-mode: multiply;
     background-size: cover;       /* Ajusta la imagen para cubrir toda la pantalla */
@@ -860,6 +870,7 @@ td {
     height: 96px;
     width: 96px;
     border-radius: 50%;
+    border: 2px solid rgb(127, 190, 241);
     overflow: hidden;
 }
 
