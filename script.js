@@ -352,7 +352,9 @@ const listaPresidentes = [
 
         // Eliminar tabla anterior
         const tabla = document.querySelector(".tabla-container");
+        const headingModo = document.querySelector(".jugando-modo-heading");
         if (tabla) tabla.remove();
+        if (headingModo) headingModo.remove();
 
         // Volver a iniciar
         iniciarJuego();
