@@ -60,7 +60,6 @@ h1 a {
     background-color: rgba(0,0,0,0.75);
     backdrop-filter: blur(50px); /* El efecto de vidrio borroso */
     -webkit-backdrop-filter: blur(10px);
-    padding: 1rem 0;
     justify-content: center;
     z-index: 100; /* para que quede arriba del contenido */
     width: 100%;
@@ -71,7 +70,8 @@ h1 a {
     display: flex;
     gap: min(clamp(0.8rem, 2vw, 2rem), clamp(0.8rem, 2vh, 2rem)); /* mínimo 0.8rem, máximo 2rem, se adapta con el ancho */
     margin: 0;
-    padding: 0;
+    padding: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.4);
 }
 
 .header-nav a {
@@ -232,7 +232,7 @@ h1 a {
     justify-content: center;
     align-items: center;
     gap: 0.5rem;
-    padding-bottom: 0.5rem;
+    padding: 0.5rem;
 }
 
 .modo-de-juego-seleccionado {
@@ -897,7 +897,6 @@ td {
     min-height: 100vh; /* Cambiá de height a min-height */
     display: flex; /* Agregá flexbox */
     flex-direction: column; /* Dirección vertical */
-    gap: 1rem;
     align-items: center;
 }
 
@@ -913,14 +912,20 @@ td {
     gap: 1rem;
     padding: 2rem;
     flex: 1; /* Esto hace que main crezca para ocupar todo el espacio disponible */
-    margin: 0 1rem;
+    margin: 1rem;
 }
 
 .acerca-body h2 {
-    margin: 1rem 0;
+    display: flex;
+    background-color: rgba(0,0,0,0.75);
+    backdrop-filter: blur(50px); /* El efecto de vidrio borroso */
+    -webkit-backdrop-filter: blur(10px);
+    justify-content: center;
+    align-items: center;
     text-align: center;
-    color: white;
-    font-size: rem;
+
+    padding: 0.5rem;
+    width: 100%;
 }
 
 .acerca-body p {
@@ -943,7 +948,6 @@ td {
     min-height: 100vh; /* Cambiá de height a min-height */
     display: flex; /* Agregá flexbox */
     flex-direction: column; /* Dirección vertical */
-    gap: 1rem;
     align-items: center;
 }
 
@@ -959,13 +963,18 @@ td {
     gap: 1rem;
     padding: 2rem;
     flex: 1; /* Esto hace que main crezca para ocupar todo el espacio disponible */
-    margin: 0 1rem;
+    margin: 1rem;
 }
 
 .contacto-body h2 {
-    text-align: center;
-    color: white;
-    font-size: 2rem;
+    display: flex;
+    background-color: rgba(0,0,0,0.75);
+    backdrop-filter: blur(50px); /* El efecto de vidrio borroso */
+    -webkit-backdrop-filter: blur(10px);
+    justify-content: center;
+    align-items: center;
+    padding: 0.5rem;
+    width: 100%;
 }
 
 .contacto-body p {
@@ -988,7 +997,6 @@ td {
     min-height: 100vh; /* Cambiá de height a min-height */
     display: flex; /* Agregá flexbox */
     flex-direction: column; /* Dirección vertical */
-    gap: 1rem;
     align-items: center;
 }
 
@@ -1004,14 +1012,19 @@ td {
     gap: 1rem;
     padding: 2rem;
     flex: 1; /* Esto hace que main crezca para ocupar todo el espacio disponible */
-    margin: 0 1rem;
+    margin: 1rem;
 }
 
 .privacidad-body h2 {
-    margin: 1rem 0;
+    display: flex;
+    background-color: rgba(0,0,0,0.75);
+    backdrop-filter: blur(50px); /* El efecto de vidrio borroso */
+    -webkit-backdrop-filter: blur(10px);
+    justify-content: center;
+    align-items: center;
     text-align: center;
-    color: white;
-    font-size: rem;
+    padding: 0.5rem;
+    width: 100%;
 }
 
 .privacidad-body p {
@@ -1035,7 +1048,6 @@ td {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 1rem;
 }
 
 .presidencias-body main {
@@ -1045,13 +1057,19 @@ td {
     margin: 0 auto;
     border-radius: 10px;
     border: 2px solid rgb(127, 190, 241);
-    margin: 0 1rem;
+    margin: 1rem;
 }
 
 .presidencias-body h2 {
+    display: flex;
+    background-color: rgba(0,0,0,0.75);
+    backdrop-filter: blur(50px); /* El efecto de vidrio borroso */
+    -webkit-backdrop-filter: blur(10px);
+    justify-content: center;
+    align-items: center;
     text-align: center;
-    color: white;
-    font-size: 2rem;
+    padding: 0.5rem;
+    width: 100%;
 }
 
 .presidencias-container {
