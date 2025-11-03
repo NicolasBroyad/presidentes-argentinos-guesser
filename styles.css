@@ -139,6 +139,21 @@ h1 a {
     .header-nav.active {
         display: block; /* se muestra al presionar el botón */
     }
+
+    .main {
+        align-items: center;
+    }
+
+    .jugando-modo-heading {
+        position: absolute;
+        z-index: 101;
+        padding: 1rem !important;
+        background: transparent !important;
+        background-color: transparent !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        box-shadow: none !important;
+    }
 }
 
 
