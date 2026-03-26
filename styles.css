@@ -1048,6 +1048,17 @@ td {
     .privacidad-body h3 {
         font-size: 1.1rem;
     }
+
+    footer {
+        padding: 1rem;
+        text-align: center;
+    }
+
+    footer p {
+        font-size: 0.9rem;
+        width: 100%;
+        text-align: center;
+    }
 }
 
 /* PRIVACIDAD HTML */
