@@ -999,6 +999,57 @@ td {
     color: white;
 }
 
+.contacto-list {
+    list-style: none;
+    padding: 0;
+    margin: 1rem 0;
+}
+
+.contacto-list li {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    font-weight: 500;
+    color: white;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+.contacto-list li strong {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+/* Responsive para páginas estáticas en mobile */
+@media (max-width: 768px) {
+    .contacto-body main,
+    .acerca-body main,
+    .privacidad-body main {
+        margin: 0.5rem;
+        padding: 1.5rem;
+        width: calc(100% - 1rem);
+    }
+
+    .contacto-list li {
+        font-size: 1rem;
+    }
+
+    .contacto-body p,
+    .acerca-body p,
+    .privacidad-body p {
+        font-size: 1rem;
+    }
+
+    .contacto-body h2,
+    .acerca-body h2,
+    .privacidad-body h2 {
+        font-size: 1.3rem;
+    }
+
+    .privacidad-body h3 {
+        font-size: 1.1rem;
+    }
+}
+
 /* PRIVACIDAD HTML */
 
 .privacidad-body {
@@ -1047,6 +1098,18 @@ td {
     line-height: 1.6;
     font-weight: 500;
     color: white;
+}
+
+.privacidad-body h3 {
+    font-size: 1.2rem;
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+    color: rgb(127, 190, 241);
+}
+
+.privacidad-body main a {
+    color: rgb(127, 190, 241);
+    text-decoration: underline;
 }
 
 /* PRESIDENCIAS HTML */
