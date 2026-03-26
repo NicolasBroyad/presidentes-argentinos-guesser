@@ -17,16 +17,16 @@
     background-position: center;  /* Centra la imagen */
     background-repeat: no-repeat; /* Evita que se repita */
     background-attachment: fixed; /* Fija la imagen para efecto "parallax" */
-    height: 100dvh;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
 }
 
-header {
-    position: absolute;
-    right: 4rem;
-    top: 2rem;
+.main {
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
 }
 
 h1 {
@@ -52,17 +52,17 @@ h1 a {
 .los { font-size: min(clamp(1rem, 3.5vw, 2rem),clamp(1rem, 3.5vh, 2rem)); }
 .presidentes, .argentinos { font-size: min(clamp(1.5rem, 5vw, 3rem),clamp(1.5rem, 5vh, 3rem)); }
 
-
 .header {
-    position: absolute;
-    top: min(clamp(1rem, 3vw, 2rem), clamp(1rem, 3vh, 2rem));   /* separación superior flexible */
-    right: min(clamp(0.5rem, 4vw, 4rem), clamp(0.5rem, 4vh, 4rem)); /* separación derecha flexible */
+    position: sticky;
+    top: 0;
     display: flex;
     align-items: center;
-}
-
-.header-nav {
-    display: none; /* oculto en desktop */
+    background-color: rgba(0,0,0,0.75);
+    backdrop-filter: blur(50px); /* El efecto de vidrio borroso */
+    -webkit-backdrop-filter: blur(10px);
+    justify-content: center;
+    z-index: 100; /* para que quede arriba del contenido */
+    width: 100%;
 }
 
 .header-nav ul {
@@ -70,19 +70,32 @@ h1 a {
     display: flex;
     gap: min(clamp(0.8rem, 2vw, 2rem), clamp(0.8rem, 2vh, 2rem)); /* mínimo 0.8rem, máximo 2rem, se adapta con el ancho */
     margin: 0;
-    padding: 0;
+    padding: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.4);
 }
 
 .header-nav a {
-    color: white;
     text-decoration: none;
     font-weight: bold;
-    font-size: 1rem;
+    font-size: 0.9rem;
+    padding: 0.5rem;
+    border-radius: 5px;
 }
 
 .header-nav a:hover {
-    color: #FFD700;
+    color: rgb(127, 190, 241);
+    border: 1px solid rgb(127, 190, 241);
+    font-weight: 900;
+    background-color: rgba(53, 53, 53, 0.75);
+    transition: all 0.3s ease; /* Animación suave */
+    transform: scale(1.1);
+}
+
+.pagina-actual {
+    border: 1px solid rgb(127, 190, 241);
     text-decoration: underline;
+    font-weight: 900;
+    background-color: rgba(53, 53, 53, 0.75);
 }
 
 /* Botón hamburguesa oculto en desktop */
@@ -97,15 +110,20 @@ h1 a {
 
 /* --- Responsive --- */
 @media (max-width: 992px) {
+    .header {
+        justify-content: space-between;
+        padding: 0 1rem;
+    }
+
     .nav-toggle {
-        display: none; /* mostramos el botón (display: block) */
+        display: block; /* mostramos el botón (display: block) */
     }
 
     .header-nav {
         display: none; /* ocultamos nav */
         position: absolute;
         top: 3rem;
-        right: 0;
+        left: 0;
         background-color: rgba(0,0,0,0.9);
         padding: 1rem 2rem;
         border-radius: 0 0 10px 10px;
@@ -121,6 +139,21 @@ h1 a {
     .header-nav.active {
         display: block; /* se muestra al presionar el botón */
     }
+
+    .main {
+        align-items: center;
+    }
+
+    .jugando-modo-heading {
+        position: absolute;
+        z-index: 101;
+        padding: 1rem !important;
+        background: transparent !important;
+        background-color: transparent !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        box-shadow: none !important;
+    }
 }
 
 
@@ -129,7 +162,7 @@ h1 a {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 440px;
+    flex: 1;
 }
 
 .button-container {
@@ -157,6 +190,7 @@ h1 a {
 .iniciar-juego-button:hover {
     color: rgb(127, 190, 241);
     transition: all 0.3s ease; /* Animación suave */
+    transform: translateY(-3px);
 }
 
 .configuracion-button {
@@ -174,17 +208,54 @@ h1 a {
 .configuracion-icon:hover {
     fill: rgb(127, 190, 241);
     cursor: pointer;
+    transition: all 0.3s ease; /* Animación suave */
+    transform: translateY(-3px);
 }
 
 
 .rules-section {
     display: flex;
-    padding: min(clamp(1rem, 5vw, 5rem), clamp(1rem, 5vh, 5rem));
+    flex-direction: column;
+    gap: 1.2rem;
+    padding: 1.2rem;
+    padding-bottom: 0;
     min-height: fit-content;
     background-color: rgba(0,0,0,0.75);
     backdrop-filter: blur(10px); /* El efecto de vidrio borroso */
     justify-content: center;
     align-items: center;
+}
+
+.modo-de-juego-seleccionado-heading {
+    font-weight: 700;
+    font-size: 1.1rem;
+    display: flex;
+    gap: 1rem;
+    padding: 0.5rem;
+    background-color: rgba(53, 53, 53, 0.75);
+    backdrop-filter: blur(10px); /* El efecto de vidrio borroso */
+    border-radius: 10px;
+    align-items: center;
+    text-align: center;
+}
+
+.jugando-modo-heading{
+    display: flex;
+    background-color: rgba(0,0,0,0.75);
+    backdrop-filter: blur(50px); /* El efecto de vidrio borroso */
+    -webkit-backdrop-filter: blur(10px);
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+}
+
+.modo-de-juego-seleccionado {
+    padding: 0.2rem 0.4rem;
+    background-color: goldenrod;
+    border-radius: 5px;
+    color: black;
+    font-weight: 800;
 }
 
 .rules-container {
@@ -203,8 +274,23 @@ h1 a {
     border-right: 1px solid white;
 }
 
+.modos-scroll-container a {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 0;
+}
+
+.scroll-icon {
+    height: 64px;
+}
+
 svg {
     fill: white;
+}
+
+.rules-icons {
     width: min(clamp(40px, 8vw, 80px), clamp(40px, 8vh, 80px));
     height: min(clamp(40px, 8vw, 80px), clamp(40px, 8vh, 80px));
     flex-shrink: 0;
@@ -223,16 +309,68 @@ h3 {
     margin-bottom: 0.5rem;
 }
 
-p {
+.rules-section p {
     font-size: min(clamp(0.9rem, 2.5vw, 1rem), clamp(0.9rem, 2.5vh, 1rem));
     color: white;
     line-height: 1.4;
 }
 
+.modos-de-juego-link {
+    text-decoration: none;
+}
+
+.modos-de-juego-heading {
+    font-weight: 600;
+    font-size: 1.2rem;
+}
+
+.modos-de-juego-section {
+    display: flex;
+    min-height: fit-content;
+    background-color: rgba(0,0,0,0.75);
+    backdrop-filter: blur(10px); /* El efecto de vidrio borroso */
+    justify-content: center;
+    align-items: center;
+}
+.modos-de-juego-buttons-container {
+    display: flex;
+    flex-direction: row;
+    gap: 1.5rem;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap; /* permite que los botones se ajusten en varias filas si es necesario */
+    padding: min(clamp(1rem, 5vw, 5rem), clamp(1rem, 5vh, 5rem));
+    width: 75%;
+    border-top: 1px solid white;
+}
+
+.modo-de-juego-button {
+    font-size: 1.1rem;
+    border-radius: 10px;
+    background-color: gray;
+    color: rgb(5, 20, 35)
+}
+
+.modo-de-juego-clasico-button {
+    background-color: rgb(127, 190, 241);
+}
+
+.modo-de-juego-button:hover {
+    background-color: rgb(150, 210, 255);
+    cursor: pointer;
+    transition: all 0.3s ease; /* Animación suave */
+    transform: translateY(-3px);
+}
+
 @media (max-width: 768px) {
 
+    .modo-de-juego-seleccionado-heading {
+        font-size: 1rem;
+    }
+
     .rules-section {
-        padding: 0;
+        gap: 0;
+        padding: 1rem;
     }
 
     .rules-container {
@@ -254,6 +392,40 @@ p {
         width: 100%;
         text-align: center;
     }
+
+    .modos-de-juego-container {
+        flex-direction: column;
+    }
+}
+
+/* Reemplazar las reglas .overlay y .modal por estas: */
+#configDialog {
+    background-color: rgba(10, 34, 53, 0.75);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 3px rgb(127, 190, 241) solid;
+    border-radius: 12px;
+    padding: 20px 30px;
+    max-width: 400px;
+    color: #fff;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    text-align: center;
+    
+    /* AGREGAR ESTAS LÍNEAS PARA CENTRARLO */
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    margin: 0; /* quitar margin automático del dialog */
+}
+
+#configDialog:not([open]) {
+    display: none;
+}
+
+#configDialog::backdrop {
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(2px);
 }
 
 /* Fondo oscuro semitransparente */
@@ -349,10 +521,11 @@ button {
 .tabla-container {
     display: flex;
     flex-direction: column;
-    justify-content: center;
     align-items: center;
+    justify-content: center;
     gap: 1rem;
     margin: 0 2rem;
+    flex: 1;
 }
 
 @media (max-width: 768px) {
@@ -367,7 +540,6 @@ table {
     max-width: 800px; /* no se estira más de 700px en desktop */
     color: white;
     font-weight: bold;
-    align-self: center;
     background-color: rgba(10, 34, 53, 0.75);
     backdrop-filter: blur(10px); /* El efecto de vidrio borroso */
     -webkit-backdrop-filter: blur(10px); /* Para Safari */
@@ -421,7 +593,7 @@ tbody {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 2rem;                 /* un poco menos de espacio para que encaje */
-    max-height: 50dvh;    /* altura máxima del tbody */
+    max-height: 60dvh;    /* altura máxima del tbody */
     overflow-y: auto;          /* solo scroll vertical */
     overflow-x: hidden;        /* oculta horizontal si sobra */
     padding: 1rem 1rem 0 1rem; /* sin padding abajo */
@@ -693,23 +865,6 @@ td {
     text-align: center;
 }
 
-
-/* Otras paginas (Acerca de, contacto, body)*/
-
-.acerca-body, .contacto-body, .privacidad-body {
-    background-image: url("images/background-oligarca-sin-personas-sin-banderas.png");
-    background-color: #a3a086;
-    background-blend-mode: multiply;
-    background-size: cover;       /* Ajusta la imagen para cubrir toda la pantalla */
-    background-position: center;  /* Centra la imagen */
-    background-repeat: no-repeat; /* Evita que se repita */
-    background-attachment: fixed; /* Fija la imagen para efecto "parallax" */
-}
-
-.acerca-paragraph, .contacto-paragraph, .contacto-list {
-    color: white;
-}
-
 /* ==== Scroll personalizado ==== */
 ::-webkit-scrollbar {
   width: 12px;
@@ -742,4 +897,388 @@ td {
     60% { transform: translateX(-4px); }
     80% { transform: translateX(4px); }
     100% { transform: translateX(0); box-shadow: 0 0 0 0 #ff2d2d; }
+}
+
+/* ACERCA HTML */
+
+.acerca-body {
+    background-image: url("images/background-oligarca-sin-personas-sin-banderas.png");
+    background-color: #a3a086;
+    background-blend-mode: multiply;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    min-height: 100vh; /* Cambiá de height a min-height */
+    display: flex; /* Agregá flexbox */
+    flex-direction: column; /* Dirección vertical */
+    align-items: center;
+}
+
+.acerca-body main {
+    background-color: rgba(10, 34, 53, 0.75);
+    backdrop-filter: blur(25px);
+    max-width: 700px;
+    margin: 0 auto;
+    border-radius: 10px;
+    border: 2px solid rgb(127, 190, 241);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 2rem;
+    flex: 1; /* Esto hace que main crezca para ocupar todo el espacio disponible */
+    margin: 1rem;
+}
+
+.acerca-body h2 {
+    display: flex;
+    background-color: rgba(0,0,0,0.75);
+    backdrop-filter: blur(50px); /* El efecto de vidrio borroso */
+    -webkit-backdrop-filter: blur(10px);
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+
+    padding: 0.5rem;
+    width: 100%;
+}
+
+.acerca-body p {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    font-weight: 500;
+    color: white;
+}
+
+/* CONTACTO HTML */
+
+.contacto-body {
+    background-image: url("images/background-oligarca-sin-personas-sin-banderas.png");
+    background-color: #a3a086;
+    background-blend-mode: multiply;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    min-height: 100vh; /* Cambiá de height a min-height */
+    display: flex; /* Agregá flexbox */
+    flex-direction: column; /* Dirección vertical */
+    align-items: center;
+}
+
+.contacto-body main {
+    background-color: rgba(10, 34, 53, 0.75);
+    backdrop-filter: blur(25px);
+    max-width: 700px;
+    margin: 0 auto;
+    border-radius: 10px;
+    border: 2px solid rgb(127, 190, 241);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 2rem;
+    flex: 1; /* Esto hace que main crezca para ocupar todo el espacio disponible */
+    margin: 1rem;
+}
+
+.contacto-body h2 {
+    display: flex;
+    background-color: rgba(0,0,0,0.75);
+    backdrop-filter: blur(50px); /* El efecto de vidrio borroso */
+    -webkit-backdrop-filter: blur(10px);
+    justify-content: center;
+    align-items: center;
+    padding: 0.5rem;
+    width: 100%;
+}
+
+.contacto-body p {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    font-weight: 500;
+    color: white;
+}
+
+/* PRIVACIDAD HTML */
+
+.privacidad-body {
+    background-image: url("images/background-oligarca-sin-personas-sin-banderas.png");
+    background-color: #a3a086;
+    background-blend-mode: multiply;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    min-height: 100vh; /* Cambiá de height a min-height */
+    display: flex; /* Agregá flexbox */
+    flex-direction: column; /* Dirección vertical */
+    align-items: center;
+}
+
+.privacidad-body main {
+    background-color: rgba(10, 34, 53, 0.75);
+    backdrop-filter: blur(25px);
+    max-width: 700px;
+    margin: 0 auto;
+    border-radius: 10px;
+    border: 2px solid rgb(127, 190, 241);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 2rem;
+    flex: 1; /* Esto hace que main crezca para ocupar todo el espacio disponible */
+    margin: 1rem;
+}
+
+.privacidad-body h2 {
+    display: flex;
+    background-color: rgba(0,0,0,0.75);
+    backdrop-filter: blur(50px); /* El efecto de vidrio borroso */
+    -webkit-backdrop-filter: blur(10px);
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 0.5rem;
+    width: 100%;
+}
+
+.privacidad-body p {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    font-weight: 500;
+    color: white;
+}
+
+/* PRESIDENCIAS HTML */
+
+.presidencias-body {
+    background-image: url("images/background-oligarca-sin-personas-sin-banderas.png");
+    background-color: #c0bda1;
+    background-blend-mode: multiply;
+    background-size: cover;       /* Ajusta la imagen para cubrir toda la pantalla */
+    background-position: center;  /* Centra la imagen */
+    background-repeat: no-repeat; /* Evita que se repita */
+    background-attachment: fixed; /* Fija la imagen para efecto "parallax" */
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.presidencias-body main {
+    background-color: rgba(10, 34, 53, 0.75);
+    backdrop-filter: blur(25px);
+    max-width: 700px;
+    margin: 0 auto;
+    border-radius: 10px;
+    border: 2px solid rgb(127, 190, 241);
+    margin: 1rem;
+}
+
+.presidencias-body h2 {
+    display: flex;
+    background-color: rgba(0,0,0,0.75);
+    backdrop-filter: blur(50px); /* El efecto de vidrio borroso */
+    -webkit-backdrop-filter: blur(10px);
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 0.5rem;
+    width: 100%;
+}
+
+.ver-presidencias-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 80vh;
+}
+
+.presidencias-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow-x: auto; /* permite scroll si algo se pasa */
+}
+
+.scroll-container {
+    display: flex;
+    align-items: center;
+    font-size: 1.5rem;
+    font-family: Arial, Helvetica, sans-serif;
+    border-top: 2px solid rgb(127, 190, 241);
+}
+
+.presidencia-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    width: 75%;
+    border-bottom: 2px solid rgb(127, 190, 241);
+    padding: 4rem 1rem;
+}
+
+.presidencia-imagen {
+    flex-shrink: 0;
+    height: 96px;
+    width: 96px;
+    border-radius: 50%;
+    border: 2px solid rgb(127, 190, 241);
+    overflow: hidden;
+}
+
+.presidencia-nombre {
+    text-align: center;
+}
+
+.presidencia-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 60%;
+}
+
+.presidencia-descripcion {
+    font-size: 0.9rem;
+    font-weight: 500;
+    line-height: 1.4;
+}
+
+.presidencia-periodo {
+    margin-top: 0.5rem;
+    font-size: 1.2rem;
+    text-align: center;
+}
+
+.presidencia-tipo {
+    text-align: center;
+    font-weight: bold;
+    width: fit-content;
+    padding: 0.25rem 0.5rem;
+}
+
+.presidencia-tipo.constitucional {
+    background-color: rgba(127, 190, 241);
+    color: rgb(10, 34, 53);
+    border-radius: 10px;
+}
+
+.presidencia-tipo.de-facto {
+    background-color: rgba(218, 17, 17);
+    color: rgb(10, 34, 53);
+    border-radius: 10px;
+}
+
+footer {
+    display: flex;
+    min-height: fit-content;
+    background-color: rgba(0,0,0,0.75);
+    backdrop-filter: blur(10px); /* El efecto de vidrio borroso */
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    padding: 1rem 0;
+    font-size: 1rem;
+}
+
+/* Dialog de fin de juego */
+#finJuegoDialog {
+    background-color: rgba(10, 34, 53, 0.75);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 3px rgb(127, 190, 241) solid;
+    border-radius: 12px;
+    padding: 30px;
+    max-width: 450px;
+    color: #fff;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    text-align: center;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    margin: 0;
+}
+
+#finJuegoDialog:not([open]) {
+    display: none;
+}
+
+#finJuegoDialog::backdrop {
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(2px);
+}
+
+#tituloFinJuego {
+    font-size: 1.8rem;
+    margin-bottom: 1.5rem;
+    color: #fff;
+}
+
+.resultado-container {
+    margin: 2rem 0;
+    padding: 1.5rem;
+    background-color: rgba(127, 190, 241, 0.1);
+    border-radius: 10px;
+    border: 1px solid rgb(127, 190, 241);
+}
+
+#mensajeResultado {
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+    line-height: 1.4;
+}
+
+#aciertosFinales, #totalPresidentes {
+    font-weight: bold;
+    color: rgb(127, 190, 241);
+    font-size: 1.3rem;
+}
+
+#finJuegoDialog .buttons {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+#porcentajeContainer {
+    margin-top: 1rem;
+}
+
+#porcentaje {
+    font-size: 2rem;
+    font-weight: bold;
+    color: rgb(127, 190, 241);
+    text-shadow: 0 0 10px rgba(127, 190, 241, 0.5);
+}
+
+.jugar-otra-vez {
+    background: #2ecc71;
+    color: #fff;
+    font-size: 0.9rem;
+}
+
+.volver-inicio {
+    background: #3498db;
+    color: #fff;
+    font-size: 0.9rem;
+}
+
+.jugar-otra-vez:hover {
+    background: #27ae60;
+}
+
+.volver-inicio:hover {
+    background: #2980b9;
+}
+
+.cerrar-modal {
+    background: #e74c3c;
+    color: #fff;
+    font-size: 0.9rem;
+}
+
+.cerrar-modal:hover {
+    background: #c0392b;
 }
