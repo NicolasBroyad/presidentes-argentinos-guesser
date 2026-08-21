@@ -274,10 +274,20 @@ const listaPresidentes = [
         h1.remove();
         if (kicker) kicker.remove();
         main.classList.add("juego-activo");
+        body.classList.add("juego-activo");
 
         const presidentesFiltrados = filtrarPresidentes();
         const contenidoDelJuego = generarTablaHTML(presidentesFiltrados);
         main.insertAdjacentHTML("beforeend", contenidoDelJuego);
+
+        // Mueve el badge "JUGANDO MODO..." adentro del header, entre el
+        // hamburguesa y el selector de tema, para que ocupen una sola franja.
+        const headerEl = document.querySelector(".header");
+        const navToggleEl = document.querySelector(".nav-toggle");
+        const jugandoModoHeading = document.querySelector(".jugando-modo-heading");
+        if (headerEl && navToggleEl && jugandoModoHeading) {
+            navToggleEl.insertAdjacentElement("afterend", jugandoModoHeading);
+        }
 
         // ⚡ Guardar lista filtrada global
         window.listaFiltrada = presidentesFiltrados;
