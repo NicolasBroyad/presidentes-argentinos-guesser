@@ -171,7 +171,7 @@ const listaPresidentes = [
                         </div>
                         <div class="hud-bottom">
                             <input class="input-presidente" type="text" id="input-presidente" placeholder="Apellido...">
-                            <button class="rendirse-button" type="button" aria-label="Rendirse">🏳</button>
+                            <button class="rendirse-button rendirse-button-compacta" type="button" aria-label="Rendirse"><svg class="rendirse-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>Rendirse</title><path d="M14.4,6L14,4H5V21H7V14H12.6L13,16H20V6H14.4Z" /></svg></button>
                         </div>
                     </div>
                 </div>
@@ -541,10 +541,13 @@ const listaPresidentes = [
             inputPresidente.placeholder = "Juego terminado";
         }
 
-        // Cambiar boton a  "JUEGO TERMINADO"
+        // Cambiar boton a "JUEGO TERMINADO" (el botón compacto de mobile
+        // solo tiene lugar para el ícono, así que ese mantiene el ícono)
         const botonRendirse = document.querySelector(".rendirse-button");
         if (botonRendirse) {
-            botonRendirse.textContent = "JUEGO TERMINADO";
+            if (!botonRendirse.classList.contains("rendirse-button-compacta")) {
+                botonRendirse.textContent = "JUEGO TERMINADO";
+            }
             botonRendirse.disabled = true;
             botonRendirse.style.backgroundColor = "gray";
             botonRendirse.style.cursor = "not-allowed";
