@@ -140,14 +140,55 @@ const listaPresidentes = [
             </tr>
         `).join('');
 
+        const restartIconSvg = `<svg class="restart-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>Volver a empezar</title><path d="M12,4C14.1,4 16.1,4.8 17.6,6.3C20.7,9.4 20.7,14.5 17.6,17.6C15.8,19.5 13.3,20.2 10.9,19.9L11.4,17.9C13.1,18.1 14.9,17.5 16.2,16.2C18.5,13.9 18.5,10.1 16.2,7.7C15.1,6.6 13.5,6 12,6V10.6L7,5.6L12,0.6V4M6.3,17.6C3.7,15 3.3,11 5.1,7.9L6.6,9.4C5.5,11.6 5.9,14.4 7.8,16.2C8.3,16.7 8.9,17.1 9.6,17.4L9,19.4C8,19 7.1,18.4 6.3,17.6Z" /></svg>`;
+        const pauseIconSvg = `<svg class="pause-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>Pausar</title><path d="M14,19H18V5H14M6,19H10V5H6V19Z" /></svg>`;
+        const tiempoInicial = `${configuracionJuego.tiempo.toString().padStart(2,'0')}:00`;
+        const tabla = `
+            <table class="tabla" border="1" cellspacing="0" cellpadding="5">
+                <tbody>
+                    ${filasTabla}
+                </tbody>
+            </table>
+            <div class="tabla-paused-overlay" style="display:none;">Juego en pausa</div>
+        `;
+
+        // En mobile el input, el reloj y "rendirse" flotan semitransparentes
+        // arriba/abajo del cuadro (superpuestos, no en filas propias) para
+        // que la tabla ocupe casi toda la pantalla visible con el teclado abierto.
+        const esMobile = window.matchMedia('(max-width: 768px)').matches;
+
+        if (esMobile) {
+            return `
+                <h4 class="jugando-modo-heading">JUGANDO MODO <span class="modo-de-juego-seleccionado">CLÁSICO</span></h4>
+                <div class="tabla-container tabla-container-compacta">
+                    <div class="tabla-wrapper" style="position:relative;">
+                        ${tabla}
+                        <div class="hud-top">
+                            ${restartIconSvg}
+                            <div id="contador-presidentes" class="contador">0/${presidentesFiltrados.length}</div>
+                            <div id="temporizador" class="temporizador">${tiempoInicial}</div>
+                            ${pauseIconSvg}
+                        </div>
+                        <div class="hud-bottom">
+                            <input class="input-presidente" type="text" id="input-presidente" placeholder="Apellido...">
+                            <button class="rendirse-button" type="button" aria-label="Rendirse">🏳</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
         return `
             <h4 class="jugando-modo-heading">JUGANDO MODO <span class="modo-de-juego-seleccionado">CLÁSICO</span></h4>
             <div class="tabla-container">
+                <div class="tabla-wrapper" style="position:relative;">
+                    ${tabla}
+                </div>
                 <div class="input-container">
                     <div class="input-container-first-row">
-                        <svg class="restart-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>Volver a empezar</title><path d="M12,4C14.1,4 16.1,4.8 17.6,6.3C20.7,9.4 20.7,14.5 17.6,17.6C15.8,19.5 13.3,20.2 10.9,19.9L11.4,17.9C13.1,18.1 14.9,17.5 16.2,16.2C18.5,13.9 18.5,10.1 16.2,7.7C15.1,6.6 13.5,6 12,6V10.6L7,5.6L12,0.6V4M6.3,17.6C3.7,15 3.3,11 5.1,7.9L6.6,9.4C5.5,11.6 5.9,14.4 7.8,16.2C8.3,16.7 8.9,17.1 9.6,17.4L9,19.4C8,19 7.1,18.4 6.3,17.6Z" /></svg>
-                        <div id="temporizador" class="temporizador">${configuracionJuego.tiempo.toString().padStart(2,'0')}:00</div>
-                        <svg class="pause-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>Pausar</title><path d="M14,19H18V5H14M6,19H10V5H6V19Z" /></svg>
+                        ${restartIconSvg}
+                        <div id="temporizador" class="temporizador">${tiempoInicial}</div>
+                        ${pauseIconSvg}
                     </div>
                     <div class="input-container-second-row">
                         <div id="contador-presidentes" class="contador">
@@ -156,14 +197,6 @@ const listaPresidentes = [
                         <input class="input-presidente" type="text" id="input-presidente" placeholder="Ingrese el apellido...">
                     </div>
                     <button class="rendirse-button" type="button">RENDIRSE</button>
-                </div>
-                <div class="tabla-wrapper" style="position:relative;">
-                    <table class="tabla" border="1" cellspacing="0" cellpadding="5">
-                        <tbody>
-                            ${filasTabla}
-                        </tbody>
-                    </table>
-                    <div class="tabla-paused-overlay" style="display:none;">Juego en pausa</div>
                 </div>
             </div>
         `;
@@ -274,19 +307,20 @@ const listaPresidentes = [
         h1.remove();
         if (kicker) kicker.remove();
         main.classList.add("juego-activo");
-        body.classList.add("juego-activo");
 
         const presidentesFiltrados = filtrarPresidentes();
         const contenidoDelJuego = generarTablaHTML(presidentesFiltrados);
         main.insertAdjacentHTML("beforeend", contenidoDelJuego);
 
-        // Mueve el badge "JUGANDO MODO..." adentro del header, entre el
-        // hamburguesa y el selector de tema, para que ocupen una sola franja.
-        const headerEl = document.querySelector(".header");
-        const navToggleEl = document.querySelector(".nav-toggle");
-        const jugandoModoHeading = document.querySelector(".jugando-modo-heading");
-        if (headerEl && navToggleEl && jugandoModoHeading) {
-            navToggleEl.insertAdjacentElement("afterend", jugandoModoHeading);
+        // El header compacto (hamburguesa + modo + tema en una sola franja,
+        // sin footer) es solo para mobile; en desktop queda todo como estaba.
+        if (window.matchMedia('(max-width: 768px)').matches) {
+            body.classList.add("juego-activo");
+            const navToggleEl = document.querySelector(".nav-toggle");
+            const jugandoModoHeading = document.querySelector(".jugando-modo-heading");
+            if (navToggleEl && jugandoModoHeading) {
+                navToggleEl.insertAdjacentElement("afterend", jugandoModoHeading);
+            }
         }
 
         // ⚡ Guardar lista filtrada global

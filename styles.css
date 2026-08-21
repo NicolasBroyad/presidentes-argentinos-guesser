@@ -176,55 +176,58 @@ h1 a {
     z-index: 101;
 }
 
-/* --- Durante una partida: se oculta el footer y el nav de texto, y el
-   header pasa a ser una sola franja angosta con hamburguesa, el modo de
-   juego (movido ahí desde el JS) y el selector de tema, todo a la misma
-   altura, sin la franja negra extra que había antes. --- */
-body.juego-activo footer {
-    display: none;
-}
+/* --- Durante una partida, SOLO EN MOBILE: se oculta el footer y el nav de
+   texto, y el header pasa a ser una sola franja angosta con hamburguesa,
+   el modo de juego (movido ahí desde el JS) y el selector de tema, todo a
+   la misma altura, sin la franja negra extra que había antes. En desktop
+   el header/footer quedan exactamente como siempre. --- */
+@media (max-width: 768px) {
+    body.juego-activo footer {
+        display: none;
+    }
 
-body.juego-activo .header {
-    justify-content: flex-start;
-    padding: 0 1rem;
-}
+    body.juego-activo .header {
+        justify-content: flex-start;
+        padding: 0 1rem;
+    }
 
-body.juego-activo .nav-toggle {
-    display: flex;
-    flex-shrink: 0;
-}
+    body.juego-activo .nav-toggle {
+        display: flex;
+        flex-shrink: 0;
+    }
 
-body.juego-activo .header-nav {
-    display: none;
-    position: absolute;
-    top: 100%;
-    left: 0;
-    background-color: rgb(var(--glass) / 0.9);
-    padding: 1rem 2rem;
-    border-radius: 0 0 10px 10px;
-}
+    body.juego-activo .header-nav {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        background-color: rgb(var(--glass) / 0.9);
+        padding: 1rem 2rem;
+        border-radius: 0 0 10px 10px;
+    }
 
-body.juego-activo .header-nav ul {
-    flex-direction: column;
-    gap: 1rem;
-}
+    body.juego-activo .header-nav ul {
+        flex-direction: column;
+        gap: 1rem;
+    }
 
-body.juego-activo .header-nav.active {
-    display: block;
-}
+    body.juego-activo .header-nav.active {
+        display: block;
+    }
 
-body.juego-activo .header .jugando-modo-heading {
-    flex: 1;
-    min-width: 0;
-    overflow: hidden;
-    margin: 0 3rem 0 0.5rem;
-    padding: 0.35rem 0.6rem;
-    font-size: 0.8rem;
-    white-space: nowrap;
-}
+    body.juego-activo .header .jugando-modo-heading {
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+        margin: 0 3rem 0 0.5rem;
+        padding: 0.35rem 0.6rem;
+        font-size: 0.8rem;
+        white-space: nowrap;
+    }
 
-body.juego-activo .header .jugando-modo-heading .modo-de-juego-seleccionado {
-    flex-shrink: 0;
+    body.juego-activo .header .jugando-modo-heading .modo-de-juego-seleccionado {
+        flex-shrink: 0;
+    }
 }
 
 @media (max-width: 360px) {
@@ -727,6 +730,95 @@ table {
     pointer-events: all;
     border-radius: 27px; /* igual al de la tabla menos el inset */
     transition: opacity 0.3s;
+}
+
+/* --- HUD flotante del juego en mobile: en vez de filas propias para el
+   reloj/contador y el input/rendirse, quedan como píldoras semitransparentes
+   superpuestas al borde superior/inferior del cuadro (mitad afuera, mitad
+   adentro), así la tabla en sí ocupa casi toda la pantalla disponible. --- */
+@media (max-width: 768px) {
+    .tabla-container-compacta .tabla-wrapper {
+        margin-top: 1.2rem;
+        margin-bottom: 1.2rem;
+    }
+
+    .hud-top,
+    .hud-bottom {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        z-index: 6;
+        border-radius: 999px;
+        box-shadow: 0 10px 24px -10px rgba(0, 0, 0, 0.65);
+    }
+
+    .hud-top {
+        top: -1.15rem;
+        background-color: rgb(var(--navy) / 0.55);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 1px solid rgb(var(--gold) / 0.45);
+        padding: 0.3rem 0.7rem;
+    }
+
+    .hud-top .restart-icon,
+    .hud-top .pause-icon {
+        height: 18px;
+        width: 18px;
+        flex-shrink: 0;
+        fill: rgb(var(--ink));
+    }
+
+    .hud-top .temporizador {
+        font-size: 0.8rem;
+        color: rgb(var(--ink));
+    }
+
+    .hud-top #contador-presidentes {
+        background: none;
+        border: none;
+        box-shadow: none;
+        padding: 0;
+        height: auto;
+        border-radius: 0;
+        font-size: 0.7rem;
+    }
+
+    .hud-bottom {
+        bottom: -1.15rem;
+        width: calc(100% - 1.5rem);
+        background-color: rgb(var(--navy) / 0.85);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgb(var(--blue) / 0.6);
+        padding: 0.35rem 0.35rem 0.35rem 1rem;
+    }
+
+    .hud-bottom .input-presidente {
+        flex: 1;
+        min-width: 0;
+        background: none;
+        border: none;
+        box-shadow: none;
+        height: auto;
+        padding: 0.4rem 0;
+    }
+
+    .hud-bottom .rendirse-button {
+        flex-shrink: 0;
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        padding: 0;
+        font-size: 1.1rem;
+        line-height: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
 }
 
 th, td {
