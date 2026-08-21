@@ -355,6 +355,15 @@ const listaPresidentes = [
             botonReiniciar.addEventListener("click", reiniciarJuego);
         }
 
+        // En mobile el HUD del reloj/pausa queda tapado por el overlay de
+        // pausa; tocar en cualquier parte del overlay reanuda el juego.
+        const overlayPausa = document.querySelector(".tabla-paused-overlay");
+        if (overlayPausa) {
+            overlayPausa.addEventListener("click", () => {
+                if (pausado) togglePausa();
+            });
+        }
+
 
         window.temporizadorInterval = temporizadorInterval;
     }
