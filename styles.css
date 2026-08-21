@@ -1,32 +1,78 @@
 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400..900&family=Fredoka:wdth,wght@97.9,300..700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400..900&family=Fredoka:wdth,wght@97.9,300..700&display=swap');
 
+/* --- Tema oscuro (por defecto) --- */
+:root {
+    --navy: 10 34 53;
+    --navy-light: 22 55 81;
+    --blue: 127 190 241;
+    --blue-strong: 27 190 241;
+    --gold: 232 200 116;
+    --gold-soft: 243 223 160;
+    --glass: 0 0 0;
+    --glass-soft: 53 53 53;
+    --ink: 255 255 255;
+    --bg-top: 12 28 44;
+    --bg-mid: 10 34 53;
+    --bg-bottom: 6 13 21;
+}
+
+/* --- Tema claro: celeste y blanco de la bandera argentina --- */
+:root[data-theme="light"] {
+    --navy: 255 255 255;
+    --navy-light: 235 244 252;
+    --blue: 90 155 214;
+    --blue-strong: 74 144 217;
+    --gold: 196 149 40;
+    --gold-soft: 150 108 20;
+    --glass: 255 255 255;
+    --glass-soft: 214 231 247;
+    --ink: 15 40 61;
+    --bg-top: 173 214 245;
+    --bg-mid: 214 232 250;
+    --bg-bottom: 255 255 255;
+}
+
 * {
     margin: 0;
     padding: 0;
     font-family: "Cinzel";
     box-sizing: border-box;
-    color: white;
+    color: rgb(var(--ink));
 }
 
 .index-body {
-    background-image: url("images/background-oligarca-extended.jpg");
-    background-color: #c0bda1;
-    background-blend-mode: multiply;
-    background-size: cover;       /* Ajusta la imagen para cubrir toda la pantalla */
-    background-position: center;  /* Centra la imagen */
-    background-repeat: no-repeat; /* Evita que se repita */
-    background-attachment: fixed; /* Fija la imagen para efecto "parallax" */
+    background-image:
+        url("images/sol-watermark.svg"),
+        radial-gradient(ellipse 70% 45% at 50% 0%, rgb(var(--blue-strong) / 0.14), transparent 65%),
+        linear-gradient(165deg, rgb(var(--bg-top)) 0%, rgb(var(--bg-mid)) 45%, rgb(var(--bg-bottom)) 100%);
+    background-color: rgb(var(--bg-mid));
+    background-size: min(820px, 85vw) auto, cover, cover;
+    background-position: center 6%, center, center;
+    background-repeat: no-repeat, no-repeat, no-repeat;
+    background-attachment: fixed, fixed, fixed;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
 }
 
 .main {
-    height: 100dvh;
+    min-height: 100dvh;
     display: flex;
     flex-direction: column;
     gap: 0;
+}
+
+.kicker {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    font-size: min(clamp(0.65rem, 1.8vw, 0.8rem), clamp(0.65rem, 1.8vh, 0.8rem));
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    text-align: center;
+    color: rgb(var(--gold-soft));
+    opacity: 0.85;
+    padding-top: 34px;
 }
 
 h1 {
@@ -39,25 +85,34 @@ h1 a {
     display: flex;
     flex-direction: column;
     align-items: center;
-    font-size: min(clamp(1.5rem, 5vw, 3rem),clamp(1.5rem, 5vh, 3rem));
-    color: white;
-    font-weight: 800;
-    padding-top: 30px;
-    line-height: 0.8;
+    padding-top: 6px;
+    line-height: 1.05;
     justify-content: center;
     text-decoration: none;
+    text-wrap: balance;
 }
 
-.adivina { font-size: min(clamp(1.2rem, 4vw, 2.5rem),clamp(1.2rem, 4vh, 2.5rem)); }
-.los { font-size: min(clamp(1rem, 3.5vw, 2rem),clamp(1rem, 3.5vh, 2rem)); }
-.presidentes, .argentinos { font-size: min(clamp(1.5rem, 5vw, 3rem),clamp(1.5rem, 5vh, 3rem)); }
+.titulo-linea1 {
+    font-size: min(clamp(1rem, 3.2vw, 1.7rem), clamp(1rem, 3.2vh, 1.7rem));
+    font-weight: 600;
+    color: rgb(var(--ink) / 0.7);
+}
+
+.titulo-linea2 {
+    font-size: min(clamp(1.9rem, 6.4vw, 3.6rem), clamp(1.9rem, 6.4vh, 3.6rem));
+    font-weight: 800;
+    background: linear-gradient(180deg, rgb(var(--ink)) 0%, rgb(var(--gold-soft)) 130%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
 
 .header {
     position: sticky;
     top: 0;
     display: flex;
     align-items: center;
-    background-color: rgba(0,0,0,0.75);
+    background-color: rgb(var(--glass) / 0.75);
     backdrop-filter: blur(50px); /* El efecto de vidrio borroso */
     -webkit-backdrop-filter: blur(10px);
     justify-content: center;
@@ -71,7 +126,7 @@ h1 a {
     gap: min(clamp(0.8rem, 2vw, 2rem), clamp(0.8rem, 2vh, 2rem)); /* mínimo 0.8rem, máximo 2rem, se adapta con el ancho */
     margin: 0;
     padding: 1rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.4);
+    border-bottom: 1px solid rgb(var(--ink) / 0.4);
 }
 
 .header-nav a {
@@ -83,19 +138,19 @@ h1 a {
 }
 
 .header-nav a:hover {
-    color: rgb(127, 190, 241);
-    border: 1px solid rgb(127, 190, 241);
+    color: rgb(var(--blue));
+    border: 1px solid rgb(var(--blue));
     font-weight: 900;
-    background-color: rgba(53, 53, 53, 0.75);
+    background-color: rgb(var(--glass-soft) / 0.75);
     transition: all 0.3s ease; /* Animación suave */
     transform: scale(1.1);
 }
 
 .pagina-actual {
-    border: 1px solid rgb(127, 190, 241);
+    border: 1px solid rgb(var(--blue));
     text-decoration: underline;
     font-weight: 900;
-    background-color: rgba(53, 53, 53, 0.75);
+    background-color: rgb(var(--glass-soft) / 0.75);
 }
 
 /* Botón hamburguesa oculto en desktop */
@@ -104,8 +159,33 @@ h1 a {
     font-size: 2rem;
     background: none;
     border: none;
-    color: white;
+    color: rgb(var(--ink));
     cursor: pointer;
+}
+
+.theme-toggle {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    display: flex;
+    padding: 0.4rem;
+    cursor: pointer;
+    z-index: 101;
+}
+
+.theme-toggle-icon {
+    height: 22px;
+    width: 22px;
+    fill: rgb(var(--gold-soft));
+    transition: transform 0.3s ease, fill 0.3s ease;
+}
+
+.theme-toggle:hover .theme-toggle-icon {
+    fill: rgb(var(--blue));
+    transform: translateY(-2px) rotate(15deg);
 }
 
 /* --- Responsive --- */
@@ -124,7 +204,7 @@ h1 a {
         position: absolute;
         top: 3rem;
         left: 0;
-        background-color: rgba(0,0,0,0.9);
+        background-color: rgb(var(--glass) / 0.9);
         padding: 1rem 2rem;
         border-radius: 0 0 10px 10px;
 
@@ -143,17 +223,6 @@ h1 a {
     .main {
         align-items: center;
     }
-
-    .jugando-modo-heading {
-        position: absolute;
-        z-index: 101;
-        padding: 1rem !important;
-        background: transparent !important;
-        background-color: transparent !important;
-        backdrop-filter: none !important;
-        -webkit-backdrop-filter: none !important;
-        box-shadow: none !important;
-    }
 }
 
 
@@ -169,47 +238,65 @@ h1 a {
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 1rem;
-    background-color: rgba(10, 34, 53);
-    height: min(clamp(50px, 10vw, 65px), clamp(50px, 10vh, 65px));
-    color: white;
-    border-radius: 30px;
+    padding: 0.3rem;
+    background-color: rgb(var(--navy) / 0.92);
+    height: min(clamp(54px, 11vw, 70px), clamp(54px, 11vh, 70px));
+    color: rgb(var(--ink));
+    border-radius: 999px;
+    border: 1px solid rgb(var(--gold) / 0.4);
+    box-shadow:
+        0 20px 45px -18px rgba(0, 0, 0, 0.7),
+        0 0 30px -6px rgb(var(--gold) / 0.18);
+    transition: box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.button-container:hover {
+    border-color: rgb(var(--gold) / 0.7);
+    box-shadow:
+        0 22px 50px -16px rgba(0, 0, 0, 0.75),
+        0 0 36px -4px rgb(var(--gold) / 0.3);
 }
 
 .iniciar-juego-button {
     font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-    font-size: min(clamp(1rem, 3vw, 1.2rem), clamp(1rem, 3vh, 1.2rem));
-    font-weight: 900;
+    font-size: min(clamp(0.9rem, 2.6vw, 1.1rem), clamp(0.9rem, 2.6vh, 1.1rem));
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
     background: none;
-    border-radius: 0;
     text-align: center;
-    border-right: 1px solid white;
-    padding: 0 1em;
+    border-right: 1px solid rgb(var(--ink) / 0.18);
+    padding: 0 1.4em;
+    cursor: pointer;
 }
 
 .iniciar-juego-button:hover {
-    color: rgb(127, 190, 241);
+    color: rgb(var(--gold-soft));
+    text-shadow: 0 0 18px rgb(var(--gold-soft) / 0.45);
     transition: all 0.3s ease; /* Animación suave */
-    transform: translateY(-3px);
+    transform: translateY(-2px);
 }
 
 .configuracion-button {
     background: none;
     border: none;
-    padding: 0 1em;
+    padding: 0 1.1em;
     display: flex;
+    cursor: pointer;
 }
 
 .configuracion-icon {
-    height: 32px;
-    width: 32px;
+    height: 30px;
+    width: 30px;
+    opacity: 0.8;
 }
 
 .configuracion-icon:hover {
-    fill: rgb(127, 190, 241);
+    fill: rgb(var(--gold-soft));
+    opacity: 1;
     cursor: pointer;
     transition: all 0.3s ease; /* Animación suave */
-    transform: translateY(-3px);
+    transform: translateY(-2px) rotate(25deg);
 }
 
 
@@ -220,7 +307,7 @@ h1 a {
     padding: 1.2rem;
     padding-bottom: 0;
     min-height: fit-content;
-    background-color: rgba(0,0,0,0.75);
+    background-color: rgb(var(--glass) / 0.75);
     backdrop-filter: blur(10px); /* El efecto de vidrio borroso */
     justify-content: center;
     align-items: center;
@@ -232,7 +319,7 @@ h1 a {
     display: flex;
     gap: 1rem;
     padding: 0.5rem;
-    background-color: rgba(53, 53, 53, 0.75);
+    background-color: rgb(var(--glass-soft) / 0.75);
     backdrop-filter: blur(10px); /* El efecto de vidrio borroso */
     border-radius: 10px;
     align-items: center;
@@ -241,13 +328,19 @@ h1 a {
 
 .jugando-modo-heading{
     display: flex;
-    background-color: rgba(0,0,0,0.75);
-    backdrop-filter: blur(50px); /* El efecto de vidrio borroso */
-    -webkit-backdrop-filter: blur(10px);
+    align-self: center;
+    width: fit-content;
+    background-color: rgb(var(--glass) / 0.75);
+    backdrop-filter: blur(20px); /* El efecto de vidrio borroso */
+    -webkit-backdrop-filter: blur(20px);
     justify-content: center;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.5rem;
+    padding: 0.6rem 1.3rem;
+    margin: 1.5rem auto 0.5rem;
+    border-radius: 999px;
+    border: 1px solid rgb(var(--gold) / 0.35);
+    box-shadow: 0 15px 35px -15px rgba(0, 0, 0, 0.7);
 }
 
 .modo-de-juego-seleccionado {
@@ -271,7 +364,7 @@ h1 a {
 }
 
 .rule-container:nth-child(1) {
-    border-right: 1px solid white;
+    border-right: 1px solid rgb(var(--ink) / 0.4);
 }
 
 .modos-scroll-container a {
@@ -287,7 +380,7 @@ h1 a {
 }
 
 svg {
-    fill: white;
+    fill: rgb(var(--ink));
 }
 
 .rules-icons {
@@ -303,7 +396,7 @@ svg {
 }
 
 h3 {
-    color: white;
+    color: rgb(var(--ink));
     font-weight: 750;
     font-size: min(clamp(1rem, 3vw, 1.2rem), clamp(1rem, 3vh, 1.2rem));
     margin-bottom: 0.5rem;
@@ -311,7 +404,7 @@ h3 {
 
 .rules-section p {
     font-size: min(clamp(0.9rem, 2.5vw, 1rem), clamp(0.9rem, 2.5vh, 1rem));
-    color: white;
+    color: rgb(var(--ink));
     line-height: 1.4;
 }
 
@@ -327,7 +420,7 @@ h3 {
 .modos-de-juego-section {
     display: flex;
     min-height: fit-content;
-    background-color: rgba(0,0,0,0.75);
+    background-color: rgb(var(--glass) / 0.75);
     backdrop-filter: blur(10px); /* El efecto de vidrio borroso */
     justify-content: center;
     align-items: center;
@@ -341,7 +434,7 @@ h3 {
     flex-wrap: wrap; /* permite que los botones se ajusten en varias filas si es necesario */
     padding: min(clamp(1rem, 5vw, 5rem), clamp(1rem, 5vh, 5rem));
     width: 75%;
-    border-top: 1px solid white;
+    border-top: 1px solid rgb(var(--ink) / 0.4);
 }
 
 .modo-de-juego-button {
@@ -352,7 +445,7 @@ h3 {
 }
 
 .modo-de-juego-clasico-button {
-    background-color: rgb(127, 190, 241);
+    background-color: rgb(var(--blue));
 }
 
 .modo-de-juego-button:hover {
@@ -385,7 +478,7 @@ h3 {
 
     .rule-container:nth-child(1) {
         border-right: none;
-        border-bottom: 1px solid white;
+        border-bottom: 1px solid rgb(var(--ink) / 0.4);
     }
 
     .rule-text-container {
@@ -400,14 +493,15 @@ h3 {
 
 /* Reemplazar las reglas .overlay y .modal por estas: */
 #configDialog {
-    background-color: rgba(10, 34, 53, 0.75);
+    background-color: rgb(var(--navy) / 0.75);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
-    border: 3px rgb(127, 190, 241) solid;
+    border: 3px rgb(var(--blue)) solid;
     border-radius: 12px;
     padding: 20px 30px;
-    max-width: 400px;
-    color: #fff;
+    max-width: min(400px, calc(100vw - 2rem));
+    box-sizing: border-box;
+    color: rgb(var(--ink));
     box-shadow: 0 4px 20px rgba(0,0,0,0.4);
     text-align: center;
     
@@ -444,20 +538,20 @@ h3 {
 .modal {
     display: flex;
     flex-direction: column;
-    background-color: rgba(10, 34, 53, 0.75);
+    background-color: rgb(var(--navy) / 0.75);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
-    border: 3px rgb(127, 190, 241) solid;
+    border: 3px rgb(var(--blue)) solid;
     border-radius: 12px;
     padding: 20px 30px;
     max-width: 400px;
-    color: #fff;
+    color: rgb(var(--ink));
     box-shadow: 0 4px 20px rgba(0,0,0,0.4);
     text-align: center;
 }
 
 .configuracion-temporizador-container {
-    border-bottom: 1px solid white;
+    border-bottom: 1px solid rgb(var(--ink) / 0.4);
     padding: 2em 0;
 }
 
@@ -483,7 +577,7 @@ h3 {
 
 .checkbox-input {
     width: 20px;
-    accent-color: rgb(127, 190, 241); /* el doradito que veníamos usando */
+    accent-color: rgb(var(--blue)); /* el doradito que veníamos usando */
 }
 
 .checkbox-label {
@@ -538,13 +632,16 @@ table {
     position: relative;
     width: 100%; /* ocupa el ancho del contenedor */
     max-width: 800px; /* no se estira más de 700px en desktop */
-    color: white;
+    color: rgb(var(--ink));
     font-weight: bold;
-    background-color: rgba(10, 34, 53, 0.75);
+    background-color: rgb(var(--navy) / 0.94);
     backdrop-filter: blur(10px); /* El efecto de vidrio borroso */
     -webkit-backdrop-filter: blur(10px); /* Para Safari */
     border-radius: 30px;
-    border: 3px rgb(127, 190, 241) solid;
+    border: 2px solid rgb(var(--gold) / 0.5);
+    box-shadow:
+        0 35px 80px -30px rgba(0, 0, 0, 0.85),
+        0 0 55px -18px rgb(var(--gold) / 0.2);
     overflow-x: auto; /* permite scroll si algo se pasa */
     padding-bottom: 1em;
 }
@@ -600,6 +697,44 @@ tbody {
     box-sizing: border-box;
 }
 
+/* --- Mientras el juego está activo: todo el bloque (desde el badge hasta
+   RENDIRSE) entra en la pantalla sin scroll de página; solo la lista de
+   presidentes scrollea internamente si no entra completa. --- */
+.main.juego-activo {
+    height: 100dvh;
+    overflow-y: auto;
+}
+
+.main.juego-activo .tabla-container {
+    min-height: 0;
+    flex-shrink: 1;
+}
+
+.main.juego-activo .tabla-wrapper {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.main.juego-activo table {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    max-height: 100%;
+    box-sizing: border-box;
+}
+
+.main.juego-activo tbody {
+    flex: 1 1 auto;
+    min-height: 120px;
+    max-height: none;
+}
+
+.main.juego-activo .input-container {
+    flex-shrink: 0;
+}
+
 
 @media (max-width: 768px) {
   tbody {
@@ -622,9 +757,10 @@ td {
 }
 
 .presidente-card {
-    background-color: rgba(10, 34, 53, 0.75);
+    background-color: rgb(var(--navy-light) / 0.85);
     backdrop-filter: blur(10px); /* El efecto de vidrio borroso */
-    border: 2px solid rgb(127, 190, 241);
+    border: 2px solid rgb(var(--blue));
+    box-shadow: 0 10px 25px -12px rgba(0, 0, 0, 0.6);
     width: 100%;
     border-radius: 10px;
     padding: 0;
@@ -645,9 +781,9 @@ td {
 .check-icon {
     height: 1.2em;
     width: 1.2em;
-    background-color: rgba(10, 34, 53, 0.75);
+    background-color: rgb(var(--navy) / 0.75);
     backdrop-filter: blur(10px); /* El efecto de vidrio borroso */
-    fill: rgb(127, 190, 241);
+    fill: rgb(var(--blue));
     border-radius: 50%;
 }
 
@@ -659,16 +795,16 @@ td {
     justify-content: center;
     width: 75%;
     margin-bottom: 0.25em;
-    color: white;
-    border-bottom: 2px solid white;
+    color: rgb(var(--ink));
+    border-bottom: 2px solid rgb(var(--ink) / 0.4);
     font-weight: 700;
     font-size: 1.1rem;
 }
 
 .periodo-presidente-cell {
     text-align: center;
-    border-top: 2px solid rgb(127, 190, 241);
-    background-color: rgba(10, 34, 53, 0.75);
+    border-top: 2px solid rgb(var(--blue));
+    background-color: rgb(var(--navy) / 0.9);
     backdrop-filter: blur(10px); /* El efecto de vidrio borroso */
     border-radius: 0 0 10px 10px;
     padding: 0.25em 0;
@@ -683,10 +819,10 @@ td {
 }
 
 .input-container-first-row{
-    border: 1px solid rgb(10, 34, 53);
+    border: 1px solid rgb(var(--navy));
     border-radius: 10px;
     padding: 1rem;
-    background-color: rgb(27, 190, 241);
+    background-color: rgb(var(--blue-strong));
     backdrop-filter: blur(10px); /* El efecto de vidrio borroso */
     display: flex;
     align-items: center;
@@ -697,14 +833,14 @@ td {
 .restart-icon {
     height: 32px;
     width: 32px;
-    fill: rgb(10, 34, 53);
+    fill: rgb(var(--navy));
     cursor: pointer;
 }
 
 .pause-icon {
     height: 32px;
     width: 32px;
-    fill: rgb(10, 34, 53);
+    fill: rgb(var(--navy));
     cursor: pointer;
 }
 
@@ -747,13 +883,13 @@ td {
 #contador-presidentes {
     height: min(clamp(50px, 8vw, 70px), clamp(50px, 8vh, 70px));
     padding: 1rem;
-    background-color: rgba(10, 34, 53, 0.75);
+    background-color: rgb(var(--navy) / 0.75);
     backdrop-filter: blur(10px); /* El efecto de vidrio borroso */
     display: flex;
     justify-content: center;
     font-weight: bold;
     font-size: min(clamp(1rem, 4vw, 1.2rem), clamp(1rem, 4vh, 1.2rem));
-    color: white;
+    color: rgb(var(--ink));
     min-width: fit-content;
     text-align: right;
     border-radius: 20px 0 0 20px;
@@ -776,9 +912,9 @@ td {
 }
 
 .input-presidente {
-    background-color: rgba(10, 34, 53, 0.75);
+    background-color: rgb(var(--navy) / 0.75);
     backdrop-filter: blur(10px); /* El efecto de vidrio borroso */
-    color: white;
+    color: rgb(var(--ink));
     height: min(clamp(50px, 8vw, 70px), clamp(50px, 8vh, 70px));
     border-radius: 0 20px 20px 0;
     padding: 0 1rem;
@@ -804,6 +940,7 @@ td {
     cursor: pointer;
     font-size: 1.1rem;
     font-weight: bold;
+    margin-bottom: 2rem;
 }
 
 .rendirse-button:hover{
@@ -861,7 +998,7 @@ td {
 .temporizador {
     font-size: min(clamp(1rem, 4vw, 1.5rem), clamp(1rem, 4vh, 1.5rem));
     font-weight: bold;
-    color: rgb(10, 34, 53);
+    color: rgb(var(--navy));
     text-align: center;
 }
 
@@ -871,14 +1008,14 @@ td {
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(10, 34, 53, 0.7); /* mismo tono que tu tabla */
+  background: rgb(var(--navy) / 0.7); /* mismo tono que tu tabla */
   border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, rgb(127, 190, 241), rgb(10, 34, 53));
+  background: linear-gradient(180deg, rgb(var(--blue)), rgb(var(--navy)));
   border-radius: 10px;
-  border: 2px solid rgba(10, 34, 53, 0.7);
+  border: 2px solid rgb(var(--navy) / 0.7);
 }
 
 ::-webkit-scrollbar-thumb:hover {
@@ -902,13 +1039,15 @@ td {
 /* ACERCA HTML */
 
 .acerca-body {
-    background-image: url("images/background-oligarca-sin-personas-sin-banderas.png");
-    background-color: #a3a086;
-    background-blend-mode: multiply;
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-attachment: fixed;
+    background-image:
+        url("images/sol-watermark.svg"),
+        radial-gradient(ellipse 70% 45% at 50% 0%, rgb(var(--blue-strong) / 0.14), transparent 65%),
+        linear-gradient(165deg, rgb(var(--bg-top)) 0%, rgb(var(--bg-mid)) 45%, rgb(var(--bg-bottom)) 100%);
+    background-color: rgb(var(--bg-mid));
+    background-size: min(820px, 85vw) auto, cover, cover;
+    background-position: center 6%, center, center;
+    background-repeat: no-repeat, no-repeat, no-repeat;
+    background-attachment: fixed, fixed, fixed;
     min-height: 100vh; /* Cambiá de height a min-height */
     display: flex; /* Agregá flexbox */
     flex-direction: column; /* Dirección vertical */
@@ -916,12 +1055,12 @@ td {
 }
 
 .acerca-body main {
-    background-color: rgba(10, 34, 53, 0.75);
+    background-color: rgb(var(--navy) / 0.75);
     backdrop-filter: blur(25px);
     max-width: 700px;
     margin: 0 auto;
     border-radius: 10px;
-    border: 2px solid rgb(127, 190, 241);
+    border: 2px solid rgb(var(--blue));
     display: flex;
     flex-direction: column;
     gap: 1rem;
@@ -932,7 +1071,7 @@ td {
 
 .acerca-body h2 {
     display: flex;
-    background-color: rgba(0,0,0,0.75);
+    background-color: rgb(var(--glass) / 0.75);
     backdrop-filter: blur(50px); /* El efecto de vidrio borroso */
     -webkit-backdrop-filter: blur(10px);
     justify-content: center;
@@ -947,19 +1086,22 @@ td {
     font-size: 1.1rem;
     line-height: 1.6;
     font-weight: 500;
-    color: white;
+    color: rgb(var(--ink));
+    overflow-wrap: break-word;
 }
 
 /* CONTACTO HTML */
 
 .contacto-body {
-    background-image: url("images/background-oligarca-sin-personas-sin-banderas.png");
-    background-color: #a3a086;
-    background-blend-mode: multiply;
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-attachment: fixed;
+    background-image:
+        url("images/sol-watermark.svg"),
+        radial-gradient(ellipse 70% 45% at 50% 0%, rgb(var(--blue-strong) / 0.14), transparent 65%),
+        linear-gradient(165deg, rgb(var(--bg-top)) 0%, rgb(var(--bg-mid)) 45%, rgb(var(--bg-bottom)) 100%);
+    background-color: rgb(var(--bg-mid));
+    background-size: min(820px, 85vw) auto, cover, cover;
+    background-position: center 6%, center, center;
+    background-repeat: no-repeat, no-repeat, no-repeat;
+    background-attachment: fixed, fixed, fixed;
     min-height: 100vh; /* Cambiá de height a min-height */
     display: flex; /* Agregá flexbox */
     flex-direction: column; /* Dirección vertical */
@@ -967,12 +1109,12 @@ td {
 }
 
 .contacto-body main {
-    background-color: rgba(10, 34, 53, 0.75);
+    background-color: rgb(var(--navy) / 0.75);
     backdrop-filter: blur(25px);
     max-width: 700px;
     margin: 0 auto;
     border-radius: 10px;
-    border: 2px solid rgb(127, 190, 241);
+    border: 2px solid rgb(var(--blue));
     display: flex;
     flex-direction: column;
     gap: 1rem;
@@ -983,7 +1125,7 @@ td {
 
 .contacto-body h2 {
     display: flex;
-    background-color: rgba(0,0,0,0.75);
+    background-color: rgb(var(--glass) / 0.75);
     backdrop-filter: blur(50px); /* El efecto de vidrio borroso */
     -webkit-backdrop-filter: blur(10px);
     justify-content: center;
@@ -996,7 +1138,8 @@ td {
     font-size: 1.1rem;
     line-height: 1.6;
     font-weight: 500;
-    color: white;
+    color: rgb(var(--ink));
+    overflow-wrap: break-word;
 }
 
 .contacto-list {
@@ -1009,7 +1152,7 @@ td {
     font-size: 1.1rem;
     line-height: 1.6;
     font-weight: 500;
-    color: white;
+    color: rgb(var(--ink));
     word-wrap: break-word;
     overflow-wrap: break-word;
 }
@@ -1064,13 +1207,15 @@ td {
 /* PRIVACIDAD HTML */
 
 .privacidad-body {
-    background-image: url("images/background-oligarca-sin-personas-sin-banderas.png");
-    background-color: #a3a086;
-    background-blend-mode: multiply;
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-attachment: fixed;
+    background-image:
+        url("images/sol-watermark.svg"),
+        radial-gradient(ellipse 70% 45% at 50% 0%, rgb(var(--blue-strong) / 0.14), transparent 65%),
+        linear-gradient(165deg, rgb(var(--bg-top)) 0%, rgb(var(--bg-mid)) 45%, rgb(var(--bg-bottom)) 100%);
+    background-color: rgb(var(--bg-mid));
+    background-size: min(820px, 85vw) auto, cover, cover;
+    background-position: center 6%, center, center;
+    background-repeat: no-repeat, no-repeat, no-repeat;
+    background-attachment: fixed, fixed, fixed;
     min-height: 100vh; /* Cambiá de height a min-height */
     display: flex; /* Agregá flexbox */
     flex-direction: column; /* Dirección vertical */
@@ -1078,12 +1223,12 @@ td {
 }
 
 .privacidad-body main {
-    background-color: rgba(10, 34, 53, 0.75);
+    background-color: rgb(var(--navy) / 0.75);
     backdrop-filter: blur(25px);
     max-width: 700px;
     margin: 0 auto;
     border-radius: 10px;
-    border: 2px solid rgb(127, 190, 241);
+    border: 2px solid rgb(var(--blue));
     display: flex;
     flex-direction: column;
     gap: 1rem;
@@ -1094,7 +1239,7 @@ td {
 
 .privacidad-body h2 {
     display: flex;
-    background-color: rgba(0,0,0,0.75);
+    background-color: rgb(var(--glass) / 0.75);
     backdrop-filter: blur(50px); /* El efecto de vidrio borroso */
     -webkit-backdrop-filter: blur(10px);
     justify-content: center;
@@ -1108,51 +1253,44 @@ td {
     font-size: 1.1rem;
     line-height: 1.6;
     font-weight: 500;
-    color: white;
+    color: rgb(var(--ink));
+    overflow-wrap: break-word;
 }
 
 .privacidad-body h3 {
     font-size: 1.2rem;
     margin-top: 1rem;
     margin-bottom: 0.5rem;
-    color: rgb(127, 190, 241);
+    color: rgb(var(--blue));
 }
 
 .privacidad-body main a {
-    color: rgb(127, 190, 241);
+    color: rgb(var(--blue));
     text-decoration: underline;
 }
 
-/* PRESIDENCIAS HTML */
+/* LINEA DE TIEMPO (también usada en presidencias.html, "Ver Presidencias") */
 
-.presidencias-body {
-    background-image: url("images/background-oligarca-sin-personas-sin-banderas.png");
-    background-color: #c0bda1;
-    background-blend-mode: multiply;
-    background-size: cover;       /* Ajusta la imagen para cubrir toda la pantalla */
-    background-position: center;  /* Centra la imagen */
-    background-repeat: no-repeat; /* Evita que se repita */
-    background-attachment: fixed; /* Fija la imagen para efecto "parallax" */
+.linea-tiempo-body {
+    background-image:
+        url("images/sol-watermark.svg"),
+        radial-gradient(ellipse 70% 45% at 50% 0%, rgb(var(--blue-strong) / 0.14), transparent 65%),
+        linear-gradient(165deg, rgb(var(--bg-top)) 0%, rgb(var(--bg-mid)) 45%, rgb(var(--bg-bottom)) 100%);
+    background-color: rgb(var(--bg-mid));
+    background-size: min(820px, 85vw) auto, cover, cover;
+    background-position: center 6%, center, center;
+    background-repeat: no-repeat, no-repeat, no-repeat;
+    background-attachment: fixed, fixed, fixed;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
     align-items: center;
 }
 
-.presidencias-body main {
-    background-color: rgba(10, 34, 53, 0.75);
-    backdrop-filter: blur(25px);
-    max-width: 700px;
-    margin: 0 auto;
-    border-radius: 10px;
-    border: 2px solid rgb(127, 190, 241);
-    margin: 1rem;
-}
-
-.presidencias-body h2 {
+.linea-tiempo-heading {
     display: flex;
-    background-color: rgba(0,0,0,0.75);
-    backdrop-filter: blur(50px); /* El efecto de vidrio borroso */
+    background-color: rgb(var(--glass) / 0.75);
+    backdrop-filter: blur(50px);
     -webkit-backdrop-filter: blur(10px);
     justify-content: center;
     align-items: center;
@@ -1161,93 +1299,223 @@ td {
     width: 100%;
 }
 
-.ver-presidencias-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    height: 80vh;
-}
-
-.presidencias-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    overflow-x: auto; /* permite scroll si algo se pasa */
-}
-
-.scroll-container {
-    display: flex;
-    align-items: center;
-    font-size: 1.5rem;
-    font-family: Arial, Helvetica, sans-serif;
-    border-top: 2px solid rgb(127, 190, 241);
-}
-
-.presidencia-card {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 1rem;
-    width: 75%;
-    border-bottom: 2px solid rgb(127, 190, 241);
-    padding: 4rem 1rem;
-}
-
-.presidencia-imagen {
-    flex-shrink: 0;
-    height: 96px;
-    width: 96px;
-    border-radius: 50%;
-    border: 2px solid rgb(127, 190, 241);
-    overflow: hidden;
-}
-
-.presidencia-nombre {
+.linea-tiempo-subheading {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
     text-align: center;
-}
-
-.presidencia-info {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 60%;
-}
-
-.presidencia-descripcion {
+    color: rgb(var(--ink) / 0.7);
     font-size: 0.9rem;
-    font-weight: 500;
-    line-height: 1.4;
+    padding: 0.75rem 1rem 0;
 }
 
-.presidencia-periodo {
-    margin-top: 0.5rem;
-    font-size: 1.2rem;
-    text-align: center;
+.linea-tiempo-body main {
+    width: 100%;
+    flex: 1;
+    display: flex;
+    justify-content: center;
 }
 
-.presidencia-tipo {
-    text-align: center;
-    font-weight: bold;
-    width: fit-content;
-    padding: 0.25rem 0.5rem;
+.timeline-container {
+    position: relative;
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 2.5rem 1rem 4rem;
 }
 
-.presidencia-tipo.constitucional {
-    background-color: rgba(127, 190, 241);
+.timeline-container::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: linear-gradient(180deg, rgb(var(--gold) / 0.75), rgb(var(--blue) / 0.5));
+    transform: translateX(-50%);
+}
+
+.timeline-item {
+    position: relative;
+    width: 50%;
+    padding: 0 2.5rem 2.5rem;
+    box-sizing: border-box;
+}
+
+.timeline-item:nth-child(odd) {
+    left: 0;
+    text-align: right;
+}
+
+.timeline-item:nth-child(even) {
+    left: 50%;
+    text-align: left;
+}
+
+.timeline-dot {
+    position: absolute;
+    top: 0.4rem;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: rgb(var(--gold));
+    border: 3px solid rgb(var(--bg-mid));
+    box-shadow: 0 0 0 3px rgb(var(--gold) / 0.3);
+    z-index: 2;
+}
+
+.timeline-item:nth-child(odd) .timeline-dot { right: -8.5px; }
+.timeline-item:nth-child(even) .timeline-dot { left: -8.5px; }
+
+.timeline-item.de-facto .timeline-dot {
+    background: rgb(218, 17, 17);
+    box-shadow: 0 0 0 3px rgba(218, 17, 17, 0.3);
+}
+
+.timeline-year {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    color: rgb(var(--gold-soft));
+    margin-bottom: 0.35rem;
+}
+
+.timeline-card {
+    display: inline-flex;
+    flex-direction: column;
+    background-color: rgb(var(--navy) / 0.85);
+    backdrop-filter: blur(10px);
+    border: 2px solid rgb(var(--blue));
+    border-radius: 14px;
+    padding: 0.6rem;
+    max-width: 340px;
+    text-align: left;
+    box-shadow: 0 10px 25px -12px rgba(0, 0, 0, 0.6);
+    cursor: pointer;
+    transition: border-color 0.25s ease, box-shadow 0.25s ease;
+    font: inherit;
+    color: inherit;
+}
+
+.timeline-card:hover,
+.timeline-card:focus-visible,
+.timeline-card.expandido {
+    border-color: rgb(var(--gold));
+    box-shadow: 0 14px 32px -14px rgba(0, 0, 0, 0.7), 0 0 24px -8px rgb(var(--gold) / 0.35);
+}
+
+.timeline-card:focus-visible {
+    outline: 2px solid rgb(var(--gold-soft));
+    outline-offset: 2px;
+}
+
+.timeline-card-main {
+    display: flex;
+    gap: 0.8rem;
+    align-items: center;
+}
+
+.timeline-item:nth-child(odd) .timeline-card-main {
+    flex-direction: row-reverse;
+    text-align: right;
+}
+
+.timeline-descripcion {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    font-size: 0.8rem;
+    line-height: 1.5;
+    color: rgb(var(--ink) / 0.85);
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    margin-top: 0;
+    transition: max-height 0.35s ease, opacity 0.25s ease, margin-top 0.35s ease;
+}
+
+.timeline-card:hover .timeline-descripcion,
+.timeline-card:focus-visible .timeline-descripcion,
+.timeline-card.expandido .timeline-descripcion {
+    max-height: 400px;
+    opacity: 1;
+    margin-top: 0.6rem;
+}
+
+.timeline-imagen {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
+    border: 2px solid rgb(var(--gold) / 0.6);
+}
+
+.timeline-nombre {
+    font-size: 0.95rem;
+    margin-bottom: 0.15rem;
+}
+
+.timeline-periodo {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    font-size: 0.75rem;
+    color: rgb(var(--ink) / 0.7);
+}
+
+.timeline-tipo {
+    display: inline-block;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 0.15rem 0.45rem;
+    border-radius: 6px;
+    margin-top: 0.3rem;
+}
+
+.timeline-tipo.constitucional {
+    background-color: rgb(var(--blue));
     color: rgb(10, 34, 53);
-    border-radius: 10px;
 }
 
-.presidencia-tipo.de-facto {
+.timeline-tipo.de-facto {
     background-color: rgba(218, 17, 17);
-    color: rgb(10, 34, 53);
-    border-radius: 10px;
+    color: rgb(var(--navy));
+}
+
+@media (max-width: 768px) {
+    .timeline-container::before {
+        left: 20px;
+    }
+
+    .timeline-item,
+    .timeline-item:nth-child(odd),
+    .timeline-item:nth-child(even) {
+        width: 100%;
+        left: 0;
+        padding-left: 3rem;
+        padding-right: 0.5rem;
+        text-align: left;
+    }
+
+    .timeline-item:nth-child(even) .timeline-dot,
+    .timeline-item:nth-child(odd) .timeline-dot {
+        left: 12px;
+        right: auto;
+    }
+
+    .timeline-card {
+        text-align: left;
+        max-width: 100%;
+    }
+
+    .timeline-card-main,
+    .timeline-item:nth-child(odd) .timeline-card-main {
+        flex-direction: row;
+        text-align: left;
+    }
 }
 
 footer {
     display: flex;
     min-height: fit-content;
-    background-color: rgba(0,0,0,0.75);
+    background-color: rgb(var(--glass) / 0.75);
     backdrop-filter: blur(10px); /* El efecto de vidrio borroso */
     justify-content: center;
     align-items: center;
@@ -1256,16 +1524,59 @@ footer {
     font-size: 1rem;
 }
 
+.footer-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+    text-align: center;
+    padding: 0 1rem;
+}
+
+.footer-nav {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+}
+
+.footer-nav a {
+    color: rgb(var(--ink) / 0.55);
+    text-decoration: none;
+    padding: 0.15rem 0.2rem;
+    transition: color 0.2s ease;
+}
+
+.footer-nav a:hover {
+    color: rgb(var(--blue));
+    text-decoration: underline;
+}
+
+.footer-nav a.pagina-actual {
+    color: rgb(var(--ink) / 0.85);
+    border: none;
+    background: none;
+    text-decoration: underline;
+    font-weight: 700;
+}
+
+.footer-nav span {
+    color: rgb(var(--ink) / 0.3);
+    font-size: 0.7rem;
+}
+
 /* Dialog de fin de juego */
 #finJuegoDialog {
-    background-color: rgba(10, 34, 53, 0.75);
+    background-color: rgb(var(--navy) / 0.75);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
-    border: 3px rgb(127, 190, 241) solid;
+    border: 3px rgb(var(--blue)) solid;
     border-radius: 12px;
     padding: 30px;
-    max-width: 450px;
-    color: #fff;
+    max-width: min(450px, calc(100vw - 2rem));
+    width: 100%;
+    box-sizing: border-box;
+    color: rgb(var(--ink));
     box-shadow: 0 4px 20px rgba(0,0,0,0.4);
     text-align: center;
     position: fixed;
@@ -1287,15 +1598,15 @@ footer {
 #tituloFinJuego {
     font-size: 1.8rem;
     margin-bottom: 1.5rem;
-    color: #fff;
+    color: rgb(var(--ink));
 }
 
 .resultado-container {
     margin: 2rem 0;
     padding: 1.5rem;
-    background-color: rgba(127, 190, 241, 0.1);
+    background-color: rgb(var(--blue) / 0.1);
     border-radius: 10px;
-    border: 1px solid rgb(127, 190, 241);
+    border: 1px solid rgb(var(--blue));
 }
 
 #mensajeResultado {
@@ -1306,14 +1617,30 @@ footer {
 
 #aciertosFinales, #totalPresidentes {
     font-weight: bold;
-    color: rgb(127, 190, 241);
+    color: rgb(var(--blue));
     font-size: 1.3rem;
 }
 
 #finJuegoDialog .buttons {
     display: flex;
+    flex-wrap: wrap;
     gap: 1rem;
     margin-top: 1.5rem;
+}
+
+#finJuegoDialog .buttons button {
+    flex: 1 1 auto;
+    min-width: fit-content;
+}
+
+@media (max-width: 480px) {
+    #finJuegoDialog {
+        padding: 20px;
+    }
+
+    #finJuegoDialog .buttons {
+        flex-direction: column;
+    }
 }
 
 #porcentajeContainer {
@@ -1323,8 +1650,8 @@ footer {
 #porcentaje {
     font-size: 2rem;
     font-weight: bold;
-    color: rgb(127, 190, 241);
-    text-shadow: 0 0 10px rgba(127, 190, 241, 0.5);
+    color: rgb(var(--blue));
+    text-shadow: 0 0 10px rgb(var(--blue) / 0.5);
 }
 
 .jugar-otra-vez {
