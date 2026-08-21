@@ -163,15 +163,17 @@ const listaPresidentes = [
                 <div class="tabla-container tabla-container-compacta">
                     <div class="tabla-wrapper" style="position:relative;">
                         ${tabla}
-                        <div class="hud-top">
-                            ${restartIconSvg}
-                            <div id="contador-presidentes" class="contador">0/${presidentesFiltrados.length}</div>
-                            <div id="temporizador" class="temporizador">${tiempoInicial}</div>
-                            ${pauseIconSvg}
-                        </div>
-                        <div class="hud-bottom">
-                            <input class="input-presidente" type="text" id="input-presidente" placeholder="Apellido...">
-                            <button class="rendirse-button rendirse-button-compacta" type="button" aria-label="Rendirse"><svg class="rendirse-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>Rendirse</title><path d="M14.4,6L14,4H5V21H7V14H12.6L13,16H20V6H14.4Z" /></svg></button>
+                        <div class="hud-bottom-group">
+                            <div class="hud-timer">
+                                ${restartIconSvg}
+                                <div id="contador-presidentes" class="contador">0/${presidentesFiltrados.length}</div>
+                                <div id="temporizador" class="temporizador">${tiempoInicial}</div>
+                                ${pauseIconSvg}
+                            </div>
+                            <div class="hud-bottom">
+                                <input class="input-presidente" type="text" id="input-presidente" placeholder="Apellido...">
+                                <button class="rendirse-button rendirse-button-compacta" type="button" aria-label="Rendirse"><svg class="rendirse-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>Rendirse</title><path d="M14.4,6L14,4H5V21H7V14H12.6L13,16H20V6H14.4Z" /></svg></button>
+                            </div>
                         </div>
                     </div>
                 </div>

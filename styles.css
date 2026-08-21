@@ -102,11 +102,13 @@ h1 a {
     font-size: min(clamp(1rem, 3.2vw, 1.7rem), clamp(1rem, 3.2vh, 1.7rem));
     font-weight: 600;
     color: rgb(var(--ink) / 0.7);
+    text-align: center;
 }
 
 .titulo-linea2 {
     font-size: min(clamp(1.9rem, 6.4vw, 3.6rem), clamp(1.9rem, 6.4vh, 3.6rem));
     font-weight: 800;
+    text-align: center;
     background: linear-gradient(180deg, rgb(var(--ink)) 0%, rgb(var(--gold-soft)) 130%);
     -webkit-background-clip: text;
     background-clip: text;
@@ -744,53 +746,65 @@ table {
     transition: opacity 0.3s;
 }
 
-/* --- HUD flotante del juego en mobile: en vez de filas propias para el
-   reloj/contador y el input/rendirse, quedan como píldoras semitransparentes
-   superpuestas al borde superior/inferior del cuadro (mitad afuera, mitad
-   adentro), así la tabla en sí ocupa casi toda la pantalla disponible. --- */
+/* --- HUD flotante del juego en mobile: el reloj y el input+rendirse quedan
+   apilados como un solo grupo semitransparente cerca del borde inferior del
+   cuadro (el reloj arriba, mitad sobre la tabla y mitad tapando el input),
+   así nunca se pierde de vista y la tabla en sí ocupa casi toda la pantalla
+   disponible arriba. --- */
 @media (max-width: 768px) {
     .tabla-container-compacta .tabla-wrapper {
         margin-top: 1.2rem;
-        margin-bottom: 1.2rem;
+        margin-bottom: 2.8rem;
     }
 
-    .hud-top,
-    .hud-bottom {
+    .hud-bottom-group {
         position: absolute;
         left: 50%;
+        bottom: -1.15rem;
         transform: translateX(-50%);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: calc(100% - 1.5rem);
+        z-index: 6;
+    }
+
+    .hud-timer,
+    .hud-bottom {
         display: flex;
         align-items: center;
         gap: 0.5rem;
-        z-index: 6;
         border-radius: 999px;
         box-shadow: 0 10px 24px -10px rgba(0, 0, 0, 0.65);
     }
 
-    .hud-top {
-        top: -1.25rem;
-        background-color: rgb(var(--navy) / 0.55);
+    .hud-timer {
+        position: relative;
+        z-index: 2;
+        justify-content: center;
+        background-color: rgb(var(--navy) / 0.6);
         backdrop-filter: blur(8px);
         -webkit-backdrop-filter: blur(8px);
-        border: 1px solid rgb(var(--gold) / 0.45);
+        border: 1px solid rgb(var(--gold) / 0.5);
         padding: 0.4rem 0.85rem;
         gap: 0.6rem;
+        margin-bottom: -16px; /* mitad tapando el input de abajo */
     }
 
-    .hud-top .restart-icon,
-    .hud-top .pause-icon {
+    .hud-timer .restart-icon,
+    .hud-timer .pause-icon {
         height: 21px;
         width: 21px;
         flex-shrink: 0;
         fill: rgb(var(--ink));
     }
 
-    .hud-top .temporizador {
+    .hud-timer .temporizador {
         font-size: 0.95rem;
         color: rgb(var(--ink));
     }
 
-    .hud-top #contador-presidentes {
+    .hud-timer #contador-presidentes {
         background: none !important;
         border: none !important;
         box-shadow: none !important;
@@ -803,9 +817,10 @@ table {
     }
 
     .hud-bottom {
-        bottom: -1.15rem;
-        width: calc(100% - 1.5rem);
-        background-color: rgb(var(--navy) / 0.85);
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        background-color: rgb(var(--navy) / 0.9);
         backdrop-filter: blur(10px);
         -webkit-backdrop-filter: blur(10px);
         border: 1px solid rgb(var(--blue) / 0.6);
