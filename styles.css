@@ -1456,7 +1456,6 @@ td {
     color: inherit;
 }
 
-.timeline-card:hover,
 .timeline-card:focus-visible,
 .timeline-card.expandido {
     border-color: rgb(var(--gold));
@@ -1466,6 +1465,16 @@ td {
 .timeline-card:focus-visible {
     outline: 2px solid rgb(var(--gold-soft));
     outline-offset: 2px;
+}
+
+/* El hover solo se activa con mouse real: en touch, ":hover" queda
+   "pegado" después de tocar y no dejaba volver a cerrar la tarjeta con
+   un segundo toque. En touch manda únicamente la clase "expandido". */
+@media (hover: hover) and (pointer: fine) {
+    .timeline-card:hover {
+        border-color: rgb(var(--gold));
+        box-shadow: 0 14px 32px -14px rgba(0, 0, 0, 0.7), 0 0 24px -8px rgb(var(--gold) / 0.35);
+    }
 }
 
 .timeline-card-main {
@@ -1491,12 +1500,19 @@ td {
     transition: max-height 0.35s ease, opacity 0.25s ease, margin-top 0.35s ease;
 }
 
-.timeline-card:hover .timeline-descripcion,
 .timeline-card:focus-visible .timeline-descripcion,
 .timeline-card.expandido .timeline-descripcion {
     max-height: 400px;
     opacity: 1;
     margin-top: 0.6rem;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .timeline-card:hover .timeline-descripcion {
+        max-height: 400px;
+        opacity: 1;
+        margin-top: 0.6rem;
+    }
 }
 
 .timeline-imagen {
