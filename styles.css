@@ -1048,6 +1048,81 @@ td {
     padding: 0.25em 0;
 }
 
+/* --- Notebooks anchas pero bajas (ej. 1280x720, 1366x768): varios
+   tamaños de texto/padding de las reglas y de las cards del juego solo
+   se achicaban con el ANCHO, no con el ALTO, así que en pantallas cortas
+   pero no angostas (no entran en el breakpoint mobile) todo se veía
+   desproporcionadamente grande respecto a un monitor 1920x1080. --- */
+@media (max-height: 820px) and (min-width: 769px) {
+    .rules-section {
+        gap: 0.6rem;
+        padding: 0.8rem;
+    }
+
+    .rules-icons {
+        width: 36px;
+        height: 36px;
+    }
+
+    .rule-text-container h3 {
+        font-size: 1rem;
+        margin-bottom: 0.2rem;
+    }
+
+    .rules-section p {
+        font-size: 0.8rem;
+    }
+
+    .rule-text-container {
+        width: min(90%, 170px);
+    }
+
+    .modos-scroll-container .scroll-icon {
+        height: 32px;
+    }
+
+    .modos-de-juego-heading {
+        font-size: 1.1rem;
+    }
+
+    .modo-de-juego-seleccionado-heading {
+        font-size: 0.95rem;
+        padding: 0.35rem;
+    }
+
+    /* Cards del juego más compactas para que entren más filas */
+    tbody {
+        gap: 0.8rem;
+        padding: 0.6rem 0.6rem 0 0.6rem;
+    }
+
+    .imagen-presidente-desconocido-container {
+        width: 36px;
+        height: 36px;
+    }
+
+    .nombre-presidente-cell {
+        padding: 0.3em;
+        min-height: 22px;
+        gap: 0.5em;
+    }
+
+    .nombre-presidente-texto {
+        min-height: 22px;
+        font-size: 0.9rem;
+        margin-bottom: 0.15em;
+    }
+
+    .periodo-presidente-cell {
+        padding: 0.15em 0;
+        font-size: 0.8rem;
+    }
+
+    th, td {
+        padding: 0.25rem;
+    }
+}
+
 .input-container {
     display: flex;
     flex-direction: column;
