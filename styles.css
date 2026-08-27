@@ -1382,7 +1382,7 @@ td {
     margin: 1rem;
 }
 
-.acerca-body h2 {
+.acerca-body h1 {
     display: flex;
     background-color: rgb(var(--glass) / 0.75);
     backdrop-filter: blur(50px); /* El efecto de vidrio borroso */
@@ -1436,7 +1436,7 @@ td {
     margin: 1rem;
 }
 
-.contacto-body h2 {
+.contacto-body h1 {
     display: flex;
     background-color: rgb(var(--glass) / 0.75);
     backdrop-filter: blur(50px); /* El efecto de vidrio borroso */
@@ -1495,9 +1495,9 @@ td {
         font-size: 1rem;
     }
 
-    .contacto-body h2,
-    .acerca-body h2,
-    .privacidad-body h2 {
+    .contacto-body h1,
+    .acerca-body h1,
+    .privacidad-body h1 {
         font-size: 1.3rem;
     }
 
@@ -1550,7 +1550,7 @@ td {
     margin: 1rem;
 }
 
-.privacidad-body h2 {
+.privacidad-body h1 {
     display: flex;
     background-color: rgb(var(--glass) / 0.75);
     backdrop-filter: blur(50px); /* El efecto de vidrio borroso */
