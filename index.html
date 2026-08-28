@@ -75,7 +75,20 @@
         </div>
 
         <div class="rules-section">
-            <h4 class="modo-de-juego-seleccionado-heading" >MODO DE JUEGO SELECCIONADO: <span class="modo-de-juego-seleccionado">CLÁSICO</span></h4>
+            <div class="modo-de-juego-seleccionado-heading">
+                <span class="modo-de-juego-seleccionado-label">MODO DE JUEGO SELECCIONADO:</span>
+                <div class="modo-selector">
+                    <button type="button" class="modo-selector-trigger" aria-haspopup="listbox" aria-expanded="false">
+                        <span class="modo-selector-actual">CLÁSICO</span>
+                        <span class="modo-selector-caret" aria-hidden="true">▾</span>
+                    </button>
+                    <ul class="modo-selector-menu" role="listbox" hidden>
+                        <li role="option"><button type="button" class="modo-selector-opcion" data-modo="clasico">Clásico</button></li>
+                        <li role="option"><button type="button" class="modo-selector-opcion" data-modo="imagen">Adivina la imagen</button></li>
+                        <li role="option"><button type="button" class="modo-selector-opcion" data-modo="periodo" disabled>Adivina el período (Próximamente)</button></li>
+                    </ul>
+                </div>
+            </div>
             <div class="rules-container">
                 <div class="rule-container">
                     <svg class="rules-icons" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>pencil</title><path d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z" /></svg>
@@ -103,9 +116,9 @@
 
     <div id="modos-de-juego-section" class="modos-de-juego-section">
         <div class="modos-de-juego-buttons-container">
-            <button class="modo-de-juego-button modo-de-juego-imagen-button">Adivina la imagen (Próximamente)</button>
-            <button class="modo-de-juego-button modo-de-juego-clasico-button">Clásico</button>
-            <button class="modo-de-juego-button modo-de-juego-periodo-button">Adivina el período (Próximamente)</button>
+            <button class="modo-de-juego-button modo-de-juego-clasico-button seleccionado" data-modo="clasico">Clásico</button>
+            <button class="modo-de-juego-button modo-de-juego-imagen-button" data-modo="imagen">Adivina la imagen</button>
+            <button class="modo-de-juego-button modo-de-juego-periodo-button" data-modo="periodo" disabled>Adivina el período (Próximamente)</button>
         </div>
     </div>
 
@@ -121,7 +134,17 @@
             </div>
             <p>Seleccionado: <span id="valorRango"></span></p>
         </div>
-        
+
+        <div class="configuracion-cantidad-container">
+            <label for="sliderCantidad">Cantidad de presidentes a adivinar:</label>
+            <div class="slider-container">
+                <span class="min">5</span>
+                <input type="range" id="sliderCantidad" min="5" max="52" step="1" value="10">
+                <span class="max">52</span>
+            </div>
+            <p>Seleccionado: <span id="valorCantidad"></span></p>
+        </div>
+
         <div class="filtros-container">
             <h4 class="filtrar-gobiernos-heading">FILTRAR GOBIERNOS</h4>
             <label class="checkbox-label"><input class="checkbox-input" type="checkbox"> Eliminar regímenes de facto</label>

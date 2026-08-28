@@ -13,23 +13,62 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Estado de configuración por defecto ---
     let configuracionJuego = {
-        tiempo: 10, // minutos
+        tiempo: 10, // minutos (solo modo clásico)
         eliminarDeFacto: false,
-        eliminarMenosDeUnAnio: false
+        eliminarMenosDeUnAnio: false,
+        cantidad: 10 // presidentes por partida (solo modo "Adivina la imagen")
     };
 
     let configuracionTemporal = {}; // Para snapshot temporal al abrir modal
 
+    // Modo elegido en la pantalla de inicio y modo que se está jugando.
+    let modoSeleccionado = 'clasico'; // 'clasico' | 'imagen'
+    let modoActual = 'clasico';
+
+    // Metadatos de cada modo para la pantalla de inicio (badge + tarjetas de reglas)
+    const iconoRegla = {
+        pencil: `<svg class="rules-icons" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>pencil</title><path d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z" /></svg>`,
+        reloj: `<svg class="rules-icons" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>clock-time-eight</title><path d="M12 2C6.5 2 2 6.5 2 12C2 17.5 6.5 22 12 22C17.5 22 22 17.5 22 12S17.5 2 12 2M7.7 15.5L7 14.2L11 11.9V7H12.5V12.8L7.7 15.5Z" /></svg>`,
+        foto: `<svg class="rules-icons" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>camera</title><path d="M4,4H7L9,2H15L17,4H20A2,2 0 0,1 22,6V18A2,2 0 0,1 20,20H4A2,2 0 0,1 2,18V6A2,2 0 0,1 4,4M12,7A5,5 0 0,0 7,12A5,5 0 0,0 12,17A5,5 0 0,0 17,12A5,5 0 0,0 12,7M12,9A3,3 0 0,1 15,12A3,3 0 0,1 12,15A3,3 0 0,1 9,12A3,3 0 0,1 12,9Z" /></svg>`,
+        teclado: `<svg class="rules-icons" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>keyboard</title><path d="M19,10H17V8H19M19,13H17V11H19M16,10H14V8H16M16,13H14V11H16M16,17H8V15H16M7,10H5V8H7M7,13H5V11H7M8,11H10V13H8M8,8H10V10H8M11,11H13V13H11M11,8H13V10H11M20,5H4C2.89,5 2,5.89 2,7V17A2,2 0 0,0 4,19H20A2,2 0 0,0 22,17V7C22,5.89 21.1,5 20,5Z" /></svg>`
+    };
+
+    const MODOS = {
+        clasico: {
+            badge: 'CLÁSICO',
+            reglas: [
+                { icono: iconoRegla.pencil, titulo: 'Llena los espacios en blanco', texto: 'Completá con los nombres de cada presidente según el periodo.' },
+                { icono: iconoRegla.reloj, titulo: 'Vencé al reloj', texto: 'Corre a contrarreloj para adivinar a todos los presidentes.' }
+            ]
+        },
+        imagen: {
+            badge: 'ADIVINA LA IMAGEN',
+            reglas: [
+                { icono: iconoRegla.foto, titulo: 'Mirá la foto', texto: 'Reconocé al presidente que aparece en la imagen.' },
+                { icono: iconoRegla.teclado, titulo: 'Escribí el apellido', texto: 'Adiviná, uno por uno, la cantidad de presidentes que elijas al azar.' }
+            ]
+        }
+    };
+
+    const botonesModo = document.querySelectorAll(".modo-de-juego-button");
+
     // --- Elementos del modal ---
     const slider = document.getElementById("sliderTiempo");
     const valorRango = document.getElementById("valorRango");
+    const sliderCantidad = document.getElementById("sliderCantidad");
+    const valorCantidad = document.getElementById("valorCantidad");
+    const contenedorTemporizador = document.querySelector(".configuracion-temporizador-container");
+    const contenedorCantidad = document.querySelector(".configuracion-cantidad-container");
     const botonGuardar = document.querySelector(".guardar");
     const botonCancelar = document.querySelector(".cancelar");
     const checkboxes = document.querySelectorAll('.checkbox-input');
 
-    // Inicializar valor del rango inmediatamente
+    // Inicializar valores de los sliders inmediatamente
     if (valorRango && slider) {
         valorRango.textContent = slider.value + " minutos";
+    }
+    if (valorCantidad && sliderCantidad) {
+        valorCantidad.textContent = sliderCantidad.value + " presidentes";
     }
 
     // --- Íconos ---
@@ -113,6 +152,156 @@ const listaPresidentes = [
             .replace(/[\u0300-\u036f]/g, "")
             .toLowerCase()
             .trim();
+    }
+
+    // --- Opciones de texto que cuentan como acierto para un presidente ---
+    // (mismas reglas para todos los modos de juego)
+    function obtenerOpcionesValidas(presidente) {
+        const apellido = normalizarTexto(presidente.apellido);
+        const primerNombre = normalizarTexto(presidente.nombre);
+        const segundosNombres = (presidente.segundoNombre || "")
+            .split(" ")
+            .map(n => normalizarTexto(n))
+            .filter(Boolean);
+
+        const nombreCompleto = normalizarTexto(
+            [presidente.nombre, presidente.segundoNombre, presidente.apellido].filter(Boolean).join(" ")
+        );
+
+        const opcionesValidas = new Set();
+        opcionesValidas.add(apellido);
+        opcionesValidas.add(`${primerNombre} ${apellido}`);
+        segundosNombres.forEach(seg => opcionesValidas.add(`${seg} ${apellido}`));
+        opcionesValidas.add(nombreCompleto);
+        return opcionesValidas;
+    }
+
+    // Nombre completo para mostrar cuando se adivina / se revela un presidente
+    function nombreCompletoPresidente(presidente) {
+        return [presidente.nombre, presidente.segundoNombre, presidente.apellido]
+            .filter(Boolean).join(" ");
+    }
+
+    // ==========================================================================
+    //  PRESIDENTES ÚNICOS + BOMBOS DE FAMA (para el modo "Adivina la imagen")
+    // ==========================================================================
+    //  En el modo imagen cada persona aparece UNA sola vez aunque haya tenido
+    //  varios mandatos. Cada presidente único guarda TODOS sus períodos (para
+    //  la pista) y todas sus fotos (se elige una al azar por partida).
+
+    function periodoDuroMasDeUnAnio(periodo) {
+        const inicio = periodo.inicio;
+        if (!inicio) return false;
+        const fin = periodo.fin || new Date();
+        const unAnioMs = 365.25 * 24 * 60 * 60 * 1000;
+        return (fin - inicio) >= unAnioMs;
+    }
+
+    // Bombos de fama: B1 = los más conocidos ... B4 = los menos conocidos.
+    // Las claves se comparan (normalizadas) contra apellido / nombre+apellido /
+    // nombre completo, así que alcanza con poner lo mínimo para desambiguar.
+    // Esta clasificación es un punto de partida: se puede ajustar a gusto.
+    const BOMBOS_FAMA = {
+        1: ["Perón", "Alfonsín", "Menem","Néstor Kirchner", "Cristina Fernández", 
+            "Macri", "Milei", "Videla", "Alberto Fernández"],
+        2: ["Rivadavia", "Pellegrini", "Roque Sáenz Peña", "de Alvear","Frondizi", "Illia", 
+            "Onganía", "Cámpora", "María Estela Martínez", "Galtieri", "De La Rúa", "Duhalde",
+            "Sarmiento", "Roca", "Yrigoyen", "Mitre"],
+        3: ["Juárez Celman", "Luis Sáenz Peña", "Quintana", "Figueroa Alcorta", "de la Plaza",
+            "Justo", "Ortiz", "Castillo", "Farrell","Bignone", "Rodríguez Saá", "Avellaneda", 
+            "José Félix Uriburu", "Aramburu","Vicente López"],
+        4: ["José Evaristo Uriburu", "Rawson", "Ramírez", "Levingston",
+            "Lastiri", "Viola", "Lacoste", "Puerta", "Camaño", "Lonardi", "Guido", "Lanusse"]
+    };
+
+    function bomboDePresidente(u) {
+        const apellido = normalizarTexto(u.apellido);
+        const nombreApellido = normalizarTexto(`${u.nombre} ${u.apellido}`);
+        const completo = normalizarTexto(nombreCompletoPresidente(u));
+        for (const bombo of Object.keys(BOMBOS_FAMA)) {
+            for (const clave of BOMBOS_FAMA[bombo]) {
+                const c = normalizarTexto(clave);
+                if (c === apellido || c === nombreApellido || c === completo) {
+                    return Number(bombo);
+                }
+            }
+        }
+        return 2; // si quedara alguno sin clasificar, va al bombo intermedio
+    }
+
+    const presidentesUnicos = (function construirPresidentesUnicos() {
+        const mapa = new Map();
+        listaPresidentes.forEach(p => {
+            const clave = normalizarTexto(nombreCompletoPresidente(p));
+            if (!mapa.has(clave)) {
+                mapa.set(clave, {
+                    nombre: p.nombre,
+                    segundoNombre: p.segundoNombre,
+                    apellido: p.apellido,
+                    deFacto: p.deFacto,
+                    descripcion: p.descripcion,
+                    imagenes: [p.imagen],
+                    periodos: [p.periodo]
+                });
+            } else {
+                const u = mapa.get(clave);
+                u.imagenes.push(p.imagen);
+                u.periodos.push(p.periodo);
+            }
+        });
+        const lista = [...mapa.values()];
+        lista.forEach(u => {
+            u.bombo = bomboDePresidente(u);
+            u.periodos.sort((a, b) => (a.inicio ? a.inicio.getTime() : 0) - (b.inicio ? b.inicio.getTime() : 0));
+        });
+        return lista;
+    })();
+
+    function presidentesUnicosFiltrados() {
+        return presidentesUnicos.filter(u => {
+            if (configuracionJuego.eliminarDeFacto && u.deFacto) return false;
+            if (configuracionJuego.eliminarMenosDeUnAnio && !u.periodos.some(periodoDuroMasDeUnAnio)) return false;
+            return true;
+        });
+    }
+
+    // Texto de la pista: fecha(s) del/los mandato(s) del presidente actual.
+    function textoPistaMandatos(u) {
+        const partes = u.periodos.map(p => p.toString());
+        return partes.length > 1
+            ? `Mandatos: ${partes.join('   ·   ')}`
+            : `Mandato: ${partes[0]}`;
+    }
+
+    // Arma la tanda de presidentes de una partida respetando la proporción de
+    // bombos: para 10 -> 2 del B1, 5 del B2, 2 del B3, 1 del B4. Para cualquier
+    // otra cantidad se extrapola con esos porcentajes (20/50/20/10). Si algún
+    // bombo no tiene suficientes, completa con los que sobran de otros bombos.
+    function elegirPresidentesPorBombo(pool, cantidad) {
+        const porBombo = { 1: [], 2: [], 3: [], 4: [] };
+        pool.forEach(u => porBombo[u.bombo].push(u));
+        [1, 2, 3, 4].forEach(b => { porBombo[b] = mezclarArray(porBombo[b]); });
+
+        const objetivo = {
+            1: Math.round(cantidad * 0.2),
+            3: Math.round(cantidad * 0.2),
+            4: Math.round(cantidad * 0.1)
+        };
+        objetivo[2] = cantidad - objetivo[1] - objetivo[3] - objetivo[4];
+
+        const seleccion = [];
+        [1, 2, 3, 4].forEach(b => {
+            const n = Math.max(0, objetivo[b]);
+            seleccion.push(...porBombo[b].splice(0, n));
+        });
+
+        // Completar si faltó gente en algún bombo (por filtros o pool chico).
+        if (seleccion.length < cantidad) {
+            const resto = mezclarArray([].concat(porBombo[2], porBombo[1], porBombo[3], porBombo[4]));
+            seleccion.push(...resto.slice(0, cantidad - seleccion.length));
+        }
+
+        return mezclarArray(seleccion).slice(0, cantidad);
     }
 
     // --- Filtrar presidentes según configuración ---
@@ -224,24 +413,7 @@ const listaPresidentes = [
         // Buscar todos los índices que coincidan
         let indicesCoincidentes = [];
         window.listaFiltrada.forEach((presidente, index) => {
-            const apellido = normalizarTexto(presidente.apellido);
-            const primerNombre = normalizarTexto(presidente.nombre);
-            const segundosNombres = (presidente.segundoNombre || "")
-                .split(" ")
-                .map(n => normalizarTexto(n))
-                .filter(Boolean);
-
-            const nombreCompleto = normalizarTexto(
-                [presidente.nombre, presidente.segundoNombre, presidente.apellido].filter(Boolean).join(" ")
-            );
-
-            const opcionesValidas = new Set();
-            opcionesValidas.add(apellido);
-            opcionesValidas.add(`${primerNombre} ${apellido}`);
-            segundosNombres.forEach(seg => opcionesValidas.add(`${seg} ${apellido}`));
-            opcionesValidas.add(nombreCompleto);
-
-            if (opcionesValidas.has(textoIngresado)) {
+            if (obtenerOpcionesValidas(presidente).has(textoIngresado)) {
                 indicesCoincidentes.push(index);
             }
         });
@@ -303,21 +475,23 @@ const listaPresidentes = [
 
     // --- Iniciar juego ---
     function iniciarJuego() {
+        modoActual = 'clasico';
         buttonSection.remove();
         rulesSection.remove();
         modosDeJuegoSection.remove();
         h1.remove();
         if (kicker) kicker.remove();
         main.classList.add("juego-activo");
+        // En cualquier modo, jugando: sin footer y sin scroll de página.
+        body.classList.add("juego-activo");
 
         const presidentesFiltrados = filtrarPresidentes();
         const contenidoDelJuego = generarTablaHTML(presidentesFiltrados);
         main.insertAdjacentHTML("beforeend", contenidoDelJuego);
 
-        // El header compacto (hamburguesa + modo + tema en una sola franja,
-        // sin footer) es solo para mobile; en desktop queda todo como estaba.
+        // El header compacto (hamburguesa + modo + tema en una sola franja)
+        // es solo para mobile; en desktop el header queda como estaba.
         if (window.matchMedia('(max-width: 768px)').matches) {
-            body.classList.add("juego-activo");
             const navToggleEl = document.querySelector(".nav-toggle");
             const jugandoModoHeading = document.querySelector(".jugando-modo-heading");
             if (navToggleEl && jugandoModoHeading) {
@@ -367,8 +541,337 @@ const listaPresidentes = [
 
         window.temporizadorInterval = temporizadorInterval;
     }
+    // --- Elegir modo de juego en la pantalla de inicio ---
+    // Elegir un modo NO arranca la partida: solo actualiza el badge
+    // "MODO DE JUEGO SELECCIONADO", las tarjetas de reglas y qué botón
+    // queda resaltado. La partida arranca recién con "Iniciar Juego".
+    function seleccionarModo(modo) {
+        if (!MODOS[modo]) return;
+        modoSeleccionado = modo;
+
+        botonesModo.forEach(boton => {
+            boton.classList.toggle("seleccionado", boton.dataset.modo === modo);
+        });
+
+        // Badge desplegable
+        const actual = document.querySelector(".modo-selector-actual");
+        if (actual) actual.textContent = MODOS[modo].badge;
+        document.querySelectorAll(".modo-selector-opcion").forEach(op => {
+            op.classList.toggle("seleccionado", op.dataset.modo === modo);
+        });
+
+        const contenedorReglas = document.querySelector(".rules-container");
+        if (contenedorReglas) {
+            contenedorReglas.innerHTML = MODOS[modo].reglas.map(regla => `
+                <div class="rule-container">
+                    ${regla.icono}
+                    <div class="rule-text-container">
+                        <h3>${regla.titulo}</h3>
+                        <p>${regla.texto}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+    }
+
+    botonesModo.forEach(boton => {
+        boton.addEventListener("click", () => seleccionarModo(boton.dataset.modo));
+    });
+
+    // --- Badge desplegable "MODO DE JUEGO SELECCIONADO" ---
+    const modoSelectorTrigger = document.querySelector(".modo-selector-trigger");
+    const modoSelectorMenu = document.querySelector(".modo-selector-menu");
+
+    function cerrarModoSelector() {
+        if (!modoSelectorMenu) return;
+        modoSelectorMenu.hidden = true;
+        if (modoSelectorTrigger) modoSelectorTrigger.setAttribute("aria-expanded", "false");
+    }
+
+    if (modoSelectorTrigger && modoSelectorMenu) {
+        modoSelectorTrigger.addEventListener("click", (e) => {
+            e.stopPropagation();
+            const abrir = modoSelectorMenu.hidden;
+            modoSelectorMenu.hidden = !abrir;
+            modoSelectorTrigger.setAttribute("aria-expanded", String(abrir));
+        });
+        document.querySelectorAll(".modo-selector-opcion").forEach(op => {
+            op.addEventListener("click", () => {
+                seleccionarModo(op.dataset.modo);
+                cerrarModoSelector();
+            });
+        });
+        document.addEventListener("click", (e) => {
+            if (!modoSelectorMenu.hidden && !e.target.closest(".modo-selector")) {
+                cerrarModoSelector();
+            }
+        });
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "Escape") cerrarModoSelector();
+        });
+    }
+
+    seleccionarModo(modoSeleccionado);
+
+    function iniciarModoSeleccionado() {
+        if (modoSeleccionado === 'imagen') {
+            iniciarJuegoImagen();
+        } else {
+            iniciarJuego();
+        }
+    }
+
     if (botonIniciar) {
-        botonIniciar.addEventListener("click", iniciarJuego);
+        botonIniciar.addEventListener("click", iniciarModoSeleccionado);
+    }
+
+
+    // ==========================================================================
+    //  MODO "ADIVINA LA IMAGEN"
+    // ==========================================================================
+    //  Aparece una foto de un presidente y el usuario escribe su apellido en el
+    //  input de al lado. Las reglas de cómo se adivina (apellido, nombre +
+    //  apellido, nombre completo, etc.) son las mismas que en el modo clásico:
+    //  reutilizamos obtenerOpcionesValidas() y filtrarPresidentes().
+
+    let juegoImagenOrden = [];   // presidentes barajados para esta partida
+    let juegoImagenIndice = 0;   // presidente que se está mostrando
+    let juegoImagenBloqueado = false; // evita dobles avances durante la animación
+    const JUEGO_IMAGEN_PISTAS_MAX = 2;
+    let juegoImagenPistas = JUEGO_IMAGEN_PISTAS_MAX; // pistas que quedan en la partida
+    let juegoImagenPistaUsada = false;               // ya se pidió pista para el presidente actual
+
+    function mezclarArray(array) {
+        const copia = array.slice();
+        for (let i = copia.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [copia[i], copia[j]] = [copia[j], copia[i]];
+        }
+        return copia;
+    }
+
+    function iniciarJuegoImagen() {
+        modoActual = 'imagen';
+
+        buttonSection.remove();
+        rulesSection.remove();
+        modosDeJuegoSection.remove();
+        h1.remove();
+        if (kicker) kicker.remove();
+        main.classList.add("juego-activo");
+        // En cualquier modo, jugando: sin footer y sin scroll de página.
+        body.classList.add("juego-activo");
+
+        // Cada persona aparece una sola vez (aunque haya tenido varios mandatos).
+        // Se juega una cantidad al azar (configurable, 10 por defecto), eligiendo
+        // por bombos de fama y barajada distinta en cada partida.
+        const pool = presidentesUnicosFiltrados();
+        const cantidad = Math.min(configuracionJuego.cantidad, pool.length);
+        juegoImagenOrden = elegirPresidentesPorBombo(pool, cantidad);
+        // Foto al azar por partida (para los que tienen varias).
+        juegoImagenOrden.forEach(u => {
+            u.imagen = u.imagenes[Math.floor(Math.random() * u.imagenes.length)];
+        });
+        juegoImagenIndice = 0;
+        juegoImagenBloqueado = false;
+        juegoImagenPistas = JUEGO_IMAGEN_PISTAS_MAX;
+        juegoImagenPistaUsada = false;
+
+        // mostrarFinJuego() usa window.listaFiltrada y la variable aciertos
+        window.listaFiltrada = juegoImagenOrden;
+        aciertos = 0;
+
+        const contenido = `
+            <h4 class="jugando-modo-heading">JUGANDO MODO <span class="modo-de-juego-seleccionado">IMAGEN</span></h4>
+            <div class="juego-imagen-container">
+                <div class="juego-imagen-foto-col">
+                    <div class="juego-imagen-card">
+                        <img class="juego-imagen-foto" src="images/presidente-desconocido.png" alt="¿Quién es este presidente?">
+                    </div>
+                    <button class="juego-imagen-pista-btn" type="button"></button>
+                    <p class="juego-imagen-pista" id="ji-pista" hidden></p>
+                </div>
+                <div class="juego-imagen-panel">
+                    <div class="juego-imagen-contador">
+                        <span id="ji-aciertos">0</span> / <span id="ji-total">${juegoImagenOrden.length}</span>
+                    </div>
+                    <label class="juego-imagen-label" for="ji-input">¿Qué presidente es?</label>
+                    <input class="input-presidente juego-imagen-input" type="text" id="ji-input" placeholder="Ingrese el apellido..." autocomplete="off" autocapitalize="off" spellcheck="false">
+                    <div class="juego-imagen-feedback" id="ji-feedback"></div>
+                    <div class="juego-imagen-acciones">
+                        <button class="juego-imagen-saltar" type="button">No sé / Paso</button>
+                        <button class="juego-imagen-rendirse" type="button">Rendirse</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        main.insertAdjacentHTML("beforeend", contenido);
+
+        // En mobile el header se vuelve compacto y el título del modo se
+        // mueve dentro de la franja del header (igual que en el modo clásico).
+        if (window.matchMedia('(max-width: 768px)').matches) {
+            const navToggleEl = document.querySelector(".nav-toggle");
+            const jugandoModoHeading = document.querySelector(".jugando-modo-heading");
+            if (navToggleEl && jugandoModoHeading) {
+                navToggleEl.insertAdjacentElement("afterend", jugandoModoHeading);
+            }
+        }
+
+        const input = document.getElementById("ji-input");
+        if (input) {
+            input.addEventListener("input", verificarRespuestaImagen);
+        }
+        const botonSaltar = document.querySelector(".juego-imagen-saltar");
+        if (botonSaltar) {
+            botonSaltar.addEventListener("click", saltarPresidenteImagen);
+        }
+        const botonRendirseImagen = document.querySelector(".juego-imagen-rendirse");
+        if (botonRendirseImagen) {
+            botonRendirseImagen.addEventListener("click", rendirseJuegoImagen);
+        }
+        const botonPista = document.querySelector(".juego-imagen-pista-btn");
+        if (botonPista) {
+            botonPista.addEventListener("click", pedirPistaImagen);
+        }
+
+        mostrarPresidenteImagen();
+    }
+
+    function actualizarBotonPista() {
+        const botonPista = document.querySelector(".juego-imagen-pista-btn");
+        if (!botonPista) return;
+        botonPista.textContent = `💡 Pedir pista (${juegoImagenPistas})`;
+        botonPista.disabled = juegoImagenPistas <= 0 || juegoImagenPistaUsada || juegoImagenBloqueado;
+    }
+
+    function pedirPistaImagen() {
+        if (juegoImagenPistas <= 0 || juegoImagenPistaUsada || juegoImagenBloqueado) return;
+        if (juegoImagenIndice >= juegoImagenOrden.length) return;
+
+        juegoImagenPistas--;
+        juegoImagenPistaUsada = true;
+
+        const pista = document.getElementById("ji-pista");
+        if (pista) {
+            pista.textContent = textoPistaMandatos(juegoImagenOrden[juegoImagenIndice]);
+            pista.hidden = false;
+        }
+        actualizarBotonPista();
+    }
+
+    function mostrarPresidenteImagen() {
+        const foto = document.querySelector(".juego-imagen-foto");
+        const input = document.getElementById("ji-input");
+        const feedback = document.getElementById("ji-feedback");
+        const card = document.querySelector(".juego-imagen-card");
+
+        if (juegoImagenIndice >= juegoImagenOrden.length) {
+            finalizarJuegoImagen();
+            return;
+        }
+
+        const presidente = juegoImagenOrden[juegoImagenIndice];
+        juegoImagenBloqueado = false;
+        juegoImagenPistaUsada = false;
+
+        if (card) card.classList.remove("acierto", "error");
+        if (foto) {
+            foto.src = presidente.imagen;
+            foto.alt = "¿Quién es este presidente?";
+        }
+        if (feedback) {
+            feedback.textContent = "";
+            feedback.classList.remove("correcto", "incorrecto");
+        }
+        const pista = document.getElementById("ji-pista");
+        if (pista) {
+            pista.hidden = true;
+            pista.textContent = "";
+        }
+        actualizarBotonPista();
+        if (input) {
+            input.value = "";
+            input.disabled = false;
+            input.focus();
+        }
+    }
+
+    function verificarRespuestaImagen(event) {
+        if (juegoImagenBloqueado) return;
+
+        const textoIngresado = normalizarTexto(event.target.value);
+        if (textoIngresado.length < 3) return;
+
+        const presidente = juegoImagenOrden[juegoImagenIndice];
+        if (!obtenerOpcionesValidas(presidente).has(textoIngresado)) return;
+
+        // Acierto
+        juegoImagenBloqueado = true;
+        aciertos++;
+
+        const card = document.querySelector(".juego-imagen-card");
+        const feedback = document.getElementById("ji-feedback");
+        const input = document.getElementById("ji-input");
+        const contador = document.getElementById("ji-aciertos");
+
+        if (card) card.classList.add("acierto");
+        if (feedback) {
+            feedback.textContent = `✓ ${nombreCompletoPresidente(presidente)}`;
+            feedback.classList.add("correcto");
+        }
+        if (input) input.disabled = true;
+        if (contador) contador.textContent = aciertos;
+        actualizarBotonPista();
+
+        juegoImagenIndice++;
+        setTimeout(mostrarPresidenteImagen, 1100);
+    }
+
+    function saltarPresidenteImagen() {
+        if (juegoImagenBloqueado) return;
+        if (juegoImagenIndice >= juegoImagenOrden.length) return;
+
+        juegoImagenBloqueado = true;
+        const presidente = juegoImagenOrden[juegoImagenIndice];
+        const card = document.querySelector(".juego-imagen-card");
+        const feedback = document.getElementById("ji-feedback");
+        const input = document.getElementById("ji-input");
+
+        if (card) card.classList.add("error");
+        if (feedback) {
+            feedback.textContent = `Era: ${nombreCompletoPresidente(presidente)}`;
+            feedback.classList.add("incorrecto");
+        }
+        if (input) input.disabled = true;
+        actualizarBotonPista();
+
+        juegoImagenIndice++;
+        setTimeout(mostrarPresidenteImagen, 1600);
+    }
+
+    function bloquearControlesImagen() {
+        const input = document.getElementById("ji-input");
+        const botonSaltar = document.querySelector(".juego-imagen-saltar");
+        const botonRendirseImagen = document.querySelector(".juego-imagen-rendirse");
+        const botonPista = document.querySelector(".juego-imagen-pista-btn");
+        if (input) input.disabled = true;
+        if (botonSaltar) botonSaltar.disabled = true;
+        if (botonRendirseImagen) botonRendirseImagen.disabled = true;
+        if (botonPista) botonPista.disabled = true;
+    }
+
+    function finalizarJuegoImagen() {
+        juegoImagenBloqueado = true;
+        bloquearControlesImagen();
+        const gano = aciertos === juegoImagenOrden.length && juegoImagenOrden.length > 0;
+        mostrarFinJuego(gano ? 'victoria' : 'fin');
+    }
+
+    function rendirseJuegoImagen() {
+        if (juegoImagenIndice >= juegoImagenOrden.length) return;
+        juegoImagenBloqueado = true;
+        bloquearControlesImagen();
+        mostrarFinJuego('rendicion');
     }
 
 
@@ -420,14 +923,20 @@ const listaPresidentes = [
         aciertos = 0;
         pausado = false;
 
-        // Eliminar tabla anterior
+        // Eliminar pantalla de juego anterior
         const tabla = document.querySelector(".tabla-container");
+        const juegoImagen = document.querySelector(".juego-imagen-container");
         const headingModo = document.querySelector(".jugando-modo-heading");
         if (tabla) tabla.remove();
+        if (juegoImagen) juegoImagen.remove();
         if (headingModo) headingModo.remove();
 
-        // Volver a iniciar
-        iniciarJuego();
+        // Volver a iniciar el modo que se estaba jugando
+        if (modoActual === 'imagen') {
+            iniciarJuegoImagen();
+        } else {
+            iniciarJuego();
+        }
     }
 
     // --- Función separada de temporizador ---
@@ -455,6 +964,26 @@ const listaPresidentes = [
     }
 
 
+    // Cuántos presidentes únicos quedan para el modo imagen según los filtros.
+    function contarDisponiblesImagen(sinDeFacto, sinCortos) {
+        return presidentesUnicos.filter(u => {
+            if (sinDeFacto && u.deFacto) return false;
+            if (sinCortos && !u.periodos.some(periodoDuroMasDeUnAnio)) return false;
+            return true;
+        }).length;
+    }
+
+    function refrescarMaxCantidad() {
+        if (!sliderCantidad) return;
+        const min = parseInt(sliderCantidad.min, 10);
+        const max = Math.max(min, contarDisponiblesImagen(checkboxes[0].checked, checkboxes[1].checked));
+        sliderCantidad.max = max;
+        if (parseInt(sliderCantidad.value, 10) > max) sliderCantidad.value = max;
+        if (valorCantidad) valorCantidad.textContent = sliderCantidad.value + " presidentes";
+        const spanMax = contenedorCantidad && contenedorCantidad.querySelector(".max");
+        if (spanMax) spanMax.textContent = max;
+    }
+
     // --- Botón Configuración ---
     function abrirConfig() {
         configuracionTemporal = { ...configuracionJuego };
@@ -464,6 +993,23 @@ const listaPresidentes = [
 
         checkboxes[0].checked = configuracionJuego.eliminarDeFacto;
         checkboxes[1].checked = configuracionJuego.eliminarMenosDeUnAnio;
+
+        // El slider de cantidad (modo imagen) no puede pedir más presidentes
+        // de los que quedan disponibles con los filtros elegidos.
+        if (sliderCantidad) {
+            sliderCantidad.value = configuracionJuego.cantidad;
+            refrescarMaxCantidad();
+        }
+
+        // Cada modo muestra solo los ajustes que le aplican:
+        // clásico -> temporizador, imagen -> cantidad de presidentes.
+        // Los filtros de gobiernos aplican a los dos.
+        if (contenedorTemporizador) {
+            contenedorTemporizador.style.display = modoSeleccionado === 'imagen' ? 'none' : '';
+        }
+        if (contenedorCantidad) {
+            contenedorCantidad.style.display = modoSeleccionado === 'imagen' ? '' : 'none';
+        }
 
         document.getElementById("configDialog").showModal(); // Cambio aquí
     }
@@ -476,6 +1022,9 @@ const listaPresidentes = [
         configuracionJuego.tiempo = parseInt(slider.value);
         configuracionJuego.eliminarDeFacto = checkboxes[0].checked;
         configuracionJuego.eliminarMenosDeUnAnio = checkboxes[1].checked;
+        if (sliderCantidad) {
+            configuracionJuego.cantidad = parseInt(sliderCantidad.value);
+        }
 
         cerrarConfig();
     }
@@ -485,6 +1034,10 @@ const listaPresidentes = [
         valorRango.textContent = configuracionTemporal.tiempo + " minutos";
         checkboxes[0].checked = configuracionTemporal.eliminarDeFacto;
         checkboxes[1].checked = configuracionTemporal.eliminarMenosDeUnAnio;
+        if (sliderCantidad) {
+            sliderCantidad.value = configuracionTemporal.cantidad;
+            if (valorCantidad) valorCantidad.textContent = configuracionTemporal.cantidad + " presidentes";
+        }
 
         cerrarConfig();
     }
@@ -504,6 +1057,15 @@ const listaPresidentes = [
             valorRango.textContent = slider.value + " minutos";
         });
     }
+
+    if (sliderCantidad && valorCantidad) {
+        sliderCantidad.addEventListener("input", () => {
+            valorCantidad.textContent = sliderCantidad.value + " presidentes";
+        });
+    }
+
+    // Si cambian los filtros, se recalcula el máximo del slider de cantidad.
+    checkboxes.forEach(cb => cb.addEventListener("change", refrescarMaxCantidad));
 
     // Agregar este event listener DENTRO del DOMContentLoaded
     const configDialog = document.getElementById("configDialog");
@@ -594,6 +1156,10 @@ function mostrarFinJuego(motivo) {
         case 'rendicion':
             titulo.textContent = "😔 TE RENDISTE";
             titulo.style.color = "#e74c3c";
+            break;
+        case 'fin':
+            titulo.textContent = "🏁 ¡JUEGO TERMINADO!";
+            titulo.style.color = "#f39c12";
             break;
     }
     
