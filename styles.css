@@ -1553,6 +1553,14 @@ td {
     box-shadow: 0 10px 25px -12px rgba(0, 0, 0, 0.6);
 }
 
+.juego-imagen-hud {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
 .juego-imagen-contador {
     font-weight: bold;
     font-size: 1.15rem;
@@ -1561,6 +1569,35 @@ td {
     background-color: rgb(var(--navy) / 0.75);
     border: 2px solid rgb(var(--blue));
     border-radius: 999px;
+}
+
+.juego-imagen-timer {
+    font-weight: 800;
+    font-size: 1.2rem;
+    letter-spacing: 0.03em;
+    color: rgb(var(--navy));
+    padding: 0.4rem 1.1rem;
+    background-color: rgb(var(--blue-strong));
+    border: 2px solid rgb(var(--navy));
+    border-radius: 999px;
+    font-variant-numeric: tabular-nums;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.juego-imagen-timer.por-terminar {
+    background-color: rgb(141, 3, 3);
+    color: #fff;
+    border-color: #fff;
+    animation: pulso-timer 1s ease-in-out infinite;
+}
+
+@keyframes pulso-timer {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.06); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .juego-imagen-timer.por-terminar { animation: none; }
 }
 
 .juego-imagen-label {

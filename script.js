@@ -13,7 +13,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Estado de configuración por defecto ---
     let configuracionJuego = {
-        tiempo: 10, // minutos (solo modo clásico)
+        tiempo: 10, // minutos (modo clásico)
+        tiempoImagen: 5, // minutos (modo "Adivina la imagen")
         eliminarDeFacto: false,
         eliminarMenosDeUnAnio: false,
         cantidad: 10 // presidentes por partida (solo modo "Adivina la imagen")
@@ -640,6 +641,8 @@ const listaPresidentes = [
     const JUEGO_IMAGEN_PISTAS_MAX = 2;
     let juegoImagenPistas = JUEGO_IMAGEN_PISTAS_MAX; // pistas que quedan en la partida
     let juegoImagenPistaUsada = false;               // ya se pidió pista para el presidente actual
+    let juegoImagenTimer = null;                     // intervalo del temporizador
+    let juegoImagenTerminado = false;                // la partida ya cerró (fin, rendición o tiempo)
 
     function mezclarArray(array) {
         const copia = array.slice();
@@ -674,6 +677,7 @@ const listaPresidentes = [
         });
         juegoImagenIndice = 0;
         juegoImagenBloqueado = false;
+        juegoImagenTerminado = false;
         juegoImagenPistas = JUEGO_IMAGEN_PISTAS_MAX;
         juegoImagenPistaUsada = false;
 
@@ -692,8 +696,11 @@ const listaPresidentes = [
                     <p class="juego-imagen-pista" id="ji-pista" hidden></p>
                 </div>
                 <div class="juego-imagen-panel">
-                    <div class="juego-imagen-contador">
-                        <span id="ji-aciertos">0</span> / <span id="ji-total">${juegoImagenOrden.length}</span>
+                    <div class="juego-imagen-hud">
+                        <span class="juego-imagen-timer" id="ji-timer">${configuracionJuego.tiempoImagen.toString().padStart(2, '0')}:00</span>
+                        <span class="juego-imagen-contador">
+                            <span id="ji-aciertos">0</span> / <span id="ji-total">${juegoImagenOrden.length}</span>
+                        </span>
                     </div>
                     <label class="juego-imagen-label" for="ji-input">¿Qué presidente es?</label>
                     <input class="input-presidente juego-imagen-input" type="text" id="ji-input" placeholder="Ingrese el apellido..." autocomplete="off" autocapitalize="off" spellcheck="false">
@@ -735,6 +742,48 @@ const listaPresidentes = [
         }
 
         mostrarPresidenteImagen();
+        iniciarTemporizadorImagen(configuracionJuego.tiempoImagen * 60);
+    }
+
+    // --- Temporizador del modo "Adivina la imagen" ---
+    function iniciarTemporizadorImagen(segundos) {
+        detenerTemporizadorImagen();
+        let restante = Math.max(1, Math.floor(segundos));
+        const div = document.getElementById("ji-timer");
+
+        const pintar = () => {
+            const m = String(Math.floor(restante / 60)).padStart(2, "0");
+            const s = String(restante % 60).padStart(2, "0");
+            if (div) {
+                div.textContent = `${m}:${s}`;
+                div.classList.toggle("por-terminar", restante <= 30);
+            }
+        };
+
+        pintar();
+        juegoImagenTimer = setInterval(() => {
+            restante--;
+            pintar();
+            if (restante <= 0) {
+                detenerTemporizadorImagen();
+                tiempoAgotadoImagen();
+            }
+        }, 1000);
+    }
+
+    function detenerTemporizadorImagen() {
+        if (juegoImagenTimer) {
+            clearInterval(juegoImagenTimer);
+            juegoImagenTimer = null;
+        }
+    }
+
+    function tiempoAgotadoImagen() {
+        if (juegoImagenTerminado) return;
+        juegoImagenTerminado = true;
+        juegoImagenBloqueado = true;
+        bloquearControlesImagen();
+        mostrarFinJuego('tiempo');
     }
 
     function actualizarBotonPista() {
@@ -760,6 +809,8 @@ const listaPresidentes = [
     }
 
     function mostrarPresidenteImagen() {
+        if (juegoImagenTerminado) return;
+
         const foto = document.querySelector(".juego-imagen-foto");
         const input = document.getElementById("ji-input");
         const feedback = document.getElementById("ji-feedback");
@@ -861,15 +912,19 @@ const listaPresidentes = [
     }
 
     function finalizarJuegoImagen() {
+        juegoImagenTerminado = true;
         juegoImagenBloqueado = true;
+        detenerTemporizadorImagen();
         bloquearControlesImagen();
         const gano = aciertos === juegoImagenOrden.length && juegoImagenOrden.length > 0;
         mostrarFinJuego(gano ? 'victoria' : 'fin');
     }
 
     function rendirseJuegoImagen() {
-        if (juegoImagenIndice >= juegoImagenOrden.length) return;
+        if (juegoImagenTerminado || juegoImagenIndice >= juegoImagenOrden.length) return;
+        juegoImagenTerminado = true;
         juegoImagenBloqueado = true;
+        detenerTemporizadorImagen();
         bloquearControlesImagen();
         mostrarFinJuego('rendicion');
     }
@@ -920,6 +975,7 @@ const listaPresidentes = [
     // --- Función Reiniciar ---
     function reiniciarJuego() {
         clearInterval(window.temporizadorInterval);
+        detenerTemporizadorImagen();
         aciertos = 0;
         pausado = false;
 
@@ -984,12 +1040,19 @@ const listaPresidentes = [
         if (spanMax) spanMax.textContent = max;
     }
 
+    // El temporizador tiene un valor propio por modo:
+    // clásico -> configuracionJuego.tiempo, imagen -> configuracionJuego.tiempoImagen
+    function claveTiempoActual() {
+        return modoSeleccionado === 'imagen' ? 'tiempoImagen' : 'tiempo';
+    }
+
     // --- Botón Configuración ---
     function abrirConfig() {
         configuracionTemporal = { ...configuracionJuego };
 
-        slider.value = configuracionJuego.tiempo;
-        valorRango.textContent = configuracionJuego.tiempo + " minutos";
+        const minutos = configuracionJuego[claveTiempoActual()];
+        slider.value = minutos;
+        valorRango.textContent = minutos + " minutos";
 
         checkboxes[0].checked = configuracionJuego.eliminarDeFacto;
         checkboxes[1].checked = configuracionJuego.eliminarMenosDeUnAnio;
@@ -1001,12 +1064,8 @@ const listaPresidentes = [
             refrescarMaxCantidad();
         }
 
-        // Cada modo muestra solo los ajustes que le aplican:
-        // clásico -> temporizador, imagen -> cantidad de presidentes.
-        // Los filtros de gobiernos aplican a los dos.
-        if (contenedorTemporizador) {
-            contenedorTemporizador.style.display = modoSeleccionado === 'imagen' ? 'none' : '';
-        }
+        // El temporizador aplica a los dos modos; la cantidad de presidentes,
+        // solo al modo imagen. Los filtros de gobiernos aplican a los dos.
         if (contenedorCantidad) {
             contenedorCantidad.style.display = modoSeleccionado === 'imagen' ? '' : 'none';
         }
@@ -1019,7 +1078,7 @@ const listaPresidentes = [
     }
 
     function guardarConfig() {
-        configuracionJuego.tiempo = parseInt(slider.value);
+        configuracionJuego[claveTiempoActual()] = parseInt(slider.value);
         configuracionJuego.eliminarDeFacto = checkboxes[0].checked;
         configuracionJuego.eliminarMenosDeUnAnio = checkboxes[1].checked;
         if (sliderCantidad) {
@@ -1030,8 +1089,9 @@ const listaPresidentes = [
     }
 
     function cancelarConfig() {
-        slider.value = configuracionTemporal.tiempo;
-        valorRango.textContent = configuracionTemporal.tiempo + " minutos";
+        const minutos = configuracionTemporal[claveTiempoActual()];
+        slider.value = minutos;
+        valorRango.textContent = minutos + " minutos";
         checkboxes[0].checked = configuracionTemporal.eliminarDeFacto;
         checkboxes[1].checked = configuracionTemporal.eliminarMenosDeUnAnio;
         if (sliderCantidad) {
