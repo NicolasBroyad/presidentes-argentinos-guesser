@@ -16,7 +16,12 @@ document.addEventListener('DOMContentLoaded', () => {
         tiempo: 10, // minutos (modo clásico)
         tiempoImagen: 5, // minutos (modo "Adivina la imagen")
         eliminarDeFacto: false,
-        eliminarMenosDeUnAnio: false,
+        // El filtro de "gobiernos de menos de 1 año" tiene un default distinto
+        // por modo: en clásico se incluyen (como siempre), en "Adivina la
+        // imagen" se descartan por defecto (son más difíciles de reconocer
+        // por foto al haber gobernado tan poco tiempo).
+        eliminarMenosDeUnAnioClasico: false,
+        eliminarMenosDeUnAnioImagen: true,
         cantidad: 10 // presidentes por partida (solo modo "Adivina la imagen")
     };
 
@@ -261,7 +266,7 @@ const listaPresidentes = [
     function presidentesUnicosFiltrados() {
         return presidentesUnicos.filter(u => {
             if (configuracionJuego.eliminarDeFacto && u.deFacto) return false;
-            if (configuracionJuego.eliminarMenosDeUnAnio && !u.periodos.some(periodoDuroMasDeUnAnio)) return false;
+            if (configuracionJuego.eliminarMenosDeUnAnioImagen && !u.periodos.some(periodoDuroMasDeUnAnio)) return false;
             return true;
         });
     }
@@ -309,7 +314,7 @@ const listaPresidentes = [
     function filtrarPresidentes(){
         return listaPresidentes.filter(p => {
             if(configuracionJuego.eliminarDeFacto && p.esDeFacto()) return false;
-            if(configuracionJuego.eliminarMenosDeUnAnio && !p.estuvoMasDeUnAnio()) return false;
+            if(configuracionJuego.eliminarMenosDeUnAnioClasico && !p.estuvoMasDeUnAnio()) return false;
             return true;
         });
     }
@@ -1046,6 +1051,12 @@ const listaPresidentes = [
         return modoSeleccionado === 'imagen' ? 'tiempoImagen' : 'tiempo';
     }
 
+    // Ídem para "eliminar gobiernos de menos de 1 año": cada modo guarda su
+    // propia preferencia (en imagen arranca activado, en clásico no).
+    function claveEliminarCortosActual() {
+        return modoSeleccionado === 'imagen' ? 'eliminarMenosDeUnAnioImagen' : 'eliminarMenosDeUnAnioClasico';
+    }
+
     // --- Botón Configuración ---
     function abrirConfig() {
         configuracionTemporal = { ...configuracionJuego };
@@ -1055,7 +1066,7 @@ const listaPresidentes = [
         valorRango.textContent = minutos + " minutos";
 
         checkboxes[0].checked = configuracionJuego.eliminarDeFacto;
-        checkboxes[1].checked = configuracionJuego.eliminarMenosDeUnAnio;
+        checkboxes[1].checked = configuracionJuego[claveEliminarCortosActual()];
 
         // El slider de cantidad (modo imagen) no puede pedir más presidentes
         // de los que quedan disponibles con los filtros elegidos.
@@ -1080,7 +1091,7 @@ const listaPresidentes = [
     function guardarConfig() {
         configuracionJuego[claveTiempoActual()] = parseInt(slider.value);
         configuracionJuego.eliminarDeFacto = checkboxes[0].checked;
-        configuracionJuego.eliminarMenosDeUnAnio = checkboxes[1].checked;
+        configuracionJuego[claveEliminarCortosActual()] = checkboxes[1].checked;
         if (sliderCantidad) {
             configuracionJuego.cantidad = parseInt(sliderCantidad.value);
         }
@@ -1093,7 +1104,7 @@ const listaPresidentes = [
         slider.value = minutos;
         valorRango.textContent = minutos + " minutos";
         checkboxes[0].checked = configuracionTemporal.eliminarDeFacto;
-        checkboxes[1].checked = configuracionTemporal.eliminarMenosDeUnAnio;
+        checkboxes[1].checked = configuracionTemporal[claveEliminarCortosActual()];
         if (sliderCantidad) {
             sliderCantidad.value = configuracionTemporal.cantidad;
             if (valorCantidad) valorCantidad.textContent = configuracionTemporal.cantidad + " presidentes";
