@@ -15,6 +15,19 @@
     --bg-top: 12 28 44;
     --bg-mid: 10 34 53;
     --bg-bottom: 6 13 21;
+
+    /* Paleta del botón "Iniciar Juego" líquido. En tema oscuro el celeste
+       contrasta de sobra contra el fondo navy, así que se queda como está. */
+    --iniciar-c1: #bdf3ff;
+    --iniciar-c2: #4fc3f7;
+    --iniciar-c3: #8fe9ff;
+    --iniciar-c4: #2fb2f0;
+    --iniciar-c5: #d8fbff;
+    --iniciar-glow: 79 195 247;
+    --iniciar-text: 4 48 73;
+    --iniciar-text-shadow: 255 255 255 / 0.5;
+    --iniciar-shine: 255 255 255;
+    --iniciar-shine-alpha: 0.75;
 }
 
 /* --- Tema claro: celeste y blanco de la bandera argentina --- */
@@ -31,6 +44,25 @@
     --bg-top: 173 214 245;
     --bg-mid: 214 232 250;
     --bg-bottom: 255 255 255;
+
+    /* En tema claro el fondo es celeste/blanco muy claro: el mismo líquido
+       celeste del botón se pierde contra él (sobre todo cuando pasa el
+       reflejo, que en blanco puro terminaba fundiéndose con la página). El
+       dorado quedaba raro por otro motivo: coincide justo con el sol dorado
+       del watermark de fondo, y el botón termina "compitiendo" con él en el
+       mismo lugar y color. Un zafiro bien saturado esquiva ambos problemas:
+       es lo bastante oscuro para no perderse contra el fondo pálido y no
+       comparte tono con el sol. */
+    --iniciar-c1: #8ecbff;
+    --iniciar-c2: #1f6fd6;
+    --iniciar-c3: #58a6f5;
+    --iniciar-c4: #0d3f91;
+    --iniciar-c5: #bfe0ff;
+    --iniciar-glow: 31 111 214;
+    --iniciar-text: 255 255 255;
+    --iniciar-text-shadow: 4 20 46 / 0.45;
+    --iniciar-shine: 219 237 255;
+    --iniciar-shine-alpha: 0.6;
 }
 
 * {
@@ -326,13 +358,14 @@ h1 a {
     border-radius: 999px;
     padding: min(clamp(0.9em, 2.4vw, 1.15em), clamp(0.9em, 2.4vh, 1.15em)) 2.8em;
     cursor: pointer;
-    /* Gradiente celeste bien saturado que se mueve solo, como un líquido. */
-    background: linear-gradient(115deg, #bdf3ff 0%, #4fc3f7 22%, #8fe9ff 45%, #2fb2f0 68%, #d8fbff 88%, #4fc3f7 100%);
+    /* Gradiente "líquido" que se mueve solo; los colores salen de variables
+       por tema (--iniciar-*), definidas junto a la paleta de cada tema. */
+    background: linear-gradient(115deg, var(--iniciar-c1) 0%, var(--iniciar-c2) 22%, var(--iniciar-c3) 45%, var(--iniciar-c4) 68%, var(--iniciar-c5) 88%, var(--iniciar-c2) 100%);
     background-size: 320% 320%;
     animation: iniciar-juego-liquido 7s ease-in-out infinite;
     box-shadow:
         0 22px 50px -16px rgba(4, 20, 32, 0.65),
-        0 0 45px -6px rgb(79 195 247 / 0.7),
+        0 0 45px -6px rgb(var(--iniciar-glow) / 0.7),
         inset 0 2px 4px rgb(255 255 255 / 0.65),
         inset 0 -10px 16px rgb(9 60 88 / 0.28);
     transition: transform 0.25s ease, box-shadow 0.25s ease;
@@ -352,7 +385,7 @@ h1 a {
     left: -30%;
     width: 55%;
     height: 220%;
-    background: linear-gradient(100deg, transparent, rgb(255 255 255 / 0.75) 45%, transparent 70%);
+    background: linear-gradient(100deg, transparent, rgb(var(--iniciar-shine) / var(--iniciar-shine-alpha)) 45%, transparent 70%);
     transform: rotate(12deg);
     animation: iniciar-juego-brillo 3.6s ease-in-out infinite;
     pointer-events: none;
@@ -373,8 +406,8 @@ h1 a {
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 0.07em;
-    color: #043049;
-    text-shadow: 0 1px 0 rgb(255 255 255 / 0.5);
+    color: rgb(var(--iniciar-text));
+    text-shadow: 0 1px 2px rgb(var(--iniciar-text-shadow));
 }
 
 .iniciar-juego-button:hover {
@@ -382,7 +415,7 @@ h1 a {
     animation-duration: 3s;
     box-shadow:
         0 26px 60px -14px rgba(4, 20, 32, 0.7),
-        0 0 60px -2px rgb(79 195 247 / 0.9),
+        0 0 60px -2px rgb(var(--iniciar-glow) / 0.9),
         inset 0 2px 4px rgb(255 255 255 / 0.75),
         inset 0 -10px 16px rgb(9 60 88 / 0.32);
 }
