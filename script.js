@@ -43,8 +43,8 @@ document.addEventListener('DOMContentLoaded', () => {
         clasico: {
             badge: 'CLÁSICO',
             reglas: [
-                { icono: iconoRegla.pencil, titulo: 'Llena los espacios en blanco', texto: 'Completá con los nombres de cada presidente según el periodo.' },
-                { icono: iconoRegla.reloj, titulo: 'Vencé al reloj', texto: 'Corre a contrarreloj para adivinar a todos los presidentes.' }
+                { icono: iconoRegla.pencil, titulo: 'Llená los espacios en blanco', texto: 'Completá con los nombres de cada presidente según el periodo.' },
+                { icono: iconoRegla.reloj, titulo: 'Vencé al reloj', texto: 'Corré a contrarreloj para adivinar a todos los presidentes.' }
             ]
         },
         imagen: {
