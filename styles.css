@@ -2304,6 +2304,8 @@ footer {
     left: 50%;
     transform: translate(-50%, -50%);
     margin: 0;
+    max-height: 85vh;
+    overflow-y: auto;
 }
 
 #finJuegoDialog:not([open]) {
@@ -2372,6 +2374,75 @@ footer {
     font-weight: bold;
     color: rgb(var(--blue));
     text-shadow: 0 0 10px rgb(var(--blue) / 0.5);
+}
+
+.resumen-partida-imagen {
+    margin-top: 1.5rem;
+    text-align: left;
+}
+
+.resumen-partida-titulo {
+    font-size: 1rem;
+    margin-bottom: 0.75rem;
+    color: rgb(var(--ink));
+    text-align: center;
+}
+
+.resumen-partida-lista {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    max-height: 260px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.resumen-partida-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.4rem 0.6rem;
+    border-radius: 8px;
+    background-color: rgb(var(--blue) / 0.08);
+    border: 1px solid rgb(var(--blue) / 0.25);
+}
+
+.resumen-partida-foto {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.resumen-partida-nombre {
+    flex: 1;
+    font-size: 0.9rem;
+    color: rgb(var(--ink));
+}
+
+.resumen-partida-icono {
+    font-weight: bold;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+.resumen-partida-item.acierto {
+    border-color: rgb(46 204 113 / 0.5);
+}
+
+.resumen-partida-item.acierto .resumen-partida-icono {
+    color: #2ecc71;
+}
+
+.resumen-partida-item.error {
+    border-color: rgb(231 76 60 / 0.5);
+}
+
+.resumen-partida-item.error .resumen-partida-icono {
+    color: #e74c3c;
 }
 
 .jugar-otra-vez {

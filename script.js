@@ -679,6 +679,7 @@ const listaPresidentes = [
         // Foto al azar por partida (para los que tienen varias).
         juegoImagenOrden.forEach(u => {
             u.imagen = u.imagenes[Math.floor(Math.random() * u.imagenes.length)];
+            u.resultadoPartida = null; // se completa con 'acierto' / 'error' al jugar
         });
         juegoImagenIndice = 0;
         juegoImagenBloqueado = false;
@@ -788,6 +789,7 @@ const listaPresidentes = [
         juegoImagenTerminado = true;
         juegoImagenBloqueado = true;
         bloquearControlesImagen();
+        marcarRestantesComoNoAcertados();
         mostrarFinJuego('tiempo');
     }
 
@@ -864,6 +866,7 @@ const listaPresidentes = [
         // Acierto
         juegoImagenBloqueado = true;
         aciertos++;
+        presidente.resultadoPartida = 'acierto';
 
         const card = document.querySelector(".juego-imagen-card");
         const feedback = document.getElementById("ji-feedback");
@@ -889,6 +892,7 @@ const listaPresidentes = [
 
         juegoImagenBloqueado = true;
         const presidente = juegoImagenOrden[juegoImagenIndice];
+        presidente.resultadoPartida = 'error';
         const card = document.querySelector(".juego-imagen-card");
         const feedback = document.getElementById("ji-feedback");
         const input = document.getElementById("ji-input");
@@ -903,6 +907,17 @@ const listaPresidentes = [
 
         juegoImagenIndice++;
         setTimeout(mostrarPresidenteImagen, 1600);
+    }
+
+    // Al rendirse o agotarse el tiempo, todo lo que no se llegó a contestar
+    // (incluido el presidente que se estaba mostrando) cuenta como error en
+    // el resumen final.
+    function marcarRestantesComoNoAcertados() {
+        for (let i = juegoImagenIndice; i < juegoImagenOrden.length; i++) {
+            if (juegoImagenOrden[i].resultadoPartida === null) {
+                juegoImagenOrden[i].resultadoPartida = 'error';
+            }
+        }
     }
 
     function bloquearControlesImagen() {
@@ -931,6 +946,7 @@ const listaPresidentes = [
         juegoImagenBloqueado = true;
         detenerTemporizadorImagen();
         bloquearControlesImagen();
+        marcarRestantesComoNoAcertados();
         mostrarFinJuego('rendicion');
     }
 
@@ -1247,7 +1263,39 @@ function mostrarFinJuego(motivo) {
         porcentajeSpan.style.color = "#e74c3c"; // Rojo
     }
     
+    actualizarResumenPartidaImagen();
+
     dialog.showModal();
+}
+
+// --- Resumen de la partida (solo modo "Adivina la imagen") ---
+// Muestra, al terminar, la tanda completa de presidentes que tocaron marcando
+// cuáles se acertaron y cuáles no (salteados, errados, sin llegar a jugarlos).
+function actualizarResumenPartidaImagen() {
+    const contenedor = document.getElementById("resumenPartidaImagen");
+    const lista = document.getElementById("resumenPartidaLista");
+    if (!contenedor || !lista) return;
+
+    if (modoActual !== 'imagen' || !Array.isArray(window.listaFiltrada)) {
+        contenedor.hidden = true;
+        lista.innerHTML = "";
+        return;
+    }
+
+    lista.innerHTML = window.listaFiltrada.map(u => {
+        const acierto = u.resultadoPartida === 'acierto';
+        const nombre = nombreCompletoPresidente(u);
+        const icono = acierto ? '✓' : '✕';
+        return `
+            <li class="resumen-partida-item ${acierto ? 'acierto' : 'error'}">
+                <img class="resumen-partida-foto" src="${u.imagen}" alt="" loading="lazy">
+                <span class="resumen-partida-nombre">${nombre}</span>
+                <span class="resumen-partida-icono" aria-hidden="true">${icono}</span>
+            </li>
+        `;
+    }).join('');
+
+    contenedor.hidden = false;
 }
 
 // --- Función para cerrar dialog de fin de juego ---

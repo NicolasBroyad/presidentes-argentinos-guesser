@@ -61,7 +61,7 @@
         <p class="kicker">Historia Argentina &middot; Contrarreloj</p>
         <h1>
             <a href="index.html">
-                <span class="titulo-linea1">Adivina los</span>
+                <span class="titulo-linea1">Adiviná los</span>
                 <span class="titulo-linea2">Presidentes Argentinos</span>
             </a>
         </h1>
@@ -159,12 +159,16 @@
 
     <!-- Dialog de fin de juego -->
     <dialog id="finJuegoDialog" class="modal-fin-juego">
-        <h2 id="tituloFinJuego">🎉 ¡JUEGO TERMINADO! 🎉</h2>
+        <h2 id="tituloFinJuego">¡JUEGO TERMINADO!</h2>
         <div class="resultado-container">
-            <p id="mensajeResultado">Has acertado <span id="aciertosFinales">0</span> de <span id="totalPresidentes">0</span> presidentes</p>
+            <p id="mensajeResultado">Acertaste <span id="aciertosFinales">0</span> de <span id="totalPresidentes">0</span> presidentes</p>
             <div id="porcentajeContainer">
                 <span id="porcentaje">0%</span>
             </div>
+        </div>
+        <div id="resumenPartidaImagen" class="resumen-partida-imagen" hidden>
+            <h3 class="resumen-partida-titulo">Resumen de la partida</h3>
+            <ul class="resumen-partida-lista" id="resumenPartidaLista"></ul>
         </div>
         <div class="buttons">
             <button class="jugar-otra-vez">JUGAR OTRA VEZ</button>
