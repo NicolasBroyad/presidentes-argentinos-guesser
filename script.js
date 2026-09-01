@@ -984,7 +984,14 @@ const listaPresidentes = [
     ];
     const SOPA_LETRAS_RELLENO = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-    let sopaObjetivos = [];      // [{ u, palabra, celdas:[{r,c}], encontrada }]
+    // Un color por presidente hallado, para distinguir las palabras en la grilla.
+    // El rojo queda reservado para las que NO se encontraron al terminar.
+    const SOPA_COLORES = [
+        "#3fb56b", "#e6b043", "#1bbef1", "#e67e22",
+        "#a980d8", "#15a89a", "#d98cb3", "#7fae3a"
+    ];
+
+    let sopaObjetivos = [];      // [{ u, palabra, celdas:[{r,c}], encontrada, color }]
     let sopaGrilla = [];         // matriz de letras
     let sopaTam = 0;             // lado de la grilla
     let sopaTimer = null;
@@ -1069,12 +1076,17 @@ const listaPresidentes = [
         return { grilla, colocadas };
     }
 
+    // Un solo tramo de años que abarca todos los mandatos del presidente
+    // (p. ej. Perón 1946–1974), para que la pista quede compacta.
     function aniosMandato(u) {
-        return u.periodos.map(p => {
-            const ini = p.inicio ? p.inicio.getFullYear() : "";
-            const fin = p.fin ? p.fin.getFullYear() : "hoy";
-            return `${ini}–${fin}`;
-        }).join("  ·  ");
+        const inicios = u.periodos.map(p => p.inicio && p.inicio.getFullYear()).filter(Boolean);
+        const enCurso = u.periodos.some(p => !p.fin);
+        const fines = u.periodos.map(p => (p.fin ? p.fin.getFullYear() : new Date().getFullYear()));
+        const desde = Math.min(...inicios);
+        const hasta = Math.max(...fines);
+        if (!isFinite(desde)) return "";
+        if (desde === hasta) return `${desde}`;
+        return `${desde}–${enCurso ? "hoy" : hasta}`;
     }
 
     function iniciarJuegoSopa() {
@@ -1093,9 +1105,9 @@ const listaPresidentes = [
         sopaCeldasMarcadas = [];
 
         const esMobile = window.matchMedia('(max-width: 768px)').matches;
-        const cantidad = esMobile ? 7 : 10;
-        const maxLargo = esMobile ? 11 : 12;
-        const baseTam = esMobile ? 12 : 14;
+        const cantidad = 5;
+        const maxLargo = esMobile ? 10 : 12;
+        const baseTam = esMobile ? 11 : 12;
 
         const elegidas = elegirPalabrasSopa(cantidad, maxLargo);
         const largoMax = elegidas.reduce((m, x) => Math.max(m, x.palabra.length), 0);
@@ -1103,10 +1115,25 @@ const listaPresidentes = [
 
         const { grilla, colocadas } = construirGrillaSopa(elegidas, sopaTam);
         sopaGrilla = grilla;
-        sopaObjetivos = colocadas;
+        // Orden cronológico para las pistas y el historial de fin de partida
+        // (independiente del orden en que se colocaron en la grilla).
+        sopaObjetivos = colocadas.sort((a, b) => {
+            const ia = a.u.periodos[0].inicio ? a.u.periodos[0].inicio.getTime() : 0;
+            const ib = b.u.periodos[0].inicio ? b.u.periodos[0].inicio.getTime() : 0;
+            return ia - ib;
+        });
 
-        // mostrarFinJuego() usa window.listaFiltrada y la variable aciertos
-        window.listaFiltrada = sopaObjetivos;
+        // Color por presidente + reset de datos para el historial de fin de partida.
+        const paleta = mezclarArray(SOPA_COLORES);
+        sopaObjetivos.forEach((o, i) => {
+            o.color = paleta[i % paleta.length];
+            o.u.imagen = o.u.imagenes[0];
+            o.u.colorSopa = o.color;
+            o.u.resultadoPartida = null;
+        });
+
+        // mostrarFinJuego() y el historial usan window.listaFiltrada + aciertos
+        window.listaFiltrada = sopaObjetivos.map(o => o.u);
         aciertos = 0;
 
         const filasHTML = grilla.map((fila, r) =>
@@ -1126,7 +1153,7 @@ const listaPresidentes = [
         const tiempoInicial = `${configuracionJuego.tiempoSopa.toString().padStart(2, "0")}:00`;
 
         const contenido = `
-            <h4 class="jugando-modo-heading">JUGANDO MODO <span class="modo-de-juego-seleccionado">SOPA DE LETRAS</span></h4>
+            <h4 class="jugando-modo-heading">JUGANDO MODO <span class="modo-de-juego-seleccionado">SOPA</span></h4>
             <div class="sopa-container">
                 <div class="sopa-grid-col">
                     <div class="sopa-grid" style="grid-template-columns: repeat(${sopaTam}, 1fr);">
@@ -1246,9 +1273,13 @@ const listaPresidentes = [
         obj.u.resultadoPartida = 'acierto';
         obj.celdas.forEach(({ r, c }) => {
             const btn = document.querySelector(`.sopa-celda[data-r="${r}"][data-c="${c}"]`);
-            if (btn) btn.classList.add("encontrada");
+            if (btn) {
+                btn.classList.add("encontrada");
+                btn.style.backgroundColor = obj.color;
+                btn.style.color = "#0a2235";
+            }
         });
-        marcarPistaSopa(sopaObjetivos.indexOf(obj), 'resuelta', obj.u);
+        marcarPistaSopa(sopaObjetivos.indexOf(obj), 'resuelta', obj.u, obj.color);
 
         aciertos++;
         const cont = document.getElementById("sopa-aciertos");
@@ -1257,10 +1288,14 @@ const listaPresidentes = [
         if (sopaObjetivos.every(o => o.encontrada)) finalizarSopa(true);
     }
 
-    function marcarPistaSopa(indice, clase, u) {
+    function marcarPistaSopa(indice, clase, u, color) {
         const pista = document.querySelector(`.sopa-pista[data-i="${indice}"]`);
         if (!pista) return;
         pista.classList.add(clase);
+        if (color) {
+            pista.style.borderColor = color;
+            pista.style.boxShadow = `inset 4px 0 0 ${color}`;
+        }
         const nombre = pista.querySelector(".sopa-pista-nombre");
         if (nombre) nombre.textContent = nombreCompletoPresidente(u);
     }
@@ -1642,20 +1677,20 @@ function mostrarFinJuego(motivo) {
         porcentajeSpan.style.color = "#e74c3c"; // Rojo
     }
     
-    actualizarResumenPartidaImagen();
+    actualizarResumenPartida();
 
     dialog.showModal();
 }
 
-// --- Resumen de la partida (solo modo "Adivina la imagen") ---
+// --- Historial de la partida (modos "Adivina la imagen" y "Sopa de letras") ---
 // Muestra, al terminar, la tanda completa de presidentes que tocaron marcando
 // cuáles se acertaron y cuáles no (salteados, errados, sin llegar a jugarlos).
-function actualizarResumenPartidaImagen() {
+function actualizarResumenPartida() {
     const contenedor = document.getElementById("resumenPartidaImagen");
     const lista = document.getElementById("resumenPartidaLista");
     if (!contenedor || !lista) return;
 
-    if (modoActual !== 'imagen' || !Array.isArray(window.listaFiltrada)) {
+    if ((modoActual !== 'imagen' && modoActual !== 'sopa') || !Array.isArray(window.listaFiltrada)) {
         contenedor.hidden = true;
         lista.innerHTML = "";
         return;
@@ -1665,9 +1700,13 @@ function actualizarResumenPartidaImagen() {
         const acierto = u.resultadoPartida === 'acierto';
         const nombre = nombreCompletoPresidente(u);
         const icono = acierto ? '✓' : '✕';
+        const puntoColor = (modoActual === 'sopa' && u.colorSopa)
+            ? `<span class="resumen-partida-color" style="background:${u.colorSopa}" aria-hidden="true"></span>`
+            : '';
         return `
             <li class="resumen-partida-item ${acierto ? 'acierto' : 'error'}">
                 <img class="resumen-partida-foto" src="${u.imagen}" alt="" loading="lazy">
+                ${puntoColor}
                 <span class="resumen-partida-nombre">${nombre}</span>
                 <span class="resumen-partida-icono" aria-hidden="true">${icono}</span>
             </li>
