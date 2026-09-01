@@ -203,20 +203,21 @@ const listaPresidentes = [
         return (fin - inicio) >= unAnioMs;
     }
 
-    // Bombos de fama: B1 = los más conocidos ... B4 = los menos conocidos.
+    // Bombos de fama: B1 = los más conocidos ... B3 = los menos conocidos.
     // Las claves se comparan (normalizadas) contra apellido / nombre+apellido /
     // nombre completo, así que alcanza con poner lo mínimo para desambiguar.
     // Esta clasificación es un punto de partida: se puede ajustar a gusto.
     const BOMBOS_FAMA = {
-        1: ["Perón", "Alfonsín", "Menem","Néstor Kirchner", "Cristina Fernández", 
+        1: ["Perón", "Alfonsín", "Menem","Néstor Kirchner", "Cristina Fernández",
             "Macri", "Milei", "Videla", "Alberto Fernández"],
-        2: ["Rivadavia", "Pellegrini", "Roque Sáenz Peña", "de Alvear","Frondizi", "Illia", 
+        2: ["Rivadavia", "Pellegrini", "Roque Sáenz Peña", "de Alvear","Frondizi", "Illia",
             "Onganía", "Cámpora", "María Estela Martínez", "Galtieri", "De La Rúa", "Duhalde",
-            "Sarmiento", "Roca", "Yrigoyen", "Mitre"],
-        3: ["Juárez Celman", "Luis Sáenz Peña", "Quintana", "Figueroa Alcorta", "de la Plaza",
-            "Justo", "Ortiz", "Castillo", "Farrell","Bignone", "Rodríguez Saá", "Avellaneda", 
-            "José Félix Uriburu", "Aramburu","Vicente López"],
-        4: ["José Evaristo Uriburu", "Rawson", "Ramírez", "Levingston",
+            "Sarmiento", "Roca", "Yrigoyen", "Mitre",
+            "Juárez Celman", "Luis Sáenz Peña", "Figueroa Alcorta", "Farrell", "Bignone",
+            "Rodríguez Saá", "Avellaneda", "Aramburu"],
+        3: ["Quintana", "de la Plaza", "Justo", "Ortiz", "Castillo", "José Félix Uriburu",
+            "Vicente López",
+            "José Evaristo Uriburu", "Rawson", "Ramírez", "Levingston",
             "Lastiri", "Viola", "Lacoste", "Puerta", "Camaño", "Lonardi", "Guido", "Lanusse"]
     };
 
@@ -280,30 +281,29 @@ const listaPresidentes = [
     }
 
     // Arma la tanda de presidentes de una partida respetando la proporción de
-    // bombos: para 10 -> 2 del B1, 5 del B2, 2 del B3, 1 del B4. Para cualquier
-    // otra cantidad se extrapola con esos porcentajes (20/50/20/10). Si algún
-    // bombo no tiene suficientes, completa con los que sobran de otros bombos.
+    // bombos: para 10 -> 2 del B1, 7 del B2, 1 del B3. Para cualquier otra
+    // cantidad se extrapola con esos porcentajes (20/70/10). Si algún bombo no
+    // tiene suficientes, completa con los que sobran de otros bombos.
     function elegirPresidentesPorBombo(pool, cantidad) {
-        const porBombo = { 1: [], 2: [], 3: [], 4: [] };
+        const porBombo = { 1: [], 2: [], 3: [] };
         pool.forEach(u => porBombo[u.bombo].push(u));
-        [1, 2, 3, 4].forEach(b => { porBombo[b] = mezclarArray(porBombo[b]); });
+        [1, 2, 3].forEach(b => { porBombo[b] = mezclarArray(porBombo[b]); });
 
         const objetivo = {
             1: Math.round(cantidad * 0.2),
-            3: Math.round(cantidad * 0.2),
-            4: Math.round(cantidad * 0.1)
+            3: Math.round(cantidad * 0.1)
         };
-        objetivo[2] = cantidad - objetivo[1] - objetivo[3] - objetivo[4];
+        objetivo[2] = cantidad - objetivo[1] - objetivo[3];
 
         const seleccion = [];
-        [1, 2, 3, 4].forEach(b => {
+        [1, 2, 3].forEach(b => {
             const n = Math.max(0, objetivo[b]);
             seleccion.push(...porBombo[b].splice(0, n));
         });
 
         // Completar si faltó gente en algún bombo (por filtros o pool chico).
         if (seleccion.length < cantidad) {
-            const resto = mezclarArray([].concat(porBombo[2], porBombo[1], porBombo[3], porBombo[4]));
+            const resto = mezclarArray([].concat(porBombo[2], porBombo[1], porBombo[3]));
             seleccion.push(...resto.slice(0, cantidad - seleccion.length));
         }
 
