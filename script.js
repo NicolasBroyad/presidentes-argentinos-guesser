@@ -22,6 +22,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // por foto al haber gobernado tan poco tiempo).
         eliminarMenosDeUnAnioClasico: false,
         eliminarMenosDeUnAnioImagen: true,
+        eliminarMenosDeUnAnioSopa: true,
+        tiempoSopa: 4, // minutos (modo "Sopa de letras")
         cantidad: 10 // presidentes por partida (solo modo "Adivina la imagen")
     };
 
@@ -36,7 +38,9 @@ document.addEventListener('DOMContentLoaded', () => {
         pencil: `<svg class="rules-icons" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>pencil</title><path d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z" /></svg>`,
         reloj: `<svg class="rules-icons" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>clock-time-eight</title><path d="M12 2C6.5 2 2 6.5 2 12C2 17.5 6.5 22 12 22C17.5 22 22 17.5 22 12S17.5 2 12 2M7.7 15.5L7 14.2L11 11.9V7H12.5V12.8L7.7 15.5Z" /></svg>`,
         foto: `<svg class="rules-icons" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>camera</title><path d="M4,4H7L9,2H15L17,4H20A2,2 0 0,1 22,6V18A2,2 0 0,1 20,20H4A2,2 0 0,1 2,18V6A2,2 0 0,1 4,4M12,7A5,5 0 0,0 7,12A5,5 0 0,0 12,17A5,5 0 0,0 17,12A5,5 0 0,0 12,7M12,9A3,3 0 0,1 15,12A3,3 0 0,1 12,15A3,3 0 0,1 9,12A3,3 0 0,1 12,9Z" /></svg>`,
-        teclado: `<svg class="rules-icons" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>keyboard</title><path d="M19,10H17V8H19M19,13H17V11H19M16,10H14V8H16M16,13H14V11H16M16,17H8V15H16M7,10H5V8H7M7,13H5V11H7M8,11H10V13H8M8,8H10V10H8M11,11H13V13H11M11,8H13V10H11M20,5H4C2.89,5 2,5.89 2,7V17A2,2 0 0,0 4,19H20A2,2 0 0,0 22,17V7C22,5.89 21.1,5 20,5Z" /></svg>`
+        teclado: `<svg class="rules-icons" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>keyboard</title><path d="M19,10H17V8H19M19,13H17V11H19M16,10H14V8H16M16,13H14V11H16M16,17H8V15H16M7,10H5V8H7M7,13H5V11H7M8,11H10V13H8M8,8H10V10H8M11,11H13V13H11M11,8H13V10H11M20,5H4C2.89,5 2,5.89 2,7V17A2,2 0 0,0 4,19H20A2,2 0 0,0 22,17V7C22,5.89 21.1,5 20,5Z" /></svg>`,
+        grilla: `<svg class="rules-icons" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>grid</title><path d="M3,3H11V11H3V3M13,3H21V11H13V3M3,13H11V21H3V13M13,13H21V21H13V13Z" /></svg>`,
+        lupa: `<svg class="rules-icons" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>magnify</title><path d="M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z" /></svg>`
     };
 
     const MODOS = {
@@ -52,6 +56,13 @@ document.addEventListener('DOMContentLoaded', () => {
             reglas: [
                 { icono: iconoRegla.foto, titulo: 'Mirá la foto', texto: 'Reconocé al presidente que aparece en la imagen.' },
                 { icono: iconoRegla.teclado, titulo: 'Escribí el apellido', texto: 'Adiviná, uno por uno, la cantidad de presidentes que elijas al azar.' }
+            ]
+        },
+        sopa: {
+            badge: 'SOPA DE LETRAS',
+            reglas: [
+                { icono: iconoRegla.lupa, titulo: 'Encontrá los apellidos', texto: 'Arrastrá sobre la grilla para marcar el apellido de cada presidente (horizontal, vertical o diagonal).' },
+                { icono: iconoRegla.grilla, titulo: 'Guiate por las pistas', texto: 'Cada pista muestra la foto y los años de mandato. Encontralos todos antes de que se acabe el tiempo.' }
             ]
         }
     };
@@ -622,6 +633,8 @@ const listaPresidentes = [
     function iniciarModoSeleccionado() {
         if (modoSeleccionado === 'imagen') {
             iniciarJuegoImagen();
+        } else if (modoSeleccionado === 'sopa') {
+            iniciarJuegoSopa();
         } else {
             iniciarJuego();
         }
@@ -951,6 +964,363 @@ const listaPresidentes = [
     }
 
 
+    // ==========================================================================
+    //  MODO "SOPA DE LETRAS"
+    // ==========================================================================
+    //  A la izquierda una grilla de letras; a la derecha, una pista por
+    //  presidente (foto + años de mandato). Hay que encontrar cada APELLIDO
+    //  arrastrando sobre la grilla (horizontal, vertical o diagonal ↘). Al
+    //  encontrarlo se tacha la pista y se revela el nombre. Se gana al
+    //  encontrar todos los apellidos antes de que se acabe el tiempo.
+    //  Reutiliza: presidentesUnicos, mezclarArray, normalizarTexto,
+    //  nombreCompletoPresidente, mostrarFinJuego (vía window.listaFiltrada +
+    //  la variable aciertos).
+
+    // Direcciones de colocación (v1 "fácil": sin palabras invertidas). [df, dc]
+    const SOPA_DIRECCIONES = [
+        [0, 1],   // horizontal  →
+        [1, 0],   // vertical    ↓
+        [1, 1]    // diagonal    ↘
+    ];
+    const SOPA_LETRAS_RELLENO = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+    let sopaObjetivos = [];      // [{ u, palabra, celdas:[{r,c}], encontrada }]
+    let sopaGrilla = [];         // matriz de letras
+    let sopaTam = 0;             // lado de la grilla
+    let sopaTimer = null;
+    let sopaTerminado = false;
+
+    // Arrastre en curso
+    let sopaArrastrando = false;
+    let sopaCeldaInicio = null;  // {r,c}
+    let sopaCeldasMarcadas = []; // celdas resaltadas mientras se arrastra
+
+    // Apellido "sopeable": una sola palabra, sin tildes, en MAYÚSCULAS.
+    function palabraSopaDe(u) {
+        return normalizarTexto(u.apellido).replace(/[^a-z]/g, "").toUpperCase();
+    }
+
+    // Presidentes elegibles: apellido de una sola palabra y de largo razonable
+    // para que entre en la grilla y sea reconocible.
+    function presidentesSopaDisponibles(maxLargo) {
+        return presidentesUnicos.filter(u => {
+            if (configuracionJuego.eliminarDeFacto && u.deFacto) return false;
+            if (configuracionJuego.eliminarMenosDeUnAnioSopa && !u.periodos.some(periodoDuroMasDeUnAnio)) return false;
+            if (u.apellido.trim().includes(" ")) return false; // apellidos compuestos afuera
+            const palabra = palabraSopaDe(u);
+            return palabra.length >= 4 && palabra.length <= maxLargo;
+        });
+    }
+
+    // Elige hasta `cantidad` presidentes con apellido único.
+    function elegirPalabrasSopa(cantidad, maxLargo) {
+        const pool = mezclarArray(presidentesSopaDisponibles(maxLargo));
+        const elegidas = [];
+        const usadas = new Set();
+        for (const u of pool) {
+            if (elegidas.length >= cantidad) break;
+            const palabra = palabraSopaDe(u);
+            if (usadas.has(palabra)) continue;
+            usadas.add(palabra);
+            elegidas.push({ u, palabra });
+        }
+        return elegidas;
+    }
+
+    // Intenta ubicar una palabra en la grilla; devuelve las celdas o null.
+    function intentarColocarSopa(grilla, palabra, tam, intentos = 150) {
+        for (let t = 0; t < intentos; t++) {
+            const [df, dc] = SOPA_DIRECCIONES[Math.floor(Math.random() * SOPA_DIRECCIONES.length)];
+            const maxR = df ? tam - palabra.length : tam - 1;
+            const maxC = dc ? tam - palabra.length : tam - 1;
+            const r0 = Math.floor(Math.random() * (maxR + 1));
+            const c0 = Math.floor(Math.random() * (maxC + 1));
+            const celdas = [];
+            let ok = true;
+            for (let i = 0; i < palabra.length; i++) {
+                const r = r0 + df * i;
+                const c = c0 + dc * i;
+                const actual = grilla[r][c];
+                if (actual && actual !== palabra[i]) { ok = false; break; }
+                celdas.push({ r, c });
+            }
+            if (ok) return celdas;
+        }
+        return null;
+    }
+
+    function construirGrillaSopa(palabras, tam) {
+        const grilla = Array.from({ length: tam }, () => Array(tam).fill(""));
+        const colocadas = [];
+        // Palabras más largas primero: son las más difíciles de ubicar.
+        [...palabras].sort((a, b) => b.palabra.length - a.palabra.length).forEach(item => {
+            const celdas = intentarColocarSopa(grilla, item.palabra, tam);
+            if (!celdas) return; // si no entra, se descarta (rara vez pasa)
+            celdas.forEach(({ r, c }, i) => { grilla[r][c] = item.palabra[i]; });
+            colocadas.push({ u: item.u, palabra: item.palabra, celdas, encontrada: false });
+        });
+        for (let r = 0; r < tam; r++) {
+            for (let c = 0; c < tam; c++) {
+                if (!grilla[r][c]) {
+                    grilla[r][c] = SOPA_LETRAS_RELLENO[Math.floor(Math.random() * SOPA_LETRAS_RELLENO.length)];
+                }
+            }
+        }
+        return { grilla, colocadas };
+    }
+
+    function aniosMandato(u) {
+        return u.periodos.map(p => {
+            const ini = p.inicio ? p.inicio.getFullYear() : "";
+            const fin = p.fin ? p.fin.getFullYear() : "hoy";
+            return `${ini}–${fin}`;
+        }).join("  ·  ");
+    }
+
+    function iniciarJuegoSopa() {
+        modoActual = 'sopa';
+        buttonSection.remove();
+        rulesSection.remove();
+        modosDeJuegoSection.remove();
+        h1.remove();
+        if (kicker) kicker.remove();
+        main.classList.add("juego-activo");
+        body.classList.add("juego-activo");
+
+        sopaTerminado = false;
+        sopaArrastrando = false;
+        sopaCeldaInicio = null;
+        sopaCeldasMarcadas = [];
+
+        const esMobile = window.matchMedia('(max-width: 768px)').matches;
+        const cantidad = esMobile ? 7 : 10;
+        const maxLargo = esMobile ? 11 : 12;
+        const baseTam = esMobile ? 12 : 14;
+
+        const elegidas = elegirPalabrasSopa(cantidad, maxLargo);
+        const largoMax = elegidas.reduce((m, x) => Math.max(m, x.palabra.length), 0);
+        sopaTam = Math.max(baseTam, largoMax + 1);
+
+        const { grilla, colocadas } = construirGrillaSopa(elegidas, sopaTam);
+        sopaGrilla = grilla;
+        sopaObjetivos = colocadas;
+
+        // mostrarFinJuego() usa window.listaFiltrada y la variable aciertos
+        window.listaFiltrada = sopaObjetivos;
+        aciertos = 0;
+
+        const filasHTML = grilla.map((fila, r) =>
+            fila.map((ch, c) => `<button type="button" class="sopa-celda" data-r="${r}" data-c="${c}">${ch}</button>`).join("")
+        ).join("");
+
+        const pistasHTML = sopaObjetivos.map((obj, i) => `
+            <li class="sopa-pista" data-i="${i}">
+                <img class="sopa-pista-foto" src="${obj.u.imagenes[0]}" alt="" loading="lazy">
+                <span class="sopa-pista-datos">
+                    <span class="sopa-pista-anios">${aniosMandato(obj.u)}</span>
+                    <span class="sopa-pista-nombre"></span>
+                </span>
+            </li>
+        `).join("");
+
+        const tiempoInicial = `${configuracionJuego.tiempoSopa.toString().padStart(2, "0")}:00`;
+
+        const contenido = `
+            <h4 class="jugando-modo-heading">JUGANDO MODO <span class="modo-de-juego-seleccionado">SOPA DE LETRAS</span></h4>
+            <div class="sopa-container">
+                <div class="sopa-grid-col">
+                    <div class="sopa-grid" style="grid-template-columns: repeat(${sopaTam}, 1fr);">
+                        ${filasHTML}
+                    </div>
+                </div>
+                <div class="sopa-panel">
+                    <div class="sopa-hud">
+                        <span class="sopa-timer" id="sopa-timer">${tiempoInicial}</span>
+                        <span class="sopa-contador"><span id="sopa-aciertos">0</span> / <span id="sopa-total">${sopaObjetivos.length}</span></span>
+                    </div>
+                    <p class="sopa-instruccion">Encontrá el apellido de cada presidente</p>
+                    <ul class="sopa-pistas">${pistasHTML}</ul>
+                    <button class="sopa-rendirse" type="button">Rendirse</button>
+                </div>
+            </div>
+        `;
+        main.insertAdjacentHTML("beforeend", contenido);
+
+        if (esMobile) {
+            const navToggleEl = document.querySelector(".nav-toggle");
+            const jugandoModoHeading = document.querySelector(".jugando-modo-heading");
+            if (navToggleEl && jugandoModoHeading) {
+                navToggleEl.insertAdjacentElement("afterend", jugandoModoHeading);
+            }
+        }
+
+        wireSopaEventos();
+        iniciarTemporizadorSopa(configuracionJuego.tiempoSopa * 60);
+    }
+
+    function wireSopaEventos() {
+        const grid = document.querySelector(".sopa-grid");
+        if (!grid) return;
+
+        const celdaDesde = (nodo) => {
+            const btn = nodo && nodo.closest ? nodo.closest(".sopa-celda") : null;
+            if (!btn || !grid.contains(btn)) return null;
+            return { r: +btn.dataset.r, c: +btn.dataset.c };
+        };
+
+        grid.addEventListener("pointerdown", (e) => {
+            if (sopaTerminado) return;
+            const celda = celdaDesde(e.target);
+            if (!celda) return;
+            e.preventDefault();
+            sopaArrastrando = true;
+            sopaCeldaInicio = celda;
+            pintarMarcadoSopa([celda]);
+        });
+
+        grid.addEventListener("pointermove", (e) => {
+            if (!sopaArrastrando || !sopaCeldaInicio) return;
+            const celda = celdaDesde(document.elementFromPoint(e.clientX, e.clientY));
+            if (!celda) return;
+            const linea = lineaEntreSopa(sopaCeldaInicio, celda);
+            if (linea) pintarMarcadoSopa(linea);
+        });
+
+        const terminarArrastre = () => {
+            if (!sopaArrastrando) return;
+            sopaArrastrando = false;
+            const seleccion = sopaCeldasMarcadas.slice();
+            limpiarMarcadoSopa();
+            sopaCeldaInicio = null;
+            evaluarSeleccionSopa(seleccion);
+        };
+        grid.addEventListener("pointerup", terminarArrastre);
+        grid.addEventListener("pointercancel", terminarArrastre);
+        window.addEventListener("pointerup", terminarArrastre);
+
+        const botonRendirse = document.querySelector(".sopa-rendirse");
+        if (botonRendirse) botonRendirse.addEventListener("click", rendirseSopa);
+    }
+
+    // Celdas en línea recta entre a y b, solo si es horizontal, vertical o
+    // diagonal exacta. Devuelve null si no forma una recta válida.
+    function lineaEntreSopa(a, b) {
+        const dr = b.r - a.r;
+        const dc = b.c - a.c;
+        if (dr === 0 && dc === 0) return [{ r: a.r, c: a.c }];
+        const esRecta = dr === 0 || dc === 0 || Math.abs(dr) === Math.abs(dc);
+        if (!esRecta) return null;
+        const pasos = Math.max(Math.abs(dr), Math.abs(dc));
+        const sr = Math.sign(dr);
+        const sc = Math.sign(dc);
+        const celdas = [];
+        for (let i = 0; i <= pasos; i++) celdas.push({ r: a.r + sr * i, c: a.c + sc * i });
+        return celdas;
+    }
+
+    function pintarMarcadoSopa(celdas) {
+        limpiarMarcadoSopa();
+        sopaCeldasMarcadas = celdas;
+        celdas.forEach(({ r, c }) => {
+            const btn = document.querySelector(`.sopa-celda[data-r="${r}"][data-c="${c}"]`);
+            if (btn) btn.classList.add("marcando");
+        });
+    }
+
+    function limpiarMarcadoSopa() {
+        document.querySelectorAll(".sopa-celda.marcando").forEach(b => b.classList.remove("marcando"));
+        sopaCeldasMarcadas = [];
+    }
+
+    function evaluarSeleccionSopa(celdas) {
+        if (sopaTerminado || !celdas || celdas.length < 2) return;
+        const dentro = celdas.every(({ r, c }) => sopaGrilla[r] && sopaGrilla[r][c] !== undefined);
+        if (!dentro) return;
+
+        const texto = celdas.map(({ r, c }) => sopaGrilla[r][c]).join("");
+        const invertido = texto.split("").reverse().join("");
+        const obj = sopaObjetivos.find(o => !o.encontrada && (o.palabra === texto || o.palabra === invertido));
+        if (!obj) return;
+
+        obj.encontrada = true;
+        obj.u.resultadoPartida = 'acierto';
+        obj.celdas.forEach(({ r, c }) => {
+            const btn = document.querySelector(`.sopa-celda[data-r="${r}"][data-c="${c}"]`);
+            if (btn) btn.classList.add("encontrada");
+        });
+        marcarPistaSopa(sopaObjetivos.indexOf(obj), 'resuelta', obj.u);
+
+        aciertos++;
+        const cont = document.getElementById("sopa-aciertos");
+        if (cont) cont.textContent = aciertos;
+
+        if (sopaObjetivos.every(o => o.encontrada)) finalizarSopa(true);
+    }
+
+    function marcarPistaSopa(indice, clase, u) {
+        const pista = document.querySelector(`.sopa-pista[data-i="${indice}"]`);
+        if (!pista) return;
+        pista.classList.add(clase);
+        const nombre = pista.querySelector(".sopa-pista-nombre");
+        if (nombre) nombre.textContent = nombreCompletoPresidente(u);
+    }
+
+    function iniciarTemporizadorSopa(segundos) {
+        detenerTemporizadorSopa();
+        let restante = Math.max(1, Math.floor(segundos));
+        const div = document.getElementById("sopa-timer");
+        const pintar = () => {
+            const m = String(Math.floor(restante / 60)).padStart(2, "0");
+            const s = String(restante % 60).padStart(2, "0");
+            if (div) {
+                div.textContent = `${m}:${s}`;
+                div.classList.toggle("por-terminar", restante <= 30);
+            }
+        };
+        pintar();
+        sopaTimer = setInterval(() => {
+            restante--;
+            pintar();
+            if (restante <= 0) {
+                detenerTemporizadorSopa();
+                finalizarSopa(false, 'tiempo');
+            }
+        }, 1000);
+    }
+
+    function detenerTemporizadorSopa() {
+        if (sopaTimer) { clearInterval(sopaTimer); sopaTimer = null; }
+    }
+
+    function revelarSopaNoEncontradas() {
+        sopaObjetivos.forEach((o, i) => {
+            if (o.encontrada) return;
+            o.u.resultadoPartida = 'error';
+            o.celdas.forEach(({ r, c }) => {
+                const btn = document.querySelector(`.sopa-celda[data-r="${r}"][data-c="${c}"]`);
+                if (btn) btn.classList.add("revelada");
+            });
+            marcarPistaSopa(i, 'revelada', o.u);
+        });
+    }
+
+    function finalizarSopa(gano, motivo) {
+        if (sopaTerminado) return;
+        sopaTerminado = true;
+        sopaArrastrando = false;
+        detenerTemporizadorSopa();
+        limpiarMarcadoSopa();
+        const botonRendirse = document.querySelector(".sopa-rendirse");
+        if (botonRendirse) botonRendirse.disabled = true;
+        if (!gano) revelarSopaNoEncontradas();
+        mostrarFinJuego(gano ? 'victoria' : (motivo === 'tiempo' ? 'tiempo' : 'rendicion'));
+    }
+
+    function rendirseSopa() {
+        finalizarSopa(false, 'rendicion');
+    }
+
+
     // --- Estado de pausa ---
     let pausado = false;
     let tiempoRestanteGlobal; // lo usamos para guardar segundos restantes
@@ -997,20 +1367,25 @@ const listaPresidentes = [
     function reiniciarJuego() {
         clearInterval(window.temporizadorInterval);
         detenerTemporizadorImagen();
+        detenerTemporizadorSopa();
         aciertos = 0;
         pausado = false;
 
         // Eliminar pantalla de juego anterior
         const tabla = document.querySelector(".tabla-container");
         const juegoImagen = document.querySelector(".juego-imagen-container");
+        const juegoSopa = document.querySelector(".sopa-container");
         const headingModo = document.querySelector(".jugando-modo-heading");
         if (tabla) tabla.remove();
         if (juegoImagen) juegoImagen.remove();
+        if (juegoSopa) juegoSopa.remove();
         if (headingModo) headingModo.remove();
 
         // Volver a iniciar el modo que se estaba jugando
         if (modoActual === 'imagen') {
             iniciarJuegoImagen();
+        } else if (modoActual === 'sopa') {
+            iniciarJuegoSopa();
         } else {
             iniciarJuego();
         }
@@ -1064,13 +1439,17 @@ const listaPresidentes = [
     // El temporizador tiene un valor propio por modo:
     // clásico -> configuracionJuego.tiempo, imagen -> configuracionJuego.tiempoImagen
     function claveTiempoActual() {
-        return modoSeleccionado === 'imagen' ? 'tiempoImagen' : 'tiempo';
+        if (modoSeleccionado === 'imagen') return 'tiempoImagen';
+        if (modoSeleccionado === 'sopa') return 'tiempoSopa';
+        return 'tiempo';
     }
 
     // Ídem para "eliminar gobiernos de menos de 1 año": cada modo guarda su
     // propia preferencia (en imagen arranca activado, en clásico no).
     function claveEliminarCortosActual() {
-        return modoSeleccionado === 'imagen' ? 'eliminarMenosDeUnAnioImagen' : 'eliminarMenosDeUnAnioClasico';
+        if (modoSeleccionado === 'imagen') return 'eliminarMenosDeUnAnioImagen';
+        if (modoSeleccionado === 'sopa') return 'eliminarMenosDeUnAnioSopa';
+        return 'eliminarMenosDeUnAnioClasico';
     }
 
     // --- Botón Configuración ---
