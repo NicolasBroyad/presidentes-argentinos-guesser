@@ -1890,8 +1890,7 @@ const listaPresidentes = [
         cruciCeldaActiva = { r, c };
         cruciActiva = ent;
         pintarCrucigrama();
-        const inp = inputCruci(r, c);
-        if (inp) inp.focus({ preventScroll: true });
+        enfocarCeldaCruci(r, c);
     }
 
     function activarEntrada(ent, irAlInicio) {
@@ -1905,8 +1904,16 @@ const listaPresidentes = [
             cruciCeldaActiva = { r: objetivo.r, c: objetivo.c };
         }
         pintarCrucigrama();
-        const inp = inputCruci(cruciCeldaActiva.r, cruciCeldaActiva.c);
-        if (inp) inp.focus({ preventScroll: true });
+        enfocarCeldaCruci(cruciCeldaActiva.r, cruciCeldaActiva.c);
+    }
+
+    // Enfoca un input y selecciona su contenido (si tiene), para poder
+    // sobrescribir una letra ya puesta sin tener que reposicionar el cursor.
+    function enfocarCeldaCruci(r, c) {
+        const inp = inputCruci(r, c);
+        if (!inp) return;
+        inp.focus({ preventScroll: true });
+        if (inp.value) { try { inp.select(); } catch (e) { /* noop */ } }
     }
 
     function pintarCrucigrama() {
@@ -1932,15 +1939,50 @@ const listaPresidentes = [
         }
     }
 
-    function moverEnEntrada(delta) {
+    function moverEnEntrada(delta, saltarLlenas) {
         if (!cruciActiva || !cruciCeldaActiva) return;
-        const idx = cruciActiva.celdas.findIndex(c => c.r === cruciCeldaActiva.r && c.c === cruciCeldaActiva.c);
-        const next = idx + delta;
-        if (next < 0 || next >= cruciActiva.celdas.length) return;
-        cruciCeldaActiva = { ...cruciActiva.celdas[next] };
+        const celdas = cruciActiva.celdas;
+        const idx = celdas.findIndex(c => c.r === cruciCeldaActiva.r && c.c === cruciCeldaActiva.c);
+        let next = idx + delta;
+        // Al avanzar tipeando, saltear los casilleros que ya tienen letra
+        // (p. ej. de una palabra cruzada ya adivinada) hasta el próximo vacío.
+        if (saltarLlenas) {
+            let t = idx + delta;
+            while (t >= 0 && t < celdas.length && inputCruci(celdas[t].r, celdas[t].c).value) t += delta;
+            if (t >= 0 && t < celdas.length) {
+                next = t;
+            } else {
+                // No hay vacío hacia adelante: buscar el primer vacío de toda la
+                // palabra; si tampoco hay, quedarse en el borde (sin trabarse).
+                const v = celdas.findIndex(({ r, c }) => !inputCruci(r, c).value);
+                next = v >= 0 ? v : Math.min(celdas.length - 1, Math.max(0, idx + delta));
+            }
+        }
+        if (next < 0 || next >= celdas.length) return;
+        cruciCeldaActiva = { ...celdas[next] };
         pintarCrucigrama();
-        const inp = inputCruci(cruciCeldaActiva.r, cruciCeldaActiva.c);
-        if (inp) inp.focus({ preventScroll: true });
+        enfocarCeldaCruci(cruciCeldaActiva.r, cruciCeldaActiva.c);
+    }
+
+    function palabraLlenaYCorrecta(ent) {
+        return ent.celdas.every(({ r, c }) => {
+            const i = inputCruci(r, c);
+            return i && i.value.toUpperCase() === cruciData.grilla[r][c].letra;
+        });
+    }
+
+    // Salta a la próxima pista (en orden) que todavía tenga casilleros vacíos.
+    function saltarSiguientePistaPendiente() {
+        const n = cruciEntradas.length;
+        const base = cruciEntradas.indexOf(cruciActiva);
+        for (let k = 1; k <= n; k++) {
+            const cand = cruciEntradas[(base + k) % n];
+            if (cand.celdas.some(({ r, c }) => !inputCruci(r, c).value)) {
+                activarEntrada(cand, true);
+                return true;
+            }
+        }
+        return false;
     }
 
     function onCruciInput(e) {
@@ -1950,8 +1992,14 @@ const listaPresidentes = [
             .replace(/[̀-ͯ]/g, "").replace(/[^A-ZÑ]/g, "");
         inp.value = limpio.slice(-1);
         inp.classList.remove("cruci-input--mal");
-        if (inp.value) moverEnEntrada(1);
         refrescarEstadoCrucigrama();
+        if (inp.value) {
+            if (cruciActiva && palabraLlenaYCorrecta(cruciActiva)) {
+                saltarSiguientePistaPendiente(); // palabra lista -> próxima pista
+            } else {
+                moverEnEntrada(1, true);
+            }
+        }
         comprobarVictoriaCrucigrama();
     }
 
