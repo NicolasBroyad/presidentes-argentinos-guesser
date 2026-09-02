@@ -40,7 +40,8 @@ document.addEventListener('DOMContentLoaded', () => {
         foto: `<svg class="rules-icons" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>camera</title><path d="M4,4H7L9,2H15L17,4H20A2,2 0 0,1 22,6V18A2,2 0 0,1 20,20H4A2,2 0 0,1 2,18V6A2,2 0 0,1 4,4M12,7A5,5 0 0,0 7,12A5,5 0 0,0 12,17A5,5 0 0,0 17,12A5,5 0 0,0 12,7M12,9A3,3 0 0,1 15,12A3,3 0 0,1 12,15A3,3 0 0,1 9,12A3,3 0 0,1 12,9Z" /></svg>`,
         teclado: `<svg class="rules-icons" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>keyboard</title><path d="M19,10H17V8H19M19,13H17V11H19M16,10H14V8H16M16,13H14V11H16M16,17H8V15H16M7,10H5V8H7M7,13H5V11H7M8,11H10V13H8M8,8H10V10H8M11,11H13V13H11M11,8H13V10H11M20,5H4C2.89,5 2,5.89 2,7V17A2,2 0 0,0 4,19H20A2,2 0 0,0 22,17V7C22,5.89 21.1,5 20,5Z" /></svg>`,
         grilla: `<svg class="rules-icons" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>grid</title><path d="M3,3H11V11H3V3M13,3H21V11H13V3M3,13H11V21H3V13M13,13H21V21H13V13Z" /></svg>`,
-        lupa: `<svg class="rules-icons" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>magnify</title><path d="M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z" /></svg>`
+        lupa: `<svg class="rules-icons" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>magnify</title><path d="M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z" /></svg>`,
+        calendario: `<svg class="rules-icons" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>calendar</title><path d="M19,19H5V8H19M16,1V3H8V1H6V3H5C3.89,3 3,3.89 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5C21,3.89 20.1,3 19,3H18V1M17,12H12V17H17V12Z" /></svg>`
     };
 
     const MODOS = {
@@ -63,6 +64,13 @@ document.addEventListener('DOMContentLoaded', () => {
             reglas: [
                 { icono: iconoRegla.lupa, titulo: 'Encontrá los apellidos', texto: 'Arrastrá sobre la grilla para marcar el apellido de cada presidente (horizontal, vertical o diagonal).' },
                 { icono: iconoRegla.grilla, titulo: 'Guiate por las pistas', texto: 'Cada pista muestra la foto y los años de mandato. Encontralos todos antes de que se acabe el tiempo.' }
+            ]
+        },
+        crucigrama: {
+            badge: 'CRUCIGRAMA',
+            reglas: [
+                { icono: iconoRegla.calendario, titulo: 'Crucigrama del día', texto: 'Un crucigrama nuevo de presidentes cada día, igual para todos.' },
+                { icono: iconoRegla.pencil, titulo: 'Completá con los apellidos', texto: 'Cada pista es el período de gobierno; escribí el apellido del presidente en la grilla.' }
             ]
         }
     };
@@ -635,6 +643,8 @@ const listaPresidentes = [
             iniciarJuegoImagen();
         } else if (modoSeleccionado === 'sopa') {
             iniciarJuegoSopa();
+        } else if (modoSeleccionado === 'crucigrama') {
+            iniciarJuegoCrucigrama();
         } else {
             iniciarJuego();
         }
@@ -1356,6 +1366,848 @@ const listaPresidentes = [
     }
 
 
+    // ==========================================================================
+    //  MODO "CRUCIGRAMA" (del día)
+    // ==========================================================================
+    //  Un crucigrama de apellidos de presidentes que se regenera cada día y es
+    //  IGUAL para todos: toda la generación usa un PRNG sembrado con la fecha,
+    //  nunca la configuración del usuario ni el tamaño de pantalla.
+    //  Cada pista es el/los período/s de gobierno; se escribe el apellido en
+    //  la grilla. Pistas numeradas a la derecha (Horizontales / Verticales).
+
+    let cruciData = null;          // { grilla, entradas, ancho, alto }
+    let cruciEntradas = [];        // [{ palabra, u, r, c, dir, celdas, numero }]
+    let cruciMapa = new Map();     // "numero-DIR" -> entrada
+    let cruciActiva = null;        // entrada activa
+    let cruciCeldaActiva = null;   // { r, c }
+    let cruciTerminado = false;
+    let cruciCronometro = null;    // intervalo del cronómetro
+    let cruciSegundos = 0;         // tiempo transcurrido (cuenta hacia arriba)
+    let cruciResultadoOficial = null; // resultado guardado del crucigrama de hoy
+    let cruciEsRejugada = false;      // ya se completó hoy y se está rejugando
+    let cruciFinInfo = null;          // datos para el dialog de fin
+    let cruciResueltasPrev = new Set(); // entradas ya verdes (para animar las nuevas)
+
+    // --- Persistencia (localStorage) ---
+    const CRUCI_LS_RES = f => `cruci-res-${f}`;
+    const CRUCI_LS_STREAK = "cruci-streak";
+    const CRUCI_LS_RECORD = "cruci-record";
+
+    function lsLeer(clave) {
+        try { return JSON.parse(localStorage.getItem(clave)); } catch (e) { return null; }
+    }
+    function lsGuardar(clave, valor) {
+        try { localStorage.setItem(clave, JSON.stringify(valor)); } catch (e) { /* modo privado, etc. */ }
+    }
+    function fechaISOMenosDias(iso, n) {
+        const [y, m, d] = iso.split("-").map(Number);
+        const dt = new Date(y, m - 1, d - n);
+        return `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, "0")}-${String(dt.getDate()).padStart(2, "0")}`;
+    }
+
+    // Racha vigente sin tocar el storage (para mostrar durante la partida).
+    function rachaVigente(hoyISO) {
+        const s = lsLeer(CRUCI_LS_STREAK);
+        if (!s || !s.ultima) return 0;
+        if (s.ultima === hoyISO || s.ultima === fechaISOMenosDias(hoyISO, 1)) return s.count || 0;
+        return 0;
+    }
+    // Suma el día de hoy a la racha (solo al ganar por primera vez).
+    function sumarRacha(hoyISO) {
+        const s = lsLeer(CRUCI_LS_STREAK) || { count: 0, ultima: null };
+        if (s.ultima === hoyISO) return s.count;
+        s.count = (s.ultima === fechaISOMenosDias(hoyISO, 1)) ? (s.count || 0) + 1 : 1;
+        s.ultima = hoyISO;
+        lsGuardar(CRUCI_LS_STREAK, s);
+        return s.count;
+    }
+    // Compara y guarda el récord personal de tiempo. Devuelve cómo salió.
+    function evaluarRecord(segundos, hoyISO) {
+        const r = lsLeer(CRUCI_LS_RECORD);
+        if (!r || segundos < r.segundos) {
+            lsGuardar(CRUCI_LS_RECORD, { segundos, fecha: hoyISO });
+            return { nuevo: true, anterior: r ? r.segundos : null };
+        }
+        return { nuevo: false, mejor: r.segundos, fecha: r.fecha };
+    }
+
+    // --- PRNG sembrado por fecha (mulberry32) ---
+    function hashCadena(str) {
+        let h = 2166136261 >>> 0;
+        for (let i = 0; i < str.length; i++) {
+            h ^= str.charCodeAt(i);
+            h = Math.imul(h, 16777619) >>> 0;
+        }
+        return h >>> 0;
+    }
+    function mulberry32(a) {
+        return function () {
+            a |= 0; a = (a + 0x6D2B79F5) | 0;
+            let t = Math.imul(a ^ (a >>> 15), 1 | a);
+            t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+            return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+        };
+    }
+    function fechaHoyISO() {
+        const d = new Date();
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    }
+    function fechaHoyLegible() {
+        const d = new Date();
+        return d.toLocaleDateString("es-AR", { day: "numeric", month: "long", year: "numeric" });
+    }
+    function mezclarConRng(array, rng) {
+        const copia = array.slice();
+        for (let i = copia.length - 1; i > 0; i--) {
+            const j = Math.floor(rng() * (i + 1));
+            [copia[i], copia[j]] = [copia[j], copia[i]];
+        }
+        return copia;
+    }
+
+    // Apellidos aptos para el crucigrama: una sola palabra, sin tildes, 4–10
+    // letras. NO se aplican los filtros de configuración (el del día es fijo).
+    function poolCrucigrama() {
+        const vistas = new Set();
+        const pool = [];
+        presidentesUnicos.forEach(u => {
+            if (u.apellido.trim().includes(" ")) return;
+            const palabra = normalizarTexto(u.apellido).replace(/[^a-z]/g, "").toUpperCase();
+            if (palabra.length < 4 || palabra.length > 10) return;
+            if (vistas.has(palabra)) return;
+            vistas.add(palabra);
+            pool.push({ u, palabra });
+        });
+        return pool;
+    }
+
+    // --- Generador de crucigrama (greedy con cruces + compacidad) ---
+    const CRUCI_DIM_MAX = 15; // lado máximo del tablero
+
+    function armarCrucigrama(orden, rng) {
+        const celdas = new Map(); // "r,c" -> { letra }
+        const entradas = [];      // { palabra, u, r, c, dir, celdas:[{r,c}] }
+        const key = (r, c) => `${r},${c}`;
+        const bounds = { minR: 0, minC: 0, maxR: 0, maxC: 0 };
+
+        function puedeColocar(palabra, r0, c0, dir) {
+            const [dr, dc] = dir === 'H' ? [0, 1] : [1, 0];
+            const [pr, pc] = dir === 'H' ? [1, 0] : [0, 1];
+            if (celdas.has(key(r0 - dr, c0 - dc))) return null;
+            if (celdas.has(key(r0 + dr * palabra.length, c0 + dc * palabra.length))) return null;
+            let cruces = 0, nuevas = 0;
+            for (let i = 0; i < palabra.length; i++) {
+                const r = r0 + dr * i, c = c0 + dc * i;
+                const cel = celdas.get(key(r, c));
+                if (cel) {
+                    if (cel.letra !== palabra[i]) return null;
+                    cruces++;
+                } else {
+                    nuevas++;
+                    if (celdas.has(key(r + pr, c + pc))) return null;
+                    if (celdas.has(key(r - pr, c - pc))) return null;
+                }
+            }
+            if (nuevas === 0) return null;                       // palabra duplicada encima de otra
+            if (entradas.length > 0 && cruces === 0) return null; // toda palabra debe cruzar
+            return { cruces, nuevas };
+        }
+
+        // Cuánto crecería cada lado del tablero al colocar esta palabra, y si
+        // el tablero seguiría dentro del máximo.
+        function crecimiento(r0, c0, dir, largo) {
+            const rf = dir === 'H' ? r0 : r0 + largo - 1;
+            const cf = dir === 'H' ? c0 + largo - 1 : c0;
+            const nMinR = Math.min(bounds.minR, r0), nMinC = Math.min(bounds.minC, c0);
+            const nMaxR = Math.max(bounds.maxR, rf), nMaxC = Math.max(bounds.maxC, cf);
+            const alto = nMaxR - nMinR + 1, ancho = nMaxC - nMinC + 1;
+            if (alto > CRUCI_DIM_MAX || ancho > CRUCI_DIM_MAX) return null;
+            const crece = (alto - (bounds.maxR - bounds.minR + 1)) + (ancho - (bounds.maxC - bounds.minC + 1));
+            return { crece, nMinR, nMinC, nMaxR, nMaxC };
+        }
+
+        function colocar(palabra, u, r0, c0, dir) {
+            const [dr, dc] = dir === 'H' ? [0, 1] : [1, 0];
+            const cs = [];
+            for (let i = 0; i < palabra.length; i++) {
+                const r = r0 + dr * i, c = c0 + dc * i;
+                if (!celdas.has(key(r, c))) celdas.set(key(r, c), { letra: palabra[i] });
+                cs.push({ r, c });
+                bounds.minR = Math.min(bounds.minR, r); bounds.minC = Math.min(bounds.minC, c);
+                bounds.maxR = Math.max(bounds.maxR, r); bounds.maxC = Math.max(bounds.maxC, c);
+            }
+            entradas.push({ palabra, u, r: r0, c: c0, dir, celdas: cs });
+        }
+
+        colocar(orden[0].palabra, orden[0].u, 0, 0, 'H');
+
+        for (let w = 1; w < orden.length; w++) {
+            const { palabra, u } = orden[w];
+            let mejor = null;
+            for (const ent of entradas) {
+                for (let i = 0; i < palabra.length; i++) {
+                    for (let j = 0; j < ent.palabra.length; j++) {
+                        if (palabra[i] !== ent.palabra[j]) continue;
+                        const dir = ent.dir === 'H' ? 'V' : 'H';
+                        const [dr, dc] = dir === 'H' ? [0, 1] : [1, 0];
+                        const cj = ent.celdas[j];
+                        const r0 = cj.r - dr * i;
+                        const c0 = cj.c - dc * i;
+                        const val = puedeColocar(palabra, r0, c0, dir);
+                        if (!val) continue;
+                        const crec = crecimiento(r0, c0, dir, palabra.length);
+                        if (!crec) continue; // se pasa del tamaño máximo
+                        const score = val.cruces * 12 - val.nuevas * 0.4 - crec.crece * 4 + rng() * 0.4;
+                        if (!mejor || score > mejor.score) mejor = { r0, c0, dir, score };
+                    }
+                }
+            }
+            if (mejor) colocar(palabra, u, mejor.r0, mejor.c0, mejor.dir);
+        }
+
+        // Normalizar coordenadas a (0,0)
+        let minR = Infinity, minC = Infinity, maxR = -Infinity, maxC = -Infinity;
+        for (const k of celdas.keys()) {
+            const [r, c] = k.split(",").map(Number);
+            if (r < minR) minR = r; if (c < minC) minC = c;
+            if (r > maxR) maxR = r; if (c > maxC) maxC = c;
+        }
+        const alto = maxR - minR + 1, ancho = maxC - minC + 1;
+        const grilla = Array.from({ length: alto }, () => Array(ancho).fill(null));
+        for (const [k, v] of celdas.entries()) {
+            const [r, c] = k.split(",").map(Number);
+            grilla[r - minR][c - minC] = { letra: v.letra };
+        }
+        entradas.forEach(e => {
+            e.r -= minR; e.c -= minC;
+            e.celdas = e.celdas.map(({ r, c }) => ({ r: r - minR, c: c - minC }));
+        });
+
+        // Numerar celdas de inicio
+        let num = 0;
+        const numeroDe = new Map();
+        for (let r = 0; r < alto; r++) {
+            for (let c = 0; c < ancho; c++) {
+                if (!grilla[r][c]) continue;
+                const inicioH = (c === 0 || !grilla[r][c - 1]) && (c + 1 < ancho && grilla[r][c + 1]);
+                const inicioV = (r === 0 || !grilla[r - 1][c]) && (r + 1 < alto && grilla[r + 1][c]);
+                if (inicioH || inicioV) {
+                    num++;
+                    grilla[r][c].num = num;
+                    numeroDe.set(`${r},${c}`, num);
+                }
+            }
+        }
+        entradas.forEach(e => { e.numero = numeroDe.get(`${e.r},${e.c}`); });
+        entradas.sort((a, b) => (a.numero - b.numero) || (a.dir === 'H' ? -1 : 1));
+
+        return { grilla, entradas, ancho, alto, area: ancho * alto, celdasUsadas: celdas.size };
+    }
+
+    function construirCrucigrama(pool, rng) {
+        // "Calidad" = muchas palabras cruzadas y tablero compacto (buena
+        // densidad de relleno). Probamos varios órdenes y nos quedamos con el
+        // mejor.
+        const calidad = res => res.entradas.length * 100 - res.area
+            + (res.celdasUsadas / res.area) * 60;
+        let mejor = null;
+        for (let intento = 0; intento < 40; intento++) {
+            const orden = mezclarConRng(pool, rng)
+                .sort((a, b) => b.palabra.length - a.palabra.length);
+            const res = armarCrucigrama(orden, rng);
+            if (!mejor || calidad(res) > calidad(mejor)) mejor = res;
+            if (mejor.entradas.length >= 9 && mejor.celdasUsadas / mejor.area >= 0.42) break;
+        }
+        return mejor;
+    }
+
+    function inputCruci(r, c) {
+        return document.querySelector(`.cruci-input[data-r="${r}"][data-c="${c}"]`);
+    }
+    function entradasEnCelda(r, c) {
+        return cruciEntradas.filter(e => e.celdas.some(cc => cc.r === r && cc.c === c));
+    }
+    function periodosTexto(u) {
+        return u.periodos.map(p => p.toString().replace(/\s+/g, "")).join("  ·  ");
+    }
+
+    // --- Pistas del crucigrama ---
+    // 6 tipos por presidente. La del día se elige con el PRNG sembrado por
+    // fecha: el mismo presidente en otra fecha trae otra pista (no memorizable).
+    function cruciIndicesEnLista(u) {
+        const clave = normalizarTexto(nombreCompletoPresidente(u));
+        const idxs = [];
+        listaPresidentes.forEach((p, i) => {
+            if (normalizarTexto(nombreCompletoPresidente(p)) === clave) idxs.push(i);
+        });
+        return idxs;
+    }
+    function cruciAnioAsuncion(u) {
+        const inicios = u.periodos.map(p => p.inicio && p.inicio.getFullYear()).filter(Boolean);
+        return inicios.length ? Math.min(...inicios) : null;
+    }
+
+    function cruciPistaMandatos(u) {
+        const tramos = u.periodos.map(p => {
+            const a = p.inicio ? p.inicio.getFullYear() : "?";
+            const b = p.fin ? p.fin.getFullYear() : "la actualidad";
+            return `${a}-${b}`;
+        });
+        if (tramos.length === 1) {
+            const p = u.periodos[0];
+            const a = p.inicio ? p.inicio.getFullYear() : "?";
+            const b = p.fin ? p.fin.getFullYear() : "la actualidad";
+            return `Presidente entre ${a} y ${b}`;
+        }
+        return `Gobernó en ${tramos.slice(0, -1).join(", ")} y ${tramos[tramos.length - 1]}`;
+    }
+    function cruciPistaNombrePila(u) {
+        const anio = cruciAnioAsuncion(u);
+        const nom = [u.nombre, u.segundoNombre].filter(Boolean).join(" ");
+        if (!anio || !nom) return null;
+        return `El presidente de nombre ${nom} que asumió en ${anio}`;
+    }
+    function cruciPistaAntecesor(u) {
+        const idxs = cruciIndicesEnLista(u);
+        if (!idxs.length || idxs[0] === 0) return null;
+        const ant = listaPresidentes[idxs[0] - 1];
+        const anio = cruciAnioAsuncion(u);
+        return `Asumió después de ${ant.apellido}${anio ? ` en ${anio}` : ""}`;
+    }
+    function cruciPistaSucesor(u) {
+        const idxs = cruciIndicesEnLista(u);
+        const ultimo = idxs[idxs.length - 1];
+        if (ultimo === undefined || ultimo >= listaPresidentes.length - 1) return null;
+        return `Lo sucedió en el cargo ${listaPresidentes[ultimo + 1].apellido}`;
+    }
+    function cruciPistaTipoGobierno(u) {
+        const anio = cruciAnioAsuncion(u);
+        if (!anio) return null;
+        return u.deFacto
+            ? `Presidente de facto que asumió en ${anio}`
+            : `Presidente constitucional que asumió en ${anio}`;
+    }
+    function cruciPistaDescripcion(u) {
+        if (!u.descripcion) return null;
+        let frase = u.descripcion.split(/(?<=\.)\s+/)[0] || u.descripcion;
+        [u.apellido, u.nombre, u.segundoNombre].filter(Boolean).forEach(t => {
+            frase = frase.replace(new RegExp(t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi"), "___");
+        });
+        if (frase.length > 150) frase = frase.slice(0, 147).trim() + "…";
+        return frase;
+    }
+
+    const CRUCI_PISTAS = [
+        cruciPistaMandatos, cruciPistaNombrePila, cruciPistaAntecesor,
+        cruciPistaSucesor, cruciPistaTipoGobierno, cruciPistaDescripcion
+    ];
+
+    function pistaCrucigramaDe(u, rng) {
+        const inicio = Math.floor(rng() * CRUCI_PISTAS.length);
+        for (let k = 0; k < CRUCI_PISTAS.length; k++) {
+            const texto = CRUCI_PISTAS[(inicio + k) % CRUCI_PISTAS.length](u);
+            if (texto) return texto;
+        }
+        return cruciPistaMandatos(u);
+    }
+
+    // --- Cronómetro del crucigrama (cuenta hacia arriba) ---
+    function formatoCronometro(s) {
+        const m = Math.floor(s / 60);
+        const ss = String(s % 60).padStart(2, "0");
+        if (m >= 60) return `${Math.floor(m / 60)}:${String(m % 60).padStart(2, "0")}:${ss}`;
+        return `${String(m).padStart(2, "0")}:${ss}`;
+    }
+    function iniciarCronometroCrucigrama() {
+        detenerCronometroCrucigrama();
+        cruciSegundos = 0;
+        const el = document.getElementById("cruci-timer");
+        if (el) el.textContent = "00:00";
+        cruciCronometro = setInterval(() => {
+            cruciSegundos++;
+            const t = document.getElementById("cruci-timer");
+            if (t) t.textContent = formatoCronometro(cruciSegundos);
+        }, 1000);
+    }
+    function detenerCronometroCrucigrama() {
+        if (cruciCronometro) { clearInterval(cruciCronometro); cruciCronometro = null; }
+    }
+
+    function iniciarJuegoCrucigrama() {
+        modoActual = 'crucigrama';
+        buttonSection.remove();
+        rulesSection.remove();
+        modosDeJuegoSection.remove();
+        h1.remove();
+        if (kicker) kicker.remove();
+        main.classList.add("juego-activo");
+        body.classList.add("juego-activo");
+
+        cruciTerminado = false;
+        cruciActiva = null;
+        cruciCeldaActiva = null;
+        cruciResueltasPrev = new Set();
+        cruciFinInfo = null;
+
+        const hoyISO = fechaHoyISO();
+        cruciResultadoOficial = lsLeer(CRUCI_LS_RES(hoyISO));
+        cruciEsRejugada = !!cruciResultadoOficial;
+        const racha = rachaVigente(hoyISO);
+
+        const rng = mulberry32(hashCadena("cruci-" + hoyISO));
+        const pool = mezclarConRng(poolCrucigrama(), rng).slice(0, 11);
+        cruciData = construirCrucigrama(pool, rng);
+        cruciEntradas = cruciData.entradas;
+
+        cruciEntradas.forEach(e => {
+            e.u.imagen = e.u.imagenes[0];
+            e.u.resultadoPartida = null;
+        });
+        // Pista del día para cada entrada (tipo elegido con el PRNG sembrado).
+        cruciEntradas.forEach(e => { e.pista = pistaCrucigramaDe(e.u, rng); });
+
+        // mostrarFinJuego() + historial usan window.listaFiltrada + aciertos
+        window.listaFiltrada = cruciEntradas.map(e => e.u);
+        aciertos = 0;
+
+        const filasHTML = cruciData.grilla.map((fila, r) =>
+            fila.map((cel, c) => {
+                if (!cel) return `<div class="cruci-celda cruci-celda--bloque"></div>`;
+                const numHTML = cel.num ? `<span class="cruci-num">${cel.num}</span>` : "";
+                return `<div class="cruci-celda" data-r="${r}" data-c="${c}">${numHTML}<input class="cruci-input" type="text" maxlength="1" inputmode="text" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" data-r="${r}" data-c="${c}" aria-label="fila ${r + 1}, columna ${c + 1}"></div>`;
+            }).join("")
+        ).join("");
+
+        const listaPistas = arr => arr.map(e => `
+            <li class="cruci-pista" data-entrada="${e.numero}-${e.dir}">
+                <span class="cruci-pista-num">${e.numero}</span>
+                <span class="cruci-pista-texto">${e.pista}</span>
+            </li>
+        `).join("");
+        const pistasH = cruciEntradas.filter(e => e.dir === 'H');
+        const pistasV = cruciEntradas.filter(e => e.dir === 'V');
+
+        const contenido = `
+            <h4 class="jugando-modo-heading">JUGANDO MODO <span class="modo-de-juego-seleccionado">CRUCIGRAMA</span></h4>
+            <div class="cruci-container">
+                <div class="cruci-grid-col">
+                    <div class="cruci-grid" style="--c:${cruciData.ancho}; --r:${cruciData.alto}; grid-template-columns: repeat(${cruciData.ancho}, 1fr);">
+                        ${filasHTML}
+                    </div>
+                </div>
+                <div class="cruci-panel">
+                    <div class="cruci-hud">
+                        <span class="cruci-fecha">Crucigrama del ${fechaHoyLegible()}</span>
+                        <span class="cruci-hud-right">
+                            ${racha > 0 ? `<span class="cruci-racha" title="Racha de días consecutivos">🔥 ${racha}</span>` : ""}
+                            <span class="cruci-timer" id="cruci-timer">00:00</span>
+                        </span>
+                    </div>
+                    ${cruciEsRejugada ? `<p class="cruci-rejugada-banner">Ya completaste el de hoy${cruciResultadoOficial.gano ? ` en ${formatoCronometro(cruciResultadoOficial.segundos)}` : " (te rendiste)"}. Lo estás rejugando — no cambia tu resultado.</p>` : ""}
+                    <div class="cruci-pistas-scroll">
+                        <h5 class="cruci-pistas-titulo">Horizontales</h5>
+                        <ul class="cruci-pistas">${listaPistas(pistasH)}</ul>
+                        <h5 class="cruci-pistas-titulo">Verticales</h5>
+                        <ul class="cruci-pistas">${listaPistas(pistasV)}</ul>
+                    </div>
+                    <div class="cruci-acciones">
+                        <button class="cruci-rendirse" type="button">RENDIRSE</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        main.insertAdjacentHTML("beforeend", contenido);
+
+        if (window.matchMedia('(max-width: 768px)').matches) {
+            const navToggleEl = document.querySelector(".nav-toggle");
+            const jugandoModoHeading = document.querySelector(".jugando-modo-heading");
+            if (navToggleEl && jugandoModoHeading) {
+                navToggleEl.insertAdjacentElement("afterend", jugandoModoHeading);
+            }
+        }
+
+        wireCrucigrama();
+        iniciarCronometroCrucigrama();
+    }
+
+    function wireCrucigrama() {
+        const grid = document.querySelector(".cruci-grid");
+        cruciMapa = new Map();
+        cruciEntradas.forEach(e => cruciMapa.set(`${e.numero}-${e.dir}`, e));
+
+        grid.addEventListener("click", (e) => {
+            const celda = e.target.closest(".cruci-celda");
+            if (!celda || celda.classList.contains("cruci-celda--bloque")) return;
+            const r = +celda.dataset.r, c = +celda.dataset.c;
+            // Click sobre el número: activa la palabra que ARRANCA en esa celda.
+            if (e.target.classList.contains("cruci-num")) {
+                const inicioAca = cruciEntradas.filter(x => x.celdas[0].r === r && x.celdas[0].c === c);
+                if (inicioAca.length) {
+                    const yaEnH = cruciActiva && inicioAca.includes(cruciActiva) && cruciActiva.dir === 'H';
+                    const ent = (yaEnH && inicioAca.find(x => x.dir === 'V'))
+                        || inicioAca.find(x => x.dir === 'H') || inicioAca[0];
+                    activarEntrada(ent, true);
+                    return;
+                }
+            }
+            activarDesdeCelda(r, c);
+        });
+        grid.addEventListener("input", onCruciInput);
+        grid.addEventListener("keydown", onCruciKeydown);
+        grid.addEventListener("focusin", (e) => {
+            const inp = e.target.closest(".cruci-input");
+            if (!inp) return;
+            const r = +inp.dataset.r, c = +inp.dataset.c;
+            if (!cruciCeldaActiva || cruciCeldaActiva.r !== r || cruciCeldaActiva.c !== c) {
+                activarDesdeCelda(r, c, true);
+            }
+        });
+
+        document.querySelectorAll(".cruci-pista").forEach(li => {
+            li.addEventListener("click", () => {
+                const ent = cruciMapa.get(li.dataset.entrada);
+                if (ent) activarEntrada(ent, true);
+            });
+        });
+        const btnRendirse = document.querySelector(".cruci-rendirse");
+        if (btnRendirse) btnRendirse.addEventListener("click", () => finalizarCrucigrama(false));
+
+        if (cruciEntradas.length) activarEntrada(cruciEntradas[0], true);
+    }
+
+    function activarDesdeCelda(r, c, mantener) {
+        const ents = entradasEnCelda(r, c);
+        if (!ents.length) return;
+        const mismaCelda = cruciCeldaActiva && cruciCeldaActiva.r === r && cruciCeldaActiva.c === c;
+        let ent;
+        if (!mantener && mismaCelda && ents.length > 1 && cruciActiva) {
+            ent = ents.find(e => e !== cruciActiva) || cruciActiva; // toca de nuevo -> cambia dirección
+        } else if (cruciActiva && ents.some(e => e.dir === cruciActiva.dir)) {
+            ent = ents.find(e => e.dir === cruciActiva.dir);
+        } else {
+            ent = ents[0];
+        }
+        cruciCeldaActiva = { r, c };
+        cruciActiva = ent;
+        pintarCrucigrama();
+        const inp = inputCruci(r, c);
+        if (inp) inp.focus({ preventScroll: true });
+    }
+
+    function activarEntrada(ent, irAlInicio) {
+        cruciActiva = ent;
+        const enLaEntrada = cruciCeldaActiva && ent.celdas.some(c => c.r === cruciCeldaActiva.r && c.c === cruciCeldaActiva.c);
+        if (irAlInicio || !enLaEntrada) {
+            const objetivo = ent.celdas.find(c => {
+                const i = inputCruci(c.r, c.c);
+                return i && !i.value;
+            }) || ent.celdas[0];
+            cruciCeldaActiva = { r: objetivo.r, c: objetivo.c };
+        }
+        pintarCrucigrama();
+        const inp = inputCruci(cruciCeldaActiva.r, cruciCeldaActiva.c);
+        if (inp) inp.focus({ preventScroll: true });
+    }
+
+    function pintarCrucigrama() {
+        document.querySelectorAll(".cruci-celda--activa, .cruci-celda--foco")
+            .forEach(el => el.classList.remove("cruci-celda--activa", "cruci-celda--foco"));
+        document.querySelectorAll(".cruci-pista--activa")
+            .forEach(el => el.classList.remove("cruci-pista--activa"));
+
+        if (cruciActiva) {
+            cruciActiva.celdas.forEach(({ r, c }) => {
+                const celda = document.querySelector(`.cruci-celda[data-r="${r}"][data-c="${c}"]`);
+                if (celda) celda.classList.add("cruci-celda--activa");
+            });
+            const li = document.querySelector(`.cruci-pista[data-entrada="${cruciActiva.numero}-${cruciActiva.dir}"]`);
+            if (li) {
+                li.classList.add("cruci-pista--activa");
+                li.scrollIntoView({ block: "nearest" });
+            }
+        }
+        if (cruciCeldaActiva) {
+            const celda = document.querySelector(`.cruci-celda[data-r="${cruciCeldaActiva.r}"][data-c="${cruciCeldaActiva.c}"]`);
+            if (celda) celda.classList.add("cruci-celda--foco");
+        }
+    }
+
+    function moverEnEntrada(delta) {
+        if (!cruciActiva || !cruciCeldaActiva) return;
+        const idx = cruciActiva.celdas.findIndex(c => c.r === cruciCeldaActiva.r && c.c === cruciCeldaActiva.c);
+        const next = idx + delta;
+        if (next < 0 || next >= cruciActiva.celdas.length) return;
+        cruciCeldaActiva = { ...cruciActiva.celdas[next] };
+        pintarCrucigrama();
+        const inp = inputCruci(cruciCeldaActiva.r, cruciCeldaActiva.c);
+        if (inp) inp.focus({ preventScroll: true });
+    }
+
+    function onCruciInput(e) {
+        const inp = e.target.closest(".cruci-input");
+        if (!inp || cruciTerminado) return;
+        const limpio = inp.value.toUpperCase().normalize("NFD")
+            .replace(/[̀-ͯ]/g, "").replace(/[^A-ZÑ]/g, "");
+        inp.value = limpio.slice(-1);
+        inp.classList.remove("cruci-input--mal");
+        if (inp.value) moverEnEntrada(1);
+        refrescarEstadoCrucigrama();
+        comprobarVictoriaCrucigrama();
+    }
+
+    // Verificación en vivo: cada palabra completa y correcta se pinta de verde
+    // y su pista queda tachada; si se rompe, vuelve atrás.
+    function refrescarEstadoCrucigrama() {
+        const okCeldas = new Set();
+        const resueltasAhora = new Set();
+        cruciEntradas.forEach(e => {
+            const ok = e.celdas.every(({ r, c }) => {
+                const inp = inputCruci(r, c);
+                return inp && inp.value.toUpperCase() === cruciData.grilla[r][c].letra;
+            });
+            const id = `${e.numero}-${e.dir}`;
+            const li = document.querySelector(`.cruci-pista[data-entrada="${id}"]`);
+            if (li) li.classList.toggle("cruci-pista--resuelta", ok);
+            if (ok) {
+                resueltasAhora.add(id);
+                e.celdas.forEach(({ r, c }) => okCeldas.add(`${r},${c}`));
+                // Animación al recién completarse (no en cada tecla posterior).
+                if (!cruciResueltasPrev.has(id) && !cruciTerminado) animarPalabraCrucigrama(e);
+            }
+        });
+        cruciResueltasPrev = resueltasAhora;
+        document.querySelectorAll(".cruci-celda[data-r]").forEach(celda => {
+            celda.classList.toggle("cruci-celda--ok", okCeldas.has(`${celda.dataset.r},${celda.dataset.c}`));
+        });
+    }
+
+    function animarPalabraCrucigrama(entrada) {
+        entrada.celdas.forEach(({ r, c }, i) => {
+            const celda = document.querySelector(`.cruci-celda[data-r="${r}"][data-c="${c}"]`);
+            if (!celda) return;
+            setTimeout(() => {
+                celda.classList.remove("cruci-celda--pop");
+                void celda.offsetWidth;
+                celda.classList.add("cruci-celda--pop");
+                setTimeout(() => celda.classList.remove("cruci-celda--pop"), 400);
+            }, i * 45);
+        });
+    }
+
+    function onCruciKeydown(e) {
+        if (cruciTerminado) return;
+        const inp = e.target.closest(".cruci-input");
+        if (!inp) return;
+        const r = +inp.dataset.r, c = +inp.dataset.c;
+
+        if (e.key === "Backspace") {
+            if (inp.value) { inp.value = ""; refrescarEstadoCrucigrama(); return; }
+            e.preventDefault();
+            moverEnEntrada(-1);
+            const prev = inputCruci(cruciCeldaActiva.r, cruciCeldaActiva.c);
+            if (prev) prev.value = "";
+            refrescarEstadoCrucigrama();
+            return;
+        }
+        if (e.key === "Tab") {
+            e.preventDefault();
+            const dir = e.shiftKey ? -1 : 1;
+            const n = cruciEntradas.length;
+            const base = cruciEntradas.indexOf(cruciActiva);
+            let objetivo = null, fallback = null;
+            for (let k = 1; k <= n; k++) {
+                const cand = cruciEntradas[((base + dir * k) % n + n) % n];
+                if (!fallback) fallback = cand;
+                if (cand.celdas.some(({ r, c }) => !inputCruci(r, c).value)) { objetivo = cand; break; }
+            }
+            activarEntrada(objetivo || fallback, true);
+            return;
+        }
+        if (e.key === " ") {
+            e.preventDefault();
+            const ents = entradasEnCelda(r, c);
+            if (ents.length > 1 && cruciActiva) {
+                cruciActiva = ents.find(x => x !== cruciActiva) || cruciActiva;
+                pintarCrucigrama();
+            }
+            return;
+        }
+        const flechas = { ArrowRight: [0, 1], ArrowLeft: [0, -1], ArrowUp: [-1, 0], ArrowDown: [1, 0] };
+        if (flechas[e.key]) {
+            e.preventDefault();
+            const [dr, dc] = flechas[e.key];
+            for (let paso = 1; paso < Math.max(cruciData.ancho, cruciData.alto); paso++) {
+                const nr = r + dr * paso, nc = c + dc * paso;
+                if (nr < 0 || nc < 0 || nr >= cruciData.alto || nc >= cruciData.ancho) break;
+                if (cruciData.grilla[nr][nc]) { activarDesdeCelda(nr, nc, true); break; }
+            }
+        }
+    }
+
+    function comprobarVictoriaCrucigrama() {
+        if (cruciTerminado) return;
+        for (let r = 0; r < cruciData.alto; r++) {
+            for (let c = 0; c < cruciData.ancho; c++) {
+                const cel = cruciData.grilla[r][c];
+                if (!cel) continue;
+                const inp = inputCruci(r, c);
+                if (!inp || inp.value.toUpperCase() !== cel.letra) return;
+            }
+        }
+        finalizarCrucigrama(true);
+    }
+
+    function marcarResultadosCrucigrama() {
+        aciertos = 0;
+        cruciEntradas.forEach(e => {
+            const ok = e.celdas.every(({ r, c }) => {
+                const inp = inputCruci(r, c);
+                return inp && inp.value.toUpperCase() === cruciData.grilla[r][c].letra;
+            });
+            e.u.resultadoPartida = ok ? 'acierto' : 'error';
+            if (ok) aciertos++;
+        });
+    }
+
+    function finalizarCrucigrama(gano) {
+        if (cruciTerminado) return;
+        cruciTerminado = true;
+        detenerCronometroCrucigrama();
+        marcarResultadosCrucigrama(); // con lo que hay escrito AHORA
+
+        const segundos = cruciSegundos;
+        const total = cruciEntradas.length;
+        const aciertosPartida = aciertos;
+        const hoyISO = fechaHoyISO();
+
+        // El resultado del día es el de la PRIMERA vez que se completó.
+        const primeraVez = !cruciResultadoOficial;
+        let racha = rachaVigente(hoyISO);
+        let record = null;
+
+        if (primeraVez) {
+            cruciResultadoOficial = { segundos, aciertos: aciertosPartida, total, gano, fecha: hoyISO };
+            lsGuardar(CRUCI_LS_RES(hoyISO), cruciResultadoOficial);
+            if (gano) {
+                racha = sumarRacha(hoyISO);
+                record = evaluarRecord(segundos, hoyISO);
+            }
+        }
+
+        cruciFinInfo = {
+            primeraVez, gano, segundos, aciertosPartida, total, racha, record,
+            oficial: cruciResultadoOficial
+        };
+
+        if (!gano) {
+            // Revelar la solución en las celdas mal o vacías
+            document.querySelectorAll(".cruci-input").forEach(inp => {
+                const cel = cruciData.grilla[+inp.dataset.r][+inp.dataset.c];
+                if (cel && inp.value.toUpperCase() !== cel.letra) {
+                    inp.value = cel.letra;
+                    inp.classList.add("cruci-input--revelada");
+                }
+            });
+        } else {
+            lanzarConfetti();
+        }
+        document.querySelectorAll(".cruci-input").forEach(i => { i.disabled = true; });
+        const btnRendirse = document.querySelector(".cruci-rendirse");
+        if (btnRendirse) btnRendirse.disabled = true;
+
+        mostrarFinJuego(gano ? 'victoria' : 'rendicion');
+    }
+
+    // --- Confetti (solo al ganar) ---
+    function lanzarConfetti() {
+        if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+        const cont = document.createElement("div");
+        cont.className = "confetti-cont";
+        const colores = ["#3fb56b", "#e6b043", "#1bbef1", "#e67e22", "#a980d8", "#ff6b6b"];
+        for (let i = 0; i < 90; i++) {
+            const p = document.createElement("i");
+            p.className = "confetti-p";
+            p.style.left = (Math.random() * 100) + "vw";
+            p.style.background = colores[i % colores.length];
+            p.style.animationDelay = (Math.random() * 0.7) + "s";
+            p.style.animationDuration = (2.2 + Math.random() * 1.8) + "s";
+            cont.appendChild(p);
+        }
+        document.body.appendChild(cont);
+        setTimeout(() => cont.remove(), 4500);
+    }
+
+    // --- Compartir resultado ---
+    function textoCompartirCrucigrama() {
+        const of = cruciResultadoOficial || cruciFinInfo;
+        const d = new Date();
+        const dd = String(d.getDate()).padStart(2, "0");
+        const mm = String(d.getMonth() + 1).padStart(2, "0");
+        const total = of.total || cruciEntradas.length;
+        const ok = of.aciertos != null ? of.aciertos : of.aciertosPartida;
+        const cuadros = "🟩".repeat(ok) + "⬛".repeat(Math.max(0, total - ok));
+        const linea = of.gano
+            ? `✅ ${formatoCronometro(of.segundos)}`
+            : `❌ ${ok}/${total}`;
+        const racha = rachaVigente(fechaHoyISO());
+        return `Crucigrama Presidentes Argentinos · ${dd}/${mm}\n${linea}${racha > 1 ? `  🔥 ${racha}` : ""}\n${cuadros}`;
+    }
+
+    async function compartirCrucigrama() {
+        const texto = textoCompartirCrucigrama();
+        const msg = document.getElementById("cruciFinCompartirMsg");
+        try {
+            if (navigator.share) { await navigator.share({ text: texto }); return; }
+        } catch (e) { return; /* el usuario canceló el diálogo del sistema */ }
+        try {
+            await navigator.clipboard.writeText(texto);
+            if (msg) { msg.textContent = "¡Copiado!"; setTimeout(() => { msg.textContent = ""; }, 2500); }
+        } catch (e) {
+            if (msg) msg.textContent = "No se pudo copiar";
+        }
+    }
+
+    function poblarFinCrucigrama() {
+        const i = cruciFinInfo;
+        const elTiempo = document.getElementById("cruciFinTiempo");
+        const elRecord = document.getElementById("cruciFinRecord");
+        const elRacha = document.getElementById("cruciFinRacha");
+        const elMsg = document.getElementById("cruciFinCompartirMsg");
+        if (elMsg) elMsg.textContent = "";
+
+        if (i.primeraVez) {
+            elTiempo.textContent = (i.gano ? "Lo completaste en " : "Te rendiste a los ")
+                + formatoCronometro(i.segundos);
+        } else {
+            const of = i.oficial;
+            const oficialTxt = of.gano ? `✅ ${formatoCronometro(of.segundos)}` : `❌ ${of.aciertos}/${of.total}`;
+            elTiempo.innerHTML = `Tu resultado de hoy: <strong>${oficialTxt}</strong>`
+                + `<br><span class="cruci-fin-rejugada">Esta rejugada: ${formatoCronometro(i.segundos)} (no cuenta)</span>`;
+        }
+
+        if (i.primeraVez && i.gano && i.record) {
+            if (i.record.nuevo) {
+                elRecord.textContent = i.record.anterior
+                    ? `🏆 ¡Nuevo récord! ${formatoCronometro(i.segundos)} (antes ${formatoCronometro(i.record.anterior)})`
+                    : `🏆 ¡Tu primer récord! ${formatoCronometro(i.segundos)}`;
+            } else {
+                elRecord.textContent = `Tu tiempo: ${formatoCronometro(i.segundos)}`
+                    + `  ·  Tu mejor tiempo: ${formatoCronometro(i.record.mejor)}`;
+            }
+            elRecord.hidden = false;
+        } else {
+            elRecord.hidden = true;
+        }
+
+        if (i.racha && i.racha > 0) {
+            elRacha.textContent = `🔥 Racha: ${i.racha} ${i.racha === 1 ? "día" : "días"}`;
+            elRacha.hidden = false;
+        } else {
+            elRacha.hidden = true;
+        }
+    }
+
+
     // --- Estado de pausa ---
     let pausado = false;
     let tiempoRestanteGlobal; // lo usamos para guardar segundos restantes
@@ -1403,6 +2255,7 @@ const listaPresidentes = [
         clearInterval(window.temporizadorInterval);
         detenerTemporizadorImagen();
         detenerTemporizadorSopa();
+        detenerCronometroCrucigrama();
         aciertos = 0;
         pausado = false;
 
@@ -1410,10 +2263,12 @@ const listaPresidentes = [
         const tabla = document.querySelector(".tabla-container");
         const juegoImagen = document.querySelector(".juego-imagen-container");
         const juegoSopa = document.querySelector(".sopa-container");
+        const juegoCrucigrama = document.querySelector(".cruci-container");
         const headingModo = document.querySelector(".jugando-modo-heading");
         if (tabla) tabla.remove();
         if (juegoImagen) juegoImagen.remove();
         if (juegoSopa) juegoSopa.remove();
+        if (juegoCrucigrama) juegoCrucigrama.remove();
         if (headingModo) headingModo.remove();
 
         // Volver a iniciar el modo que se estaba jugando
@@ -1421,6 +2276,8 @@ const listaPresidentes = [
             iniciarJuegoImagen();
         } else if (modoActual === 'sopa') {
             iniciarJuegoSopa();
+        } else if (modoActual === 'crucigrama') {
+            iniciarJuegoCrucigrama();
         } else {
             iniciarJuego();
         }
@@ -1677,12 +2534,24 @@ function mostrarFinJuego(motivo) {
         porcentajeSpan.style.color = "#e74c3c"; // Rojo
     }
     
+    // Panel de fin del crucigrama (tiempo, récord, racha, compartir)
+    const finPanel = document.getElementById("cruciFinPanel");
+    if (finPanel) {
+        if (modoActual === 'crucigrama' && cruciFinInfo) {
+            poblarFinCrucigrama();
+            finPanel.hidden = false;
+        } else {
+            finPanel.hidden = true;
+        }
+    }
+
     actualizarResumenPartida();
 
     dialog.showModal();
 }
 
-// --- Historial de la partida (modos "Adivina la imagen" y "Sopa de letras") ---
+// --- Historial de la partida (modos "Adivina la imagen", "Sopa de letras" y
+// "Crucigrama") ---
 // Muestra, al terminar, la tanda completa de presidentes que tocaron marcando
 // cuáles se acertaron y cuáles no (salteados, errados, sin llegar a jugarlos).
 function actualizarResumenPartida() {
@@ -1690,7 +2559,8 @@ function actualizarResumenPartida() {
     const lista = document.getElementById("resumenPartidaLista");
     if (!contenedor || !lista) return;
 
-    if ((modoActual !== 'imagen' && modoActual !== 'sopa') || !Array.isArray(window.listaFiltrada)) {
+    const modosConResumen = ['imagen', 'sopa', 'crucigrama'];
+    if (!modosConResumen.includes(modoActual) || !Array.isArray(window.listaFiltrada)) {
         contenedor.hidden = true;
         lista.innerHTML = "";
         return;
@@ -1746,6 +2616,11 @@ function agregarEventListenersModalFinJuego() {
         botonCerrarModal.addEventListener("click", () => {
             cerrarFinJuego();
         });
+    }
+
+    const botonCompartir = document.getElementById("cruciFinCompartir");
+    if (botonCompartir) {
+        botonCompartir.addEventListener("click", compartirCrucigrama);
     }
 }
 

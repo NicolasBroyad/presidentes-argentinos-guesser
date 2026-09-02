@@ -2105,6 +2105,415 @@ td {
     }
 }
 
+/* ==== MODO "CRUCIGRAMA" ==== */
+
+.cruci-container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+    padding: 1.25rem 1rem;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.cruci-grid-col {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 0;
+    min-width: 0;
+    flex-shrink: 1;
+}
+
+.cruci-grid {
+    display: grid;
+    grid-auto-rows: 1fr;
+    gap: 2px;
+    height: min(64vh, calc(90vw * var(--r) / var(--c)));
+    aspect-ratio: var(--c) / var(--r);
+    padding: 4px;
+    background-color: rgb(var(--navy) / 0.55);
+    border: 2px solid rgb(var(--gold) / 0.5);
+    border-radius: 12px;
+    box-shadow: 0 30px 70px -30px rgba(0, 0, 0, 0.85);
+}
+
+.cruci-celda {
+    position: relative;
+    aspect-ratio: 1;
+    background-color: #eef1f5;
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.cruci-celda--bloque {
+    background-color: #0a0f16;
+}
+
+.cruci-num {
+    position: absolute;
+    top: 0;
+    left: 1px;
+    padding: 1px 2px 2px;
+    font-size: clamp(0.4rem, 1.35vh, 0.6rem);
+    font-weight: 700;
+    line-height: 1.1;
+    color: #5a6b7d;
+    cursor: pointer;
+    z-index: 2;
+}
+
+.cruci-num:hover {
+    color: #12263a;
+}
+
+.cruci-input {
+    width: 100%;
+    height: 100%;
+    border: none;
+    background: transparent;
+    text-align: center;
+    text-transform: uppercase;
+    font-weight: 800;
+    font-size: clamp(0.7rem, 2.6vh, 1.15rem);
+    color: #12263a;
+    caret-color: transparent;
+    padding: 0;
+}
+
+.cruci-input:focus {
+    outline: none;
+}
+
+.cruci-celda--ok {
+    background-color: #a8e0bd;
+}
+
+.cruci-celda--activa {
+    background-color: #b6d8f5;
+}
+
+.cruci-celda--ok.cruci-celda--activa {
+    background-color: #9bd6c0;
+}
+
+.cruci-celda--foco {
+    background-color: #f2c94c;
+}
+
+.cruci-celda--pop {
+    animation: cruci-pop 0.4s ease;
+    z-index: 3;
+}
+
+@keyframes cruci-pop {
+    0% { transform: scale(1); }
+    45% { transform: scale(1.18); }
+    100% { transform: scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .cruci-celda--pop { animation: none; }
+}
+
+.cruci-input--mal {
+    color: #c0392b !important;
+    background-color: rgb(192 57 43 / 0.2);
+}
+
+.cruci-input--revelada {
+    color: #c0392b !important;
+}
+
+.cruci-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    width: min(340px, 92vw);
+    max-height: 100%;
+    padding: 1.1rem;
+    background-color: rgb(var(--navy-light) / 0.85);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 2px solid rgb(var(--blue));
+    border-radius: 16px;
+    box-shadow: 0 10px 25px -12px rgba(0, 0, 0, 0.6);
+}
+
+.cruci-hud {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+
+.cruci-fecha {
+    margin: 0;
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: rgb(var(--gold-soft));
+}
+
+.cruci-timer {
+    flex-shrink: 0;
+    font-weight: 800;
+    font-size: 1rem;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.03em;
+    color: rgb(var(--navy));
+    background-color: rgb(var(--blue-strong));
+    padding: 0.25rem 0.7rem;
+    border-radius: 999px;
+}
+
+.cruci-hud-right {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
+}
+
+.cruci-racha {
+    font-weight: 800;
+    font-size: 0.9rem;
+    color: rgb(var(--gold-soft));
+    white-space: nowrap;
+}
+
+.cruci-rejugada-banner {
+    margin: 0;
+    padding: 0.4rem 0.6rem;
+    border-radius: 8px;
+    background-color: rgb(var(--gold) / 0.14);
+    border: 1px solid rgb(var(--gold) / 0.35);
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: rgb(var(--ink) / 0.85);
+    text-align: center;
+}
+
+/* --- Panel de fin del crucigrama (dentro del dialog) --- */
+.cruci-fin-panel {
+    margin: 0.8rem 0 0.2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.cruci-fin-tiempo {
+    margin: 0;
+    text-align: center;
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: rgb(var(--gold-soft));
+}
+
+.cruci-fin-rejugada {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: rgb(var(--ink) / 0.6);
+}
+
+.cruci-fin-record {
+    margin: 0;
+    text-align: center;
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: rgb(var(--ink));
+}
+
+.cruci-fin-racha {
+    margin: 0;
+    text-align: center;
+    font-weight: 800;
+    font-size: 1rem;
+    color: rgb(var(--gold-soft));
+}
+
+.cruci-fin-compartir {
+    margin-top: 0.3rem;
+    border: none;
+    border-radius: 10px;
+    padding: 0.55rem 1.4rem;
+    font-size: 0.95rem;
+    font-weight: bold;
+    cursor: pointer;
+    color: rgb(5, 20, 35);
+    background: rgb(var(--blue-strong));
+    transition: filter 0.2s ease;
+}
+
+.cruci-fin-compartir:hover {
+    filter: brightness(1.1);
+}
+
+.cruci-fin-compartir-msg {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #3fb56b;
+    min-height: 1em;
+}
+
+/* --- Confetti --- */
+.confetti-cont {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 9999;
+}
+
+.confetti-p {
+    position: absolute;
+    top: -14px;
+    width: 9px;
+    height: 15px;
+    border-radius: 2px;
+    opacity: 0.95;
+    animation-name: confetti-fall;
+    animation-timing-function: linear;
+    animation-fill-mode: forwards;
+}
+
+@keyframes confetti-fall {
+    0% { transform: translateY(0) rotate(0); }
+    100% { transform: translateY(106vh) rotate(720deg); opacity: 0.9; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .confetti-cont { display: none; }
+}
+
+.cruci-pistas-scroll {
+    overflow-y: auto;
+    min-height: 0;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.cruci-pistas-titulo {
+    margin: 0.3rem 0 0.1rem;
+    font-size: 0.8rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgb(var(--ink) / 0.7);
+}
+
+.cruci-pistas {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+
+.cruci-pista {
+    display: flex;
+    gap: 0.5rem;
+    padding: 0.3rem 0.45rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    color: rgb(var(--ink) / 0.9);
+    cursor: pointer;
+}
+
+.cruci-pista:hover {
+    background-color: rgb(var(--blue) / 0.12);
+}
+
+.cruci-pista--activa {
+    background-color: rgb(var(--blue-strong) / 0.22);
+    color: rgb(var(--ink));
+}
+
+.cruci-pista--resuelta {
+    opacity: 0.5;
+}
+
+.cruci-pista--resuelta .cruci-pista-texto {
+    text-decoration: line-through;
+}
+
+.cruci-pista--resuelta .cruci-pista-num {
+    color: #3fb56b;
+}
+
+.cruci-pista-num {
+    font-weight: 800;
+    color: rgb(var(--gold-soft));
+    flex-shrink: 0;
+    min-width: 1.2em;
+}
+
+.cruci-pista-texto {
+    font-variant-numeric: tabular-nums;
+}
+
+.cruci-acciones {
+    display: flex;
+    flex-shrink: 0;
+}
+
+.cruci-rendirse {
+    flex: 1;
+    border: none;
+    border-radius: 12px;
+    padding: 0.6rem 0.8rem;
+    font-size: 0.95rem;
+    font-weight: bold;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    color: #fff;
+    background: rgb(141, 3, 3);
+}
+
+.cruci-rendirse:not(:disabled):hover {
+    background: rgb(200, 0, 0);
+}
+
+.cruci-rendirse:disabled {
+    background: gray;
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+    .cruci-container {
+        flex-direction: column;
+        gap: 0.7rem;
+        padding: 0.6rem;
+    }
+
+    .cruci-grid {
+        height: min(46vh, calc(94vw * var(--r) / var(--c)));
+    }
+
+    .cruci-panel {
+        width: min(460px, 96vw);
+        padding: 0.7rem;
+        gap: 0.5rem;
+        flex-shrink: 1;
+        min-height: 0;
+    }
+
+    .cruci-pistas-scroll {
+        gap: 0.2rem;
+    }
+
+    .cruci-pista {
+        padding: 0.25rem 0.4rem;
+        font-size: 0.82rem;
+    }
+}
+
 /* ACERCA HTML */
 
 .acerca-body {

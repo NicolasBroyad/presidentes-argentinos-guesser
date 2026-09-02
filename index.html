@@ -87,6 +87,7 @@
                         <li role="option"><button type="button" class="modo-selector-opcion" data-modo="clasico">Clásico</button></li>
                         <li role="option"><button type="button" class="modo-selector-opcion" data-modo="imagen">Adivina la imagen</button></li>
                         <li role="option"><button type="button" class="modo-selector-opcion" data-modo="sopa">Sopa de letras</button></li>
+                        <li role="option"><button type="button" class="modo-selector-opcion" data-modo="crucigrama">Crucigrama</button></li>
                     </ul>
                 </div>
             </div>
@@ -120,6 +121,7 @@
             <button class="modo-de-juego-button modo-de-juego-clasico-button seleccionado" data-modo="clasico">Clásico</button>
             <button class="modo-de-juego-button modo-de-juego-imagen-button" data-modo="imagen">Adivina la imagen</button>
             <button class="modo-de-juego-button modo-de-juego-sopa-button" data-modo="sopa">Sopa de letras</button>
+            <button class="modo-de-juego-button modo-de-juego-crucigrama-button" data-modo="crucigrama">Crucigrama</button>
         </div>
     </div>
 
@@ -166,6 +168,13 @@
             <div id="porcentajeContainer">
                 <span id="porcentaje">0%</span>
             </div>
+        </div>
+        <div id="cruciFinPanel" class="cruci-fin-panel" hidden>
+            <p id="cruciFinTiempo" class="cruci-fin-tiempo"></p>
+            <p id="cruciFinRecord" class="cruci-fin-record" hidden></p>
+            <p id="cruciFinRacha" class="cruci-fin-racha" hidden></p>
+            <button id="cruciFinCompartir" class="cruci-fin-compartir" type="button">Compartir resultado</button>
+            <span id="cruciFinCompartirMsg" class="cruci-fin-compartir-msg" aria-live="polite"></span>
         </div>
         <div id="resumenPartidaImagen" class="resumen-partida-imagen" hidden>
             <h3 class="resumen-partida-titulo">Resumen de la partida</h3>
