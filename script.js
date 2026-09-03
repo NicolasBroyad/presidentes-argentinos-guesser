@@ -298,34 +298,47 @@ const listaPresidentes = [
             : `Mandato: ${partes[0]}`;
     }
 
-    // Arma la tanda de presidentes de una partida respetando la proporción de
-    // bombos: para 10 -> 2 del B1, 7 del B2, 1 del B3. Para cualquier otra
-    // cantidad se extrapola con esos porcentajes (20/70/10). Si algún bombo no
-    // tiene suficientes, completa con los que sobran de otros bombos.
-    function elegirPresidentesPorBombo(pool, cantidad) {
-        const porBombo = { 1: [], 2: [], 3: [] };
-        pool.forEach(u => porBombo[u.bombo].push(u));
-        [1, 2, 3].forEach(b => { porBombo[b] = mezclarArray(porBombo[b]); });
+    // Probabilidad de cada bombo en la "ruleta" que se tira antes de cada
+    // presidente (20% B1, 70% B2, 10% B3 — las mismas proporciones que se
+    // venían usando, solo que antes se pre-calculaba una cantidad fija por
+    // bombo para toda la partida).
+    const PROBABILIDAD_BOMBO = { 1: 0.2, 2: 0.7, 3: 0.1 };
 
-        const objetivo = {
-            1: Math.round(cantidad * 0.2),
-            3: Math.round(cantidad * 0.1)
-        };
-        objetivo[2] = cantidad - objetivo[1] - objetivo[3];
+    // Tira la "ruleta" entre los bombos que todavía tienen gente disponible,
+    // respetando (renormalizando entre sí) sus probabilidades relativas.
+    function tirarRuletaDeBombo(bombosDisponibles) {
+        const pesoTotal = bombosDisponibles.reduce((acc, b) => acc + PROBABILIDAD_BOMBO[b], 0);
+        let tiro = Math.random() * pesoTotal;
+        for (const b of bombosDisponibles) {
+            tiro -= PROBABILIDAD_BOMBO[b];
+            if (tiro <= 0) return b;
+        }
+        return bombosDisponibles[bombosDisponibles.length - 1]; // fallback por redondeo de floats
+    }
+
+    // Arma la tanda de presidentes de una partida: para CADA presidente que
+    // va a aparecer se tira la ruleta de bombos (20/70/10) y, según qué
+    // bombo salga, se elige una persona al azar entre las de ese bombo (sin
+    // repetir a nadie dos veces en la misma partida). Es un doble sorteo
+    // independiente por cada presidente, no una cantidad fija por bombo
+    // calculada de antemano para toda la partida.
+    function elegirPresidentesPorBombo(pool, cantidad) {
+        const disponiblesPorBombo = { 1: [], 2: [], 3: [] };
+        pool.forEach(u => disponiblesPorBombo[u.bombo].push(u));
+        [1, 2, 3].forEach(b => { disponiblesPorBombo[b] = mezclarArray(disponiblesPorBombo[b]); });
 
         const seleccion = [];
-        [1, 2, 3].forEach(b => {
-            const n = Math.max(0, objetivo[b]);
-            seleccion.push(...porBombo[b].splice(0, n));
-        });
+        for (let i = 0; i < cantidad; i++) {
+            const bombosConGente = [1, 2, 3].filter(b => disponiblesPorBombo[b].length > 0);
+            if (bombosConGente.length === 0) break; // no queda nadie en ningún bombo
 
-        // Completar si faltó gente en algún bombo (por filtros o pool chico).
-        if (seleccion.length < cantidad) {
-            const resto = mezclarArray([].concat(porBombo[2], porBombo[1], porBombo[3]));
-            seleccion.push(...resto.slice(0, cantidad - seleccion.length));
+            const bomboElegido = tirarRuletaDeBombo(bombosConGente);
+            // El array de ese bombo ya está mezclado, así que sacar el
+            // último es elegir a alguien al azar dentro del bombo.
+            seleccion.push(disponiblesPorBombo[bomboElegido].pop());
         }
 
-        return mezclarArray(seleccion).slice(0, cantidad);
+        return seleccion;
     }
 
     // --- Filtrar presidentes según configuración ---
