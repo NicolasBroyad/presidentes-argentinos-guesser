@@ -162,8 +162,16 @@ const listaPresidentes = [
 
     // --- Opciones de texto que cuentan como acierto para un presidente ---
     // (mismas reglas para todos los modos de juego)
+    // Para apellidos compuestos con preposición ("de Alvear", "de la Plaza",
+    // "De La Rúa") también vale escribir solo la parte "fuerte" del apellido
+    // (p. ej. "alvear", "plaza", "rua"), sin la preposición.
+    function apellidoSinPreposicion(apellidoNormalizado) {
+        return apellidoNormalizado.replace(/^(de la |de los |de las |del |de )/, "");
+    }
+
     function obtenerOpcionesValidas(presidente) {
         const apellido = normalizarTexto(presidente.apellido);
+        const apellidoCorto = apellidoSinPreposicion(apellido);
         const primerNombre = normalizarTexto(presidente.nombre);
         const segundosNombres = (presidente.segundoNombre || "")
             .split(" ")
@@ -176,8 +184,13 @@ const listaPresidentes = [
 
         const opcionesValidas = new Set();
         opcionesValidas.add(apellido);
+        opcionesValidas.add(apellidoCorto);
         opcionesValidas.add(`${primerNombre} ${apellido}`);
-        segundosNombres.forEach(seg => opcionesValidas.add(`${seg} ${apellido}`));
+        opcionesValidas.add(`${primerNombre} ${apellidoCorto}`);
+        segundosNombres.forEach(seg => {
+            opcionesValidas.add(`${seg} ${apellido}`);
+            opcionesValidas.add(`${seg} ${apellidoCorto}`);
+        });
         opcionesValidas.add(nombreCompleto);
         return opcionesValidas;
     }
