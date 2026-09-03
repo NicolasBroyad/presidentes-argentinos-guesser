@@ -236,6 +236,24 @@ const listaPresidentes = [
         return 2; // si quedara alguno sin clasificar, va al bombo intermedio
     }
 
+    // Para las personas con más de un mandato, en el modo imagen siempre se
+    // usa la MISMA foto (elegida a mano) en vez de una al azar cada partida.
+    // Se matchea por apellido; si esa persona no tiene esa foto entre las
+    // suyas (o no está en la lista), se sigue eligiendo al azar como antes.
+    const FOTO_FIJA_MODO_IMAGEN = {
+        "fernandez": "cristinafernandez2.jpg",
+        "menem": "menem2.jpg",
+        "peron": "peron1.jpg",
+        "roca": "roca2.jpg",
+        "yrigoyen": "yrigoyen1.jpg"
+    };
+
+    function fotoFijaDePresidente(u) {
+        const archivo = FOTO_FIJA_MODO_IMAGEN[normalizarTexto(u.apellido)];
+        if (!archivo) return null;
+        return u.imagenes.find(img => img.endsWith("/" + archivo)) || null;
+    }
+
     const presidentesUnicos = (function construirPresidentesUnicos() {
         const mapa = new Map();
         listaPresidentes.forEach(p => {
@@ -676,9 +694,10 @@ const listaPresidentes = [
         const pool = presidentesUnicosFiltrados();
         const cantidad = Math.min(configuracionJuego.cantidad, pool.length);
         juegoImagenOrden = elegirPresidentesPorBombo(pool, cantidad);
-        // Foto al azar por partida (para los que tienen varias).
+        // Para quienes tuvieron varios mandatos: foto fija elegida a mano si
+        // está definida; si no, al azar (como antes).
         juegoImagenOrden.forEach(u => {
-            u.imagen = u.imagenes[Math.floor(Math.random() * u.imagenes.length)];
+            u.imagen = fotoFijaDePresidente(u) || u.imagenes[Math.floor(Math.random() * u.imagenes.length)];
             u.resultadoPartida = null; // se completa con 'acierto' / 'error' al jugar
         });
         juegoImagenIndice = 0;
