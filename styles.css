@@ -1848,158 +1848,39 @@ td {
 
 .acerca-body {
     background-image:
-        url("images/sol-watermark.svg"),
         radial-gradient(ellipse 70% 45% at 50% 0%, rgb(var(--blue-strong) / 0.14), transparent 65%),
         linear-gradient(165deg, rgb(var(--bg-top)) 0%, rgb(var(--bg-mid)) 45%, rgb(var(--bg-bottom)) 100%);
     background-color: rgb(var(--bg-mid));
-    background-size: min(820px, 85vw) auto, cover, cover;
-    background-position: center 6%, center, center;
-    background-repeat: no-repeat, no-repeat, no-repeat;
-    background-attachment: fixed, fixed, fixed;
+    background-size: cover, cover;
+    background-position: center, center;
+    background-repeat: no-repeat, no-repeat;
+    background-attachment: fixed, fixed;
     min-height: 100vh; /* Cambiá de height a min-height */
     display: flex; /* Agregá flexbox */
     flex-direction: column; /* Dirección vertical */
     align-items: center;
-}
-
-.acerca-body main {
-    background-color: rgb(var(--navy) / 0.75);
-    backdrop-filter: blur(25px);
-    max-width: 700px;
-    margin: 0 auto;
-    border-radius: 10px;
-    border: 2px solid rgb(var(--blue));
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    padding: 2rem;
-    flex: 1; /* Esto hace que main crezca para ocupar todo el espacio disponible */
-    margin: 1rem;
-}
-
-.acerca-body h1 {
-    display: flex;
-    background-color: rgb(var(--glass) / 0.75);
-    backdrop-filter: blur(50px); /* El efecto de vidrio borroso */
-    -webkit-backdrop-filter: blur(10px);
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-
-    padding: 0.5rem;
-    width: 100%;
-}
-
-.acerca-body p {
-    font-size: 1.1rem;
-    line-height: 1.6;
-    font-weight: 500;
-    color: rgb(var(--ink));
-    overflow-wrap: break-word;
 }
 
 /* CONTACTO HTML */
 
 .contacto-body {
     background-image:
-        url("images/sol-watermark.svg"),
         radial-gradient(ellipse 70% 45% at 50% 0%, rgb(var(--blue-strong) / 0.14), transparent 65%),
         linear-gradient(165deg, rgb(var(--bg-top)) 0%, rgb(var(--bg-mid)) 45%, rgb(var(--bg-bottom)) 100%);
     background-color: rgb(var(--bg-mid));
-    background-size: min(820px, 85vw) auto, cover, cover;
-    background-position: center 6%, center, center;
-    background-repeat: no-repeat, no-repeat, no-repeat;
-    background-attachment: fixed, fixed, fixed;
+    background-size: cover, cover;
+    background-position: center, center;
+    background-repeat: no-repeat, no-repeat;
+    background-attachment: fixed, fixed;
     min-height: 100vh; /* Cambiá de height a min-height */
     display: flex; /* Agregá flexbox */
     flex-direction: column; /* Dirección vertical */
     align-items: center;
 }
 
-.contacto-body main {
-    background-color: rgb(var(--navy) / 0.75);
-    backdrop-filter: blur(25px);
-    max-width: 700px;
-    margin: 0 auto;
-    border-radius: 10px;
-    border: 2px solid rgb(var(--blue));
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    padding: 2rem;
-    flex: 1; /* Esto hace que main crezca para ocupar todo el espacio disponible */
-    margin: 1rem;
-}
-
-.contacto-body h1 {
-    display: flex;
-    background-color: rgb(var(--glass) / 0.75);
-    backdrop-filter: blur(50px); /* El efecto de vidrio borroso */
-    -webkit-backdrop-filter: blur(10px);
-    justify-content: center;
-    align-items: center;
-    padding: 0.5rem;
-    width: 100%;
-}
-
-.contacto-body p {
-    font-size: 1.1rem;
-    line-height: 1.6;
-    font-weight: 500;
-    color: rgb(var(--ink));
-    overflow-wrap: break-word;
-}
-
-.contacto-list {
-    list-style: none;
-    padding: 0;
-    margin: 1rem 0;
-}
-
-.contacto-list li {
-    font-size: 1.1rem;
-    line-height: 1.6;
-    font-weight: 500;
-    color: rgb(var(--ink));
-    word-wrap: break-word;
-    overflow-wrap: break-word;
-}
-
-.contacto-list li strong {
-    word-wrap: break-word;
-    overflow-wrap: break-word;
-}
-
-/* Responsive para páginas estáticas en mobile */
+/* Responsive para páginas estáticas en mobile (más reglas específicas de
+   ".info-*" al final de este bloque, junto a los estilos de esos componentes) */
 @media (max-width: 768px) {
-    .contacto-body main,
-    .acerca-body main,
-    .privacidad-body main {
-        margin: 0.5rem;
-        padding: 1.5rem;
-        width: calc(100% - 1rem);
-    }
-
-    .contacto-list li {
-        font-size: 1rem;
-    }
-
-    .contacto-body p,
-    .acerca-body p,
-    .privacidad-body p {
-        font-size: 1rem;
-    }
-
-    .contacto-body h1,
-    .acerca-body h1,
-    .privacidad-body h1 {
-        font-size: 1.3rem;
-    }
-
-    .privacidad-body h3 {
-        font-size: 1.1rem;
-    }
-
     footer {
         padding: 1rem;
         text-align: center;
@@ -2016,65 +1897,429 @@ td {
 
 .privacidad-body {
     background-image:
-        url("images/sol-watermark.svg"),
         radial-gradient(ellipse 70% 45% at 50% 0%, rgb(var(--blue-strong) / 0.14), transparent 65%),
         linear-gradient(165deg, rgb(var(--bg-top)) 0%, rgb(var(--bg-mid)) 45%, rgb(var(--bg-bottom)) 100%);
     background-color: rgb(var(--bg-mid));
-    background-size: min(820px, 85vw) auto, cover, cover;
-    background-position: center 6%, center, center;
-    background-repeat: no-repeat, no-repeat, no-repeat;
-    background-attachment: fixed, fixed, fixed;
+    background-size: cover, cover;
+    background-position: center, center;
+    background-repeat: no-repeat, no-repeat;
+    background-attachment: fixed, fixed;
     min-height: 100vh; /* Cambiá de height a min-height */
     display: flex; /* Agregá flexbox */
     flex-direction: column; /* Dirección vertical */
     align-items: center;
 }
 
-.privacidad-body main {
-    background-color: rgb(var(--navy) / 0.75);
-    backdrop-filter: blur(25px);
-    max-width: 700px;
+/* ==========================================================================
+   PÁGINAS INSTITUCIONALES (Acerca / Contacto / Privacidad)
+   Componentes compartidos por las tres páginas: hero con medallón + título
+   en degradé (mismo lenguaje visual que el título de la home), tarjetas de
+   vidrio esmerilado a tono con ".rule-container", y algunos bloques propios
+   de cada página (stats en Acerca, tarjeta de mail en Contacto, lista de
+   políticas en Privacidad).
+   ========================================================================== */
+
+.info-main {
+    width: 100%;
+    max-width: 880px;
     margin: 0 auto;
-    border-radius: 10px;
-    border: 2px solid rgb(var(--blue));
+    padding: 1.5rem 1.2rem 3rem;
     display: flex;
     flex-direction: column;
-    gap: 1rem;
-    padding: 2rem;
-    flex: 1; /* Esto hace que main crezca para ocupar todo el espacio disponible */
-    margin: 1rem;
+    gap: 2.2rem;
+    flex: 1;
 }
 
-.privacidad-body h1 {
+.info-hero {
     display: flex;
-    background-color: rgb(var(--glass) / 0.75);
-    backdrop-filter: blur(50px); /* El efecto de vidrio borroso */
-    -webkit-backdrop-filter: blur(10px);
-    justify-content: center;
+    flex-direction: column;
     align-items: center;
     text-align: center;
-    padding: 0.5rem;
-    width: 100%;
+    gap: 0.5rem;
+    padding-top: 1rem;
 }
 
-.privacidad-body p {
-    font-size: 1.1rem;
+.info-hero-medallon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    margin-bottom: 0.6rem;
+    background: linear-gradient(160deg, rgb(var(--navy-light)) 0%, rgb(var(--navy)) 100%);
+    border: 2px solid rgb(var(--gold) / 0.7);
+    box-shadow: 0 0 30px -6px rgb(var(--gold) / 0.5), inset 0 0 14px rgb(var(--gold) / 0.12);
+}
+
+.info-hero-medallon svg {
+    width: 30px;
+    height: 30px;
+    fill: rgb(var(--gold-soft));
+}
+
+.info-kicker {
+    padding-top: 0;
+}
+
+.info-title {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.15rem;
+    line-height: 1.15;
+}
+
+.info-title-chica {
+    font-size: min(clamp(1rem, 3vw, 1.3rem), clamp(1rem, 3vh, 1.3rem));
+    font-weight: 600;
+    color: rgb(var(--ink) / 0.7);
+}
+
+.info-title-grande {
+    font-size: min(clamp(1.7rem, 5.2vw, 2.6rem), clamp(1.7rem, 5.2vh, 2.6rem));
+    font-weight: 800;
+    background: linear-gradient(180deg, rgb(var(--ink)) 0%, rgb(var(--gold-soft)) 130%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    text-wrap: balance;
+}
+
+.info-subtitulo {
+    max-width: 46ch;
+    font-size: 1.05rem;
     line-height: 1.6;
-    font-weight: 500;
+    color: rgb(var(--ink) / 0.8);
+}
+
+.info-subtitulo strong {
+    color: rgb(var(--gold-soft));
+}
+
+/* --- Franja de estadísticas (Acerca) --- */
+.info-stats {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.info-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.2rem;
+    min-width: 120px;
+    padding: 1rem 1.4rem;
+    background-color: rgb(var(--glass-soft) / 0.6);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    border: 1px solid rgb(var(--gold) / 0.25);
+}
+
+.info-stat-numero {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: rgb(var(--gold-soft));
+}
+
+.info-stat-label {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: rgb(var(--ink) / 0.65);
+}
+
+/* --- Grilla de tarjetas (Acerca) --- */
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.2rem;
+}
+
+.info-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    padding: 1.5rem;
+    background-color: rgb(var(--glass) / 0.65);
+    backdrop-filter: blur(10px);
+    border-radius: 14px;
+    border: 1px solid rgb(var(--ink) / 0.12);
+    transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.info-card:hover {
+    transform: translateY(-4px);
+    border-color: rgb(var(--gold) / 0.5);
+    box-shadow: 0 18px 34px -18px rgba(0, 0, 0, 0.6);
+}
+
+.info-card-icono {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    color: rgb(var(--gold-soft));
+    background-color: rgb(var(--gold) / 0.12);
+}
+
+.info-card-icono svg {
+    width: 24px;
+    height: 24px;
+}
+
+.info-card h2 {
+    font-size: 1.15rem;
     color: rgb(var(--ink));
+}
+
+.info-card p {
+    font-size: 0.95rem;
+    line-height: 1.55;
+    color: rgb(var(--ink) / 0.8);
+}
+
+/* --- Bloque final de invitación a jugar (Acerca) --- */
+.info-cta {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 0.5rem;
+    padding: 2rem 1.5rem;
+    background-color: rgb(var(--glass-soft) / 0.5);
+    border-radius: 16px;
+    border: 1px solid rgb(var(--gold) / 0.3);
+}
+
+.info-cta h2 {
+    font-size: 1.3rem;
+    color: rgb(var(--gold-soft));
+}
+
+.info-cta p {
+    color: rgb(var(--ink) / 0.8);
+    max-width: 40ch;
+}
+
+.info-cta-boton {
+    margin-top: 0.6rem;
+    padding: 0.75em 2.2em;
+    border-radius: 999px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-size: 0.95rem;
+    text-decoration: none;
+    color: rgb(var(--navy));
+    background: linear-gradient(135deg, rgb(var(--gold-soft)) 0%, rgb(var(--gold)) 60%, rgb(var(--gold-soft)) 100%);
+    box-shadow: 0 14px 30px -12px rgba(0, 0, 0, 0.6), 0 0 24px -6px rgb(var(--gold) / 0.5);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.info-cta-boton:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 18px 36px -12px rgba(0, 0, 0, 0.65), 0 0 32px -4px rgb(var(--gold) / 0.7);
+}
+
+/* --- Tarjeta de contacto (Contacto) --- */
+.info-contacto-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 0.7rem;
+    padding: 2.2rem 1.5rem;
+    background-color: rgb(var(--glass) / 0.65);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    border: 1px solid rgb(var(--gold) / 0.3);
+}
+
+.info-contacto-icono {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    color: rgb(var(--gold-soft));
+    background-color: rgb(var(--gold) / 0.12);
+    margin-bottom: 0.3rem;
+}
+
+.info-contacto-icono svg {
+    width: 28px;
+    height: 28px;
+}
+
+.info-contacto-label {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    font-size: 0.8rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgb(var(--ink) / 0.6);
+}
+
+.info-email-boton {
+    font-size: clamp(1rem, 3.4vw, 1.3rem);
+    font-weight: 700;
+    color: rgb(var(--gold-soft));
+    text-decoration: none;
+    padding: 0.5em 1em;
+    border-radius: 999px;
+    border: 1px solid rgb(var(--gold) / 0.5);
+    overflow-wrap: break-word;
+    max-width: 100%;
+    transition: all 0.25s ease;
+}
+
+.info-email-boton:hover {
+    background-color: rgb(var(--gold) / 0.12);
+    border-color: rgb(var(--gold));
+}
+
+.info-contacto-nota {
+    font-size: 0.9rem;
+    color: rgb(var(--ink) / 0.6);
+}
+
+/* --- Redes sociales (Contacto) --- */
+.info-redes {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    text-align: center;
+}
+
+.info-redes-titulo {
+    font-size: 1rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: rgb(var(--ink) / 0.6);
+}
+
+.info-redes-lista {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.8rem;
+}
+
+.info-red-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1.1rem;
+    border-radius: 999px;
+    background-color: rgb(var(--glass-soft) / 0.5);
+    border: 1px solid rgb(var(--ink) / 0.15);
+    color: rgb(var(--ink) / 0.55);
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.info-red-badge svg {
+    width: 18px;
+    height: 18px;
+    fill: currentColor;
+    opacity: 0.7;
+}
+
+.info-red-badge em {
+    font-style: normal;
+    font-size: 0.7rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: rgb(var(--gold-soft));
+    opacity: 0.85;
+}
+
+/* --- Lista de políticas (Privacidad) --- */
+.info-politica-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    background-color: rgb(var(--glass) / 0.55);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    border: 1px solid rgb(var(--ink) / 0.12);
+    overflow: hidden;
+}
+
+.info-politica-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1.1rem;
+    padding: 1.6rem;
+    border-bottom: 1px solid rgb(var(--ink) / 0.12);
+}
+
+.info-politica-item:last-child {
+    border-bottom: none;
+}
+
+.info-politica-icono {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    color: rgb(var(--gold-soft));
+    background-color: rgb(var(--gold) / 0.12);
+}
+
+.info-politica-icono svg {
+    width: 22px;
+    height: 22px;
+}
+
+.info-politica-texto h2 {
+    font-size: 1.05rem;
+    margin-bottom: 0.35rem;
+    color: rgb(var(--ink));
+}
+
+.info-politica-texto p {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: rgb(var(--ink) / 0.8);
+}
+
+.info-politica-texto a {
+    color: rgb(var(--blue));
+    text-decoration: underline;
     overflow-wrap: break-word;
 }
 
-.privacidad-body h3 {
-    font-size: 1.2rem;
-    margin-top: 1rem;
-    margin-bottom: 0.5rem;
-    color: rgb(var(--blue));
-}
+@media (max-width: 640px) {
+    .info-main {
+        padding: 1rem 0.9rem 2.5rem;
+        gap: 1.6rem;
+    }
 
-.privacidad-body main a {
-    color: rgb(var(--blue));
-    text-decoration: underline;
+    .info-subtitulo {
+        font-size: 0.95rem;
+    }
+
+    .info-politica-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.6rem;
+    }
+
+    .info-email-boton {
+        font-size: 0.95rem;
+        word-break: break-word;
+    }
 }
 
 /* LINEA DE TIEMPO (también usada en presidencias.html, "Ver Presidencias") */
