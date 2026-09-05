@@ -4,7 +4,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const body = document.querySelector("body");
     const buttonSection = document.querySelector(".button-section");
     const rulesSection = document.querySelector(".rules-section");
-    const modosDeJuegoSection = document.querySelector(".modos-de-juego-section");
     const botonIniciar = document.querySelector(".iniciar-juego-button");
     const botonConfiguracion = document.querySelector(".configuracion-link");
     const main = document.querySelector(".main");
@@ -528,7 +527,6 @@ const listaPresidentes = [
         modoActual = 'clasico';
         buttonSection.remove();
         rulesSection.remove();
-        modosDeJuegoSection.remove();
         h1.remove();
         if (kicker) kicker.remove();
         main.classList.add("juego-activo");
@@ -707,7 +705,6 @@ const listaPresidentes = [
 
         buttonSection.remove();
         rulesSection.remove();
-        modosDeJuegoSection.remove();
         h1.remove();
         if (kicker) kicker.remove();
         main.classList.add("juego-activo");
