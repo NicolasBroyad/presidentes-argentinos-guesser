@@ -90,6 +90,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const valorCantidad = document.getElementById("valorCantidad");
     const contenedorTemporizador = document.querySelector(".configuracion-temporizador-container");
     const contenedorCantidad = document.querySelector(".configuracion-cantidad-container");
+    const contenedorFiltros = document.querySelector(".filtros-container");
     const botonGuardar = document.querySelector(".guardar");
     const botonCancelar = document.querySelector(".cancelar");
     const checkboxes = document.querySelectorAll('.checkbox-input');
@@ -670,6 +671,14 @@ const listaPresidentes = [
         if (contenedorReglas) {
             contenedorReglas.innerHTML = htmlReglas(modo);
         }
+
+        // El contador de "se reinicia en..." solo tiene sentido para los
+        // modos del día (Sopa de letras / Crucigrama); el texto lo pinta
+        // actualizarContadoresReinicioDiario() en su próximo tick.
+        const contadorReinicio = document.getElementById("contadorReinicioDiario");
+        if (contadorReinicio) {
+            contadorReinicio.hidden = !(modo === 'sopa' || modo === 'crucigrama');
+        }
     }
 
     botonesModo.forEach(boton => {
@@ -1098,6 +1107,11 @@ const listaPresidentes = [
     let sopaTam = 0;             // lado de la grilla
     let sopaTimer = null;
     let sopaTerminado = false;
+    let sopaSegundosTotales = 0;    // duración del countdown (para calcular el tiempo jugado)
+    let sopaSegundosRestantes = 0;  // countdown en curso
+    let sopaResultadoOficial = null; // resultado guardado de la sopa de hoy
+    let sopaEsRejugada = false;      // ya se completó hoy y se está rejugando
+    let sopaFinInfo = null;          // datos para el dialog de fin
 
     // Arrastre en curso
     let sopaArrastrando = false;
@@ -1110,11 +1124,10 @@ const listaPresidentes = [
     }
 
     // Presidentes elegibles: apellido de una sola palabra y de largo razonable
-    // para que entre en la grilla y sea reconocible.
+    // para que entre en la grilla y sea reconocible. Igual para todos (como el
+    // crucigrama): NO se aplican los filtros de configuración, la del día es fija.
     function presidentesSopaDisponibles(maxLargo) {
         return presidentesUnicos.filter(u => {
-            if (configuracionJuego.eliminarDeFacto && u.deFacto) return false;
-            if (configuracionJuego.eliminarMenosDeUnAnioSopa && !u.periodos.some(periodoDuroMasDeUnAnio)) return false;
             if (u.apellido.trim().includes(" ")) return false; // apellidos compuestos afuera
             const palabra = palabraSopaDe(u);
             return palabra.length >= 4 && palabra.length <= maxLargo;
@@ -1122,8 +1135,8 @@ const listaPresidentes = [
     }
 
     // Elige hasta `cantidad` presidentes con apellido único.
-    function elegirPalabrasSopa(cantidad, maxLargo) {
-        const pool = mezclarArray(presidentesSopaDisponibles(maxLargo));
+    function elegirPalabrasSopa(cantidad, maxLargo, rng) {
+        const pool = mezclarConRng(presidentesSopaDisponibles(maxLargo), rng);
         const elegidas = [];
         const usadas = new Set();
         for (const u of pool) {
@@ -1137,13 +1150,13 @@ const listaPresidentes = [
     }
 
     // Intenta ubicar una palabra en la grilla; devuelve las celdas o null.
-    function intentarColocarSopa(grilla, palabra, tam, intentos = 150) {
+    function intentarColocarSopa(grilla, palabra, tam, rng, intentos = 150) {
         for (let t = 0; t < intentos; t++) {
-            const [df, dc] = SOPA_DIRECCIONES[Math.floor(Math.random() * SOPA_DIRECCIONES.length)];
+            const [df, dc] = SOPA_DIRECCIONES[Math.floor(rng() * SOPA_DIRECCIONES.length)];
             const maxR = df ? tam - palabra.length : tam - 1;
             const maxC = dc ? tam - palabra.length : tam - 1;
-            const r0 = Math.floor(Math.random() * (maxR + 1));
-            const c0 = Math.floor(Math.random() * (maxC + 1));
+            const r0 = Math.floor(rng() * (maxR + 1));
+            const c0 = Math.floor(rng() * (maxC + 1));
             const celdas = [];
             let ok = true;
             for (let i = 0; i < palabra.length; i++) {
@@ -1158,12 +1171,12 @@ const listaPresidentes = [
         return null;
     }
 
-    function construirGrillaSopa(palabras, tam) {
+    function construirGrillaSopa(palabras, tam, rng) {
         const grilla = Array.from({ length: tam }, () => Array(tam).fill(""));
         const colocadas = [];
         // Palabras más largas primero: son las más difíciles de ubicar.
         [...palabras].sort((a, b) => b.palabra.length - a.palabra.length).forEach(item => {
-            const celdas = intentarColocarSopa(grilla, item.palabra, tam);
+            const celdas = intentarColocarSopa(grilla, item.palabra, tam, rng);
             if (!celdas) return; // si no entra, se descarta (rara vez pasa)
             celdas.forEach(({ r, c }, i) => { grilla[r][c] = item.palabra[i]; });
             colocadas.push({ u: item.u, palabra: item.palabra, celdas, encontrada: false });
@@ -1171,7 +1184,7 @@ const listaPresidentes = [
         for (let r = 0; r < tam; r++) {
             for (let c = 0; c < tam; c++) {
                 if (!grilla[r][c]) {
-                    grilla[r][c] = SOPA_LETRAS_RELLENO[Math.floor(Math.random() * SOPA_LETRAS_RELLENO.length)];
+                    grilla[r][c] = SOPA_LETRAS_RELLENO[Math.floor(rng() * SOPA_LETRAS_RELLENO.length)];
                 }
             }
         }
@@ -1205,16 +1218,23 @@ const listaPresidentes = [
         sopaCeldaInicio = null;
         sopaCeldasMarcadas = [];
 
-        const esMobile = window.matchMedia('(max-width: 768px)').matches;
-        const cantidad = 5;
-        const maxLargo = esMobile ? 10 : 12;
-        const baseTam = esMobile ? 11 : 12;
+        const hoyISO = fechaHoyISO();
+        sopaResultadoOficial = lsLeer(SOPA_LS_RES(hoyISO));
+        sopaEsRejugada = !!sopaResultadoOficial;
+        const racha = rachaVigente(SOPA_LS_STREAK, hoyISO);
 
-        const elegidas = elegirPalabrasSopa(cantidad, maxLargo);
+        // Igual para todos: toda la generación usa el PRNG sembrado con la
+        // fecha, nunca la configuración del usuario ni el tamaño de pantalla.
+        const rng = mulberry32(hashCadena("sopa-" + hoyISO));
+        const cantidad = 5;
+        const maxLargo = 12;
+        const baseTam = 12;
+
+        const elegidas = elegirPalabrasSopa(cantidad, maxLargo, rng);
         const largoMax = elegidas.reduce((m, x) => Math.max(m, x.palabra.length), 0);
         sopaTam = Math.max(baseTam, largoMax + 1);
 
-        const { grilla, colocadas } = construirGrillaSopa(elegidas, sopaTam);
+        const { grilla, colocadas } = construirGrillaSopa(elegidas, sopaTam, rng);
         sopaGrilla = grilla;
         // Orden cronológico para las pistas y el historial de fin de partida
         // (independiente del orden en que se colocaron en la grilla).
@@ -1225,7 +1245,7 @@ const listaPresidentes = [
         });
 
         // Color por presidente + reset de datos para el historial de fin de partida.
-        const paleta = mezclarArray(SOPA_COLORES);
+        const paleta = mezclarConRng(SOPA_COLORES, rng);
         sopaObjetivos.forEach((o, i) => {
             o.color = paleta[i % paleta.length];
             o.u.imagen = o.u.imagenes[0];
@@ -1262,6 +1282,13 @@ const listaPresidentes = [
                     </div>
                 </div>
                 <div class="sopa-panel">
+                    <div class="cruci-hud">
+                        <span class="cruci-fecha">Sopa de letras del ${fechaHoyLegible()}</span>
+                        <span class="cruci-hud-right">
+                            ${racha > 0 ? `<span class="cruci-racha" title="Racha de días consecutivos">🔥 ${racha}</span>` : ""}
+                        </span>
+                    </div>
+                    ${sopaEsRejugada ? `<p class="cruci-rejugada-banner">Ya jugaste la de hoy${sopaResultadoOficial.gano ? ` en ${formatoCronometro(sopaResultadoOficial.segundos)}` : " (no la resolviste)"}. La estás rejugando — no cambia tu resultado.</p>` : ""}
                     <div class="sopa-hud">
                         <span class="sopa-timer" id="sopa-timer">${tiempoInicial}</span>
                         <span class="sopa-contador"><span id="sopa-aciertos">0</span> / <span id="sopa-total">${sopaObjetivos.length}</span></span>
@@ -1274,7 +1301,7 @@ const listaPresidentes = [
         `;
         main.insertAdjacentHTML("beforeend", contenido);
 
-        if (esMobile) {
+        if (window.matchMedia('(max-width: 768px)').matches) {
             const navToggleEl = document.querySelector(".nav-toggle");
             const jugandoModoHeading = document.querySelector(".jugando-modo-heading");
             if (navToggleEl && jugandoModoHeading) {
@@ -1403,21 +1430,22 @@ const listaPresidentes = [
 
     function iniciarTemporizadorSopa(segundos) {
         detenerTemporizadorSopa();
-        let restante = Math.max(1, Math.floor(segundos));
+        sopaSegundosTotales = Math.max(1, Math.floor(segundos));
+        sopaSegundosRestantes = sopaSegundosTotales;
         const div = document.getElementById("sopa-timer");
         const pintar = () => {
-            const m = String(Math.floor(restante / 60)).padStart(2, "0");
-            const s = String(restante % 60).padStart(2, "0");
+            const m = String(Math.floor(sopaSegundosRestantes / 60)).padStart(2, "0");
+            const s = String(sopaSegundosRestantes % 60).padStart(2, "0");
             if (div) {
                 div.textContent = `${m}:${s}`;
-                div.classList.toggle("por-terminar", restante <= 30);
+                div.classList.toggle("por-terminar", sopaSegundosRestantes <= 30);
             }
         };
         pintar();
         sopaTimer = setInterval(() => {
-            restante--;
+            sopaSegundosRestantes--;
             pintar();
-            if (restante <= 0) {
+            if (sopaSegundosRestantes <= 0) {
                 detenerTemporizadorSopa();
                 finalizarSopa(false, 'tiempo');
             }
@@ -1449,6 +1477,31 @@ const listaPresidentes = [
         const botonRendirse = document.querySelector(".sopa-rendirse");
         if (botonRendirse) botonRendirse.disabled = true;
         if (!gano) revelarSopaNoEncontradas();
+
+        const segundos = sopaSegundosTotales - sopaSegundosRestantes;
+        const total = sopaObjetivos.length;
+        const aciertosPartida = aciertos;
+        const hoyISO = fechaHoyISO();
+
+        // El resultado del día es el de la PRIMERA vez que se completó.
+        const primeraVez = !sopaResultadoOficial;
+        let racha = rachaVigente(SOPA_LS_STREAK, hoyISO);
+        let record = null;
+
+        if (primeraVez) {
+            sopaResultadoOficial = { segundos, aciertos: aciertosPartida, total, gano, fecha: hoyISO };
+            lsGuardar(SOPA_LS_RES(hoyISO), sopaResultadoOficial);
+            if (gano) {
+                racha = sumarRacha(SOPA_LS_STREAK, hoyISO);
+                record = evaluarRecord(SOPA_LS_RECORD, segundos, hoyISO);
+            }
+        }
+
+        sopaFinInfo = {
+            primeraVez, gano, segundos, aciertosPartida, total, racha, record,
+            oficial: sopaResultadoOficial
+        };
+
         mostrarFinJuego(gano ? 'victoria' : (motivo === 'tiempo' ? 'tiempo' : 'rendicion'));
     }
 
@@ -1480,9 +1533,16 @@ const listaPresidentes = [
     let cruciResueltasPrev = new Set(); // entradas ya verdes (para animar las nuevas)
 
     // --- Persistencia (localStorage) ---
+    // Mismo mecanismo para los dos modos "del día" (crucigrama y sopa de
+    // letras): cada uno con sus propias claves, pero compartiendo la lógica
+    // de racha/récord (rachaVigente/sumarRacha/evaluarRecord reciben la
+    // clave de storage como parámetro).
     const CRUCI_LS_RES = f => `cruci-res-${f}`;
     const CRUCI_LS_STREAK = "cruci-streak";
     const CRUCI_LS_RECORD = "cruci-record";
+    const SOPA_LS_RES = f => `sopa-res-${f}`;
+    const SOPA_LS_STREAK = "sopa-streak";
+    const SOPA_LS_RECORD = "sopa-record";
 
     function lsLeer(clave) {
         try { return JSON.parse(localStorage.getItem(clave)); } catch (e) { return null; }
@@ -1497,26 +1557,26 @@ const listaPresidentes = [
     }
 
     // Racha vigente sin tocar el storage (para mostrar durante la partida).
-    function rachaVigente(hoyISO) {
-        const s = lsLeer(CRUCI_LS_STREAK);
+    function rachaVigente(claveStreak, hoyISO) {
+        const s = lsLeer(claveStreak);
         if (!s || !s.ultima) return 0;
         if (s.ultima === hoyISO || s.ultima === fechaISOMenosDias(hoyISO, 1)) return s.count || 0;
         return 0;
     }
     // Suma el día de hoy a la racha (solo al ganar por primera vez).
-    function sumarRacha(hoyISO) {
-        const s = lsLeer(CRUCI_LS_STREAK) || { count: 0, ultima: null };
+    function sumarRacha(claveStreak, hoyISO) {
+        const s = lsLeer(claveStreak) || { count: 0, ultima: null };
         if (s.ultima === hoyISO) return s.count;
         s.count = (s.ultima === fechaISOMenosDias(hoyISO, 1)) ? (s.count || 0) + 1 : 1;
         s.ultima = hoyISO;
-        lsGuardar(CRUCI_LS_STREAK, s);
+        lsGuardar(claveStreak, s);
         return s.count;
     }
     // Compara y guarda el récord personal de tiempo. Devuelve cómo salió.
-    function evaluarRecord(segundos, hoyISO) {
-        const r = lsLeer(CRUCI_LS_RECORD);
+    function evaluarRecord(claveRecord, segundos, hoyISO) {
+        const r = lsLeer(claveRecord);
         if (!r || segundos < r.segundos) {
-            lsGuardar(CRUCI_LS_RECORD, { segundos, fecha: hoyISO });
+            lsGuardar(claveRecord, { segundos, fecha: hoyISO });
             return { nuevo: true, anterior: r ? r.segundos : null };
         }
         return { nuevo: false, mejor: r.segundos, fecha: r.fecha };
@@ -1546,6 +1606,35 @@ const listaPresidentes = [
     function fechaHoyLegible() {
         const d = new Date();
         return d.toLocaleDateString("es-AR", { day: "numeric", month: "long", year: "numeric" });
+    }
+
+    // --- Cuenta regresiva hasta que se reinicien los modos "del día" ---
+    // Sopa de letras y Crucigrama usan la fecha local como semilla, así que
+    // ambos cambian exactamente a la medianoche local del dispositivo.
+    function msHastaMedianoche() {
+        const ahora = new Date();
+        const medianoche = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate() + 1, 0, 0, 0, 0);
+        return medianoche - ahora;
+    }
+    function formatoCuentaRegresiva(ms) {
+        const totalSeg = Math.max(0, Math.floor(ms / 1000));
+        const h = String(Math.floor(totalSeg / 3600)).padStart(2, "0");
+        const m = String(Math.floor((totalSeg % 3600) / 60)).padStart(2, "0");
+        const s = String(totalSeg % 60).padStart(2, "0");
+        return `${h}:${m}:${s}`;
+    }
+    // Actualiza CUALQUIER elemento ".contador-reinicio-diario" presente en la
+    // página (los hay en index.html, junto al selector de modo, y en
+    // modos.html, dentro de las tarjetas de Sopa de letras y Crucigrama).
+    function actualizarContadoresReinicioDiario() {
+        const elementos = document.querySelectorAll(".contador-reinicio-diario");
+        if (!elementos.length) return;
+        const texto = `Se reinicia en ${formatoCuentaRegresiva(msHastaMedianoche())}`;
+        elementos.forEach(el => { el.textContent = texto; });
+    }
+    if (document.querySelector(".contador-reinicio-diario")) {
+        actualizarContadoresReinicioDiario();
+        setInterval(actualizarContadoresReinicioDiario, 1000);
     }
     function mezclarConRng(array, rng) {
         const copia = array.slice();
@@ -1842,7 +1931,7 @@ const listaPresidentes = [
         const hoyISO = fechaHoyISO();
         cruciResultadoOficial = lsLeer(CRUCI_LS_RES(hoyISO));
         cruciEsRejugada = !!cruciResultadoOficial;
-        const racha = rachaVigente(hoyISO);
+        const racha = rachaVigente(CRUCI_LS_STREAK, hoyISO);
 
         const rng = mulberry32(hashCadena("cruci-" + hoyISO));
         const pool = mezclarConRng(poolCrucigrama(), rng).slice(0, 11);
@@ -2220,15 +2309,15 @@ const listaPresidentes = [
 
         // El resultado del día es el de la PRIMERA vez que se completó.
         const primeraVez = !cruciResultadoOficial;
-        let racha = rachaVigente(hoyISO);
+        let racha = rachaVigente(CRUCI_LS_STREAK, hoyISO);
         let record = null;
 
         if (primeraVez) {
             cruciResultadoOficial = { segundos, aciertos: aciertosPartida, total, gano, fecha: hoyISO };
             lsGuardar(CRUCI_LS_RES(hoyISO), cruciResultadoOficial);
             if (gano) {
-                racha = sumarRacha(hoyISO);
-                record = evaluarRecord(segundos, hoyISO);
+                racha = sumarRacha(CRUCI_LS_STREAK, hoyISO);
+                record = evaluarRecord(CRUCI_LS_RECORD, segundos, hoyISO);
             }
         }
 
@@ -2275,24 +2364,29 @@ const listaPresidentes = [
         setTimeout(() => cont.remove(), 4500);
     }
 
-    // --- Compartir resultado ---
-    function textoCompartirCrucigrama() {
-        const of = cruciResultadoOficial || cruciFinInfo;
+    // --- Compartir resultado (crucigrama y sopa de letras comparten el
+    // mismo mecanismo de juego diario, así que también comparten esta lógica) ---
+    function textoCompartirDiario() {
+        const esSopa = modoActual === 'sopa';
+        const of = esSopa ? (sopaResultadoOficial || sopaFinInfo) : (cruciResultadoOficial || cruciFinInfo);
+        const nombreJuego = esSopa ? "Sopa de letras" : "Crucigrama";
+        const claveStreak = esSopa ? SOPA_LS_STREAK : CRUCI_LS_STREAK;
+        const totalDefault = esSopa ? sopaObjetivos.length : cruciEntradas.length;
         const d = new Date();
         const dd = String(d.getDate()).padStart(2, "0");
         const mm = String(d.getMonth() + 1).padStart(2, "0");
-        const total = of.total || cruciEntradas.length;
+        const total = of.total || totalDefault;
         const ok = of.aciertos != null ? of.aciertos : of.aciertosPartida;
         const cuadros = "🟩".repeat(ok) + "⬛".repeat(Math.max(0, total - ok));
         const linea = of.gano
             ? `✅ ${formatoCronometro(of.segundos)}`
             : `❌ ${ok}/${total}`;
-        const racha = rachaVigente(fechaHoyISO());
-        return `Crucigrama Presidentes Argentinos · ${dd}/${mm}\n${linea}${racha > 1 ? `  🔥 ${racha}` : ""}\n${cuadros}`;
+        const racha = rachaVigente(claveStreak, fechaHoyISO());
+        return `${nombreJuego} Presidentes Argentinos · ${dd}/${mm}\n${linea}${racha > 1 ? `  🔥 ${racha}` : ""}\n${cuadros}`;
     }
 
-    async function compartirCrucigrama() {
-        const texto = textoCompartirCrucigrama();
+    async function compartirDiario() {
+        const texto = textoCompartirDiario();
         const msg = document.getElementById("cruciFinCompartirMsg");
         try {
             if (navigator.share) { await navigator.share({ text: texto }); return; }
@@ -2305,8 +2399,7 @@ const listaPresidentes = [
         }
     }
 
-    function poblarFinCrucigrama() {
-        const i = cruciFinInfo;
+    function poblarFinDiario(i) {
         const elTiempo = document.getElementById("cruciFinTiempo");
         const elRecord = document.getElementById("cruciFinRecord");
         const elRacha = document.getElementById("cruciFinRacha");
@@ -2500,10 +2593,16 @@ const listaPresidentes = [
             refrescarMaxCantidad();
         }
 
-        // El temporizador aplica a los dos modos; la cantidad de presidentes,
-        // solo al modo imagen. Los filtros de gobiernos aplican a los dos.
+        // El temporizador aplica a los tres modos jugables; la cantidad de
+        // presidentes, solo a "Adivina la imagen". Los filtros de gobiernos
+        // no tienen efecto en sopa/crucigrama (el desafío del día es fijo
+        // para todos), así que se ocultan en esos modos.
         if (contenedorCantidad) {
             contenedorCantidad.style.display = modoSeleccionado === 'imagen' ? '' : 'none';
+        }
+        if (contenedorFiltros) {
+            const esModoDiario = modoSeleccionado === 'sopa' || modoSeleccionado === 'crucigrama';
+            contenedorFiltros.style.display = esModoDiario ? 'none' : '';
         }
 
         document.getElementById("configDialog").showModal(); // Cambio aquí
@@ -2672,11 +2771,15 @@ function mostrarFinJuego(motivo) {
         porcentajeSpan.style.color = "#e74c3c"; // Rojo
     }
     
-    // Panel de fin del crucigrama (tiempo, récord, racha, compartir)
+    // Panel de fin de los modos "del día" (tiempo, récord, racha, compartir):
+    // crucigrama y sopa de letras comparten el mismo panel y mecanismo.
     const finPanel = document.getElementById("cruciFinPanel");
     if (finPanel) {
-        if (modoActual === 'crucigrama' && cruciFinInfo) {
-            poblarFinCrucigrama();
+        const infoDiario = modoActual === 'sopa' ? sopaFinInfo
+            : modoActual === 'crucigrama' ? cruciFinInfo
+            : null;
+        if (infoDiario) {
+            poblarFinDiario(infoDiario);
             finPanel.hidden = false;
         } else {
             finPanel.hidden = true;
@@ -2758,7 +2861,7 @@ function agregarEventListenersModalFinJuego() {
 
     const botonCompartir = document.getElementById("cruciFinCompartir");
     if (botonCompartir) {
-        botonCompartir.addEventListener("click", compartirCrucigrama);
+        botonCompartir.addEventListener("click", compartirDiario);
     }
 }
 

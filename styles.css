@@ -494,6 +494,20 @@ h1 a {
     text-align: center;
 }
 
+/* Cuenta regresiva hasta que se reinicien los modos "del día" (Sopa de
+   letras / Crucigrama). Se actualiza en vivo desde script.js; en index.html
+   vive dentro de ".modo-de-juego-seleccionado-heading" y solo se muestra
+   cuando el modo elegido es uno de los dos diarios. */
+.contador-reinicio-diario {
+    display: block;
+    width: 100%;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: rgb(var(--gold-soft));
+    font-variant-numeric: tabular-nums;
+}
+
 /* Fila con el selector de modo + la rosquita de configuración: flex con
    align-items:center para que ambos queden centrados en altura entre sí,
    sin importar que tengan alturas de contenido distintas (texto vs ícono). */
@@ -3378,6 +3392,13 @@ td {
     font-size: 0.8rem;
     line-height: 1.4;
     color: rgb(var(--ink) / 0.75);
+}
+
+/* Cuenta regresiva "Se reinicia en HH:MM:SS" dentro de las tarjetas de los
+   modos diarios (Sopa de letras / Crucigrama). El texto lo pinta en vivo
+   actualizarContadoresReinicioDiario() en script.js. */
+.modo-card-contador {
+    margin-top: 0.4rem;
 }
 
 @media (max-width: 768px) {
