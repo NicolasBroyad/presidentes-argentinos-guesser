@@ -604,6 +604,38 @@ const listaPresidentes = [
     // Elegir un modo NO arranca la partida: solo actualiza el badge
     // "MODO DE JUEGO SELECCIONADO", las tarjetas de reglas y qué botón
     // queda resaltado. La partida arranca recién con "Iniciar Juego".
+    function htmlReglas(modo) {
+        return MODOS[modo].reglas.map(regla => `
+            <div class="rule-container">
+                ${regla.icono}
+                <div class="rule-text-container">
+                    <h3>${regla.titulo}</h3>
+                    <p>${regla.texto}</p>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    // La tarjeta de reglas no debe cambiar de tamaño ni correr el separador
+    // central al cambiar de modo. En vez de adivinar cuántas líneas puede
+    // llegar a ocupar el texto más largo (frágil: se rompe cada vez que se
+    // agrega un modo o se edita el texto), medimos en el DOM la altura real
+    // que necesita CADA modo y usamos la más alta como piso para todos.
+    function igualarAlturaReglas() {
+        const contenedorReglas = document.querySelector(".rules-container");
+        if (!contenedorReglas) return;
+
+        contenedorReglas.style.minHeight = "";
+        let maxAltura = 0;
+        Object.keys(MODOS).forEach(modo => {
+            contenedorReglas.innerHTML = htmlReglas(modo);
+            maxAltura = Math.max(maxAltura, contenedorReglas.getBoundingClientRect().height);
+        });
+        contenedorReglas.style.minHeight = `${maxAltura}px`;
+
+        contenedorReglas.innerHTML = htmlReglas(modoSeleccionado);
+    }
+
     function seleccionarModo(modo) {
         if (!MODOS[modo]) return;
         modoSeleccionado = modo;
@@ -621,15 +653,7 @@ const listaPresidentes = [
 
         const contenedorReglas = document.querySelector(".rules-container");
         if (contenedorReglas) {
-            contenedorReglas.innerHTML = MODOS[modo].reglas.map(regla => `
-                <div class="rule-container">
-                    ${regla.icono}
-                    <div class="rule-text-container">
-                        <h3>${regla.titulo}</h3>
-                        <p>${regla.texto}</p>
-                    </div>
-                </div>
-            `).join('');
+            contenedorReglas.innerHTML = htmlReglas(modo);
         }
     }
 
@@ -671,6 +695,16 @@ const listaPresidentes = [
     }
 
     seleccionarModo(modoSeleccionado);
+    igualarAlturaReglas();
+
+    // Recalcular ante cambios de tamaño de ventana (rotar el celular, cambiar
+    // de mobile a desktop, etc.), ya que el ancho/alto afecta cuántas líneas
+    // ocupa cada texto de regla.
+    let resizeReglasTimeout = null;
+    window.addEventListener("resize", () => {
+        clearTimeout(resizeReglasTimeout);
+        resizeReglasTimeout = setTimeout(igualarAlturaReglas, 150);
+    });
 
     function iniciarModoSeleccionado() {
         if (modoSeleccionado === 'imagen') {
