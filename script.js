@@ -705,6 +705,15 @@ const listaPresidentes = [
     seleccionarModo(modoSeleccionado);
     igualarAlturaReglas();
 
+    // La tipografía (Cinzel, vía @import de Google Fonts) carga en forma
+    // asíncrona. Si igualarAlturaReglas() mide antes de que esté lista, el
+    // texto todavía está en la fuente de reemplazo (más angosta) y el
+    // resultado queda corto. Recalculamos apenas terminan de cargar las
+    // fuentes para corregir esa medición inicial.
+    if (document.fonts && document.fonts.ready) {
+        document.fonts.ready.then(igualarAlturaReglas);
+    }
+
     // Recalcular ante cambios de tamaño de ventana (rotar el celular, cambiar
     // de mobile a desktop, etc.), ya que el ancho/alto afecta cuántas líneas
     // ocupa cada texto de regla.
