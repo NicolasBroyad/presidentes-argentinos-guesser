@@ -620,6 +620,7 @@ h1 a {
 
 .rule-container {
     display: flex;
+    flex: 1 1 0;
     gap: min(clamp(1rem, 3vw, 2rem), clamp(1rem, 3vh, 2rem));
     justify-content: center;
 }
@@ -656,6 +657,13 @@ svg {
     width: min(90%, 200px); /* máximo 200px, pero adaptable */
 }
 
+.rule-text-container h3 {
+    line-height: 1.3;
+    /* Reserva espacio para el título de regla más largo (2 líneas) para que
+       la altura de la tarjeta no cambie al pasar de un modo de juego a otro. */
+    min-height: calc(1.3em * 2);
+}
+
 h3 {
     color: rgb(var(--ink));
     font-weight: 750;
@@ -667,6 +675,9 @@ h3 {
     font-size: min(clamp(0.9rem, 2.5vw, 1rem), clamp(0.9rem, 2.5vh, 1rem));
     color: rgb(var(--ink));
     line-height: 1.4;
+    /* Reserva espacio para el texto de reglas más largo (4 líneas) para que
+       la altura de la tarjeta no cambie al pasar de un modo de juego a otro. */
+    min-height: calc(1.4em * 4);
 }
 
 .modos-de-juego-link {
@@ -777,6 +788,14 @@ h3 {
     .rule-text-container {
         width: 100%;
         text-align: center;
+    }
+
+    .rules-section p {
+        min-height: 0;
+    }
+
+    .rule-text-container h3 {
+        min-height: 0;
     }
 
     .modos-de-juego-container {
