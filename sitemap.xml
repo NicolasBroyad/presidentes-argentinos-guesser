@@ -47,4 +47,12 @@
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
+
+  <!-- Ver modos de juego -->
+  <url>
+    <loc>https://presidentes-argentinos-guesser.vercel.app/modos.html</loc>
+    <lastmod>2026-09-07</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
 </urlset>

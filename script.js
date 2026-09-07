@@ -74,6 +74,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    // Permite llegar a la pantalla de inicio con un modo ya elegido desde
+    // otra página (ej. "Ver modos de juego" linkea a index.html?modo=sopa).
+    const modoDesdeUrl = new URLSearchParams(window.location.search).get("modo");
+    if (modoDesdeUrl && MODOS[modoDesdeUrl]) {
+        modoSeleccionado = modoDesdeUrl;
+    }
+
     const botonesModo = document.querySelectorAll(".modo-de-juego-button");
 
     // --- Elementos del modal ---
