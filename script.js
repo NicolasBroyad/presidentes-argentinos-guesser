@@ -64,6 +64,20 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // --- Sonido de click de botón ---
+    // Archivo de audio (sonido-boton.mpeg) para "Iniciar Juego" y el botón
+    // que abre/cierra el selector de modo. Respeta el mismo mute que el
+    // sonido de acierto (un solo botón de "silenciar sonido" para todo el sitio).
+    function reproducirSonidoBoton() {
+        if (!sonidoAciertoActivado) return;
+        try {
+            const audio = new Audio("sonido-boton.mpeg");
+            audio.play().catch(() => {}); // autoplay bloqueado, modo privado, etc.
+        } catch (e) {
+            // Audio no disponible en este navegador: fallamos en silencio.
+        }
+    }
+
     // En el header compacto de mobile durante la partida, el badge "JUGANDO
     // MODO X" tiene que entrar completo (no se corta ni se oculta el
     // prefijo): si el texto no entra en el ancho disponible, se va achicando
@@ -814,6 +828,7 @@ const listaPresidentes = [
     if (modoSelectorTrigger && modoSelectorMenu) {
         modoSelectorTrigger.addEventListener("click", (e) => {
             e.stopPropagation();
+            reproducirSonidoBoton();
             const abrir = modoSelectorMenu.hidden;
             modoSelectorMenu.hidden = !abrir;
             modoSelectorTrigger.setAttribute("aria-expanded", String(abrir));
@@ -868,7 +883,10 @@ const listaPresidentes = [
     }
 
     if (botonIniciar) {
-        botonIniciar.addEventListener("click", iniciarModoSeleccionado);
+        botonIniciar.addEventListener("click", () => {
+            reproducirSonidoBoton();
+            iniciarModoSeleccionado();
+        });
     }
 
 
