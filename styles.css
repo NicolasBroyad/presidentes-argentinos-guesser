@@ -610,6 +610,10 @@ h1 a {
     align-items: center;
     justify-content: center;
     text-align: center;
+    /* El "width" real lo fija igualarAlturaReglas() en script.js (igual que
+       ".modo-actual-card", para que ambos midan exactamente lo mismo); esto
+       es solo un techo para no desbordar en pantallas angostas. */
+    max-width: 100%;
 }
 
 /* Cuenta regresiva hasta que se reinicien los modos "del día" (Sopa de
@@ -752,15 +756,25 @@ h1 a {
     width: 100%;
 }
 
-.modo-card {
+.modo-actual-card {
     display: flex;
     align-items: center;
     gap: min(clamp(1rem, 3vw, 1.6rem), clamp(1rem, 3vh, 1.6rem));
-    max-width: 560px;
+    /* Ocupa el 100% de ".rules-container": igualarAlturaReglas() en
+       script.js fija el ancho de ESE contenedor (no de la tarjeta, que se
+       reemplaza cada vez que se cambia de modo), así que la tarjeta hereda
+       ese ancho fijo automáticamente sea cual sea el modo. */
+    width: 100%;
+    max-width: 100%;
     padding: 1.1rem 1.4rem;
-    border-radius: 16px;
-    background-color: rgb(var(--navy-light) / 0.55);
-    border: 1px solid rgb(var(--blue) / 0.28);
+    /* Mismo border-radius que ".modo-de-juego-seleccionado-heading" (10px),
+       para que ambos contenedores luzcan como parte del mismo conjunto. */
+    border-radius: 10px;
+    /* Mismo tono "vidrio" oscuro que el resto de .rules-section (antes era
+       un navy más saturado con borde celeste fuerte, que quedaba como una
+       pieza aparte en vez de integrada al entorno). */
+    background-color: rgb(var(--glass-soft) / 0.35);
+    border: 1px solid rgb(var(--ink) / 0.12);
 }
 
 .modo-card-logo {
@@ -792,7 +806,7 @@ h1 a {
 .modo-card-text h3 {
     margin: 0;
     font-family: 'Cinzel', serif;
-    font-weight: 750;
+    font-weight: 800;
     letter-spacing: 0.02em;
     line-height: 1.15;
     font-size: min(clamp(1.15rem, 3.4vw, 1.35rem), clamp(1.15rem, 3.4vh, 1.35rem));
@@ -922,7 +936,7 @@ h3 {
         padding: 1rem;
     }
 
-    .modo-card {
+    .modo-actual-card {
         flex-direction: column;
         text-align: center;
         gap: 0.9rem;
@@ -1431,7 +1445,7 @@ td {
         padding: 0.8rem;
     }
 
-    .modo-card {
+    .modo-actual-card {
         padding: 0.8rem 1rem;
     }
 

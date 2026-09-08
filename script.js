@@ -888,7 +888,7 @@ const listaPresidentes = [
     function htmlReglas(modo) {
         const datos = MODOS[modo];
         return `
-            <div class="modo-card">
+            <div class="modo-actual-card">
                 <div class="modo-card-logo">${logoModo[modo]}</div>
                 <div class="modo-card-text">
                     <h3>${datos.nombre}</h3>
@@ -903,19 +903,50 @@ const listaPresidentes = [
     // llegar a ocupar el texto más largo (frágil: se rompe cada vez que se
     // agrega un modo o se edita el texto), medimos en el DOM la altura real
     // que necesita CADA modo y usamos la más alta como piso para todos.
+    // De paso, igualamos el ANCHO de la tarjeta con el del contenedor
+    // "MODO DE JUEGO SELECCIONADO" de arriba (que también varía según el
+    // largo del badge de cada modo), así ambos quedan del mismo ancho
+    // exacto sin importar el modo elegido.
     function igualarAlturaReglas() {
         const contenedorReglas = document.querySelector(".rules-container");
+        const heading = document.querySelector(".modo-de-juego-seleccionado-heading");
+        const badge = document.querySelector(".modo-selector-actual");
         if (!contenedorReglas) return;
 
         contenedorReglas.style.minHeight = "";
+        // Se resetea también el ancho del contenedor: si quedara fijo de una
+        // corrida anterior, la tarjeta (que por CSS ocupa el 100% de este
+        // contenedor) mediría ese ancho fijo en vez de su ancho de
+        // contenido real, y maxAncho terminaría calculado mal.
+        contenedorReglas.style.width = "";
+        if (heading) heading.style.width = "";
+
         let maxAltura = 0;
+        let maxAncho = 0;
         Object.keys(MODOS).forEach(modo => {
             contenedorReglas.innerHTML = htmlReglas(modo);
+            if (badge) badge.textContent = MODOS[modo].badge;
+            const tarjeta = contenedorReglas.querySelector(".modo-actual-card");
+            // Para medir el ancho de CONTENIDO de la tarjeta (no el 100% de
+            // un contenedor que todavía no está fijado) se la achica al
+            // contenido momentáneamente; se descarta solo, ya que esta
+            // tarjeta se reemplaza en la próxima vuelta del loop.
+            if (tarjeta) tarjeta.style.width = "fit-content";
             maxAltura = Math.max(maxAltura, contenedorReglas.getBoundingClientRect().height);
+            if (tarjeta) maxAncho = Math.max(maxAncho, tarjeta.getBoundingClientRect().width);
+            if (heading) maxAncho = Math.max(maxAncho, heading.getBoundingClientRect().width);
         });
         contenedorReglas.style.minHeight = `${maxAltura}px`;
+        // El ancho se fija en el CONTENEDOR (estable, no se reemplaza al
+        // cambiar de modo) y no en la tarjeta en sí (que sí se reemplaza
+        // cada vez que se elige un modo): la tarjeta ocupa el 100% de este
+        // contenedor por CSS, así que hereda el ancho fijo automáticamente
+        // sin importar cuántas veces se regenere su HTML después.
+        contenedorReglas.style.width = `${maxAncho}px`;
 
         contenedorReglas.innerHTML = htmlReglas(modoSeleccionado);
+        if (badge) badge.textContent = MODOS[modoSeleccionado].badge;
+        if (heading) heading.style.width = `${maxAncho}px`;
     }
 
     function seleccionarModo(modo) {
