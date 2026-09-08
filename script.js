@@ -284,45 +284,37 @@ document.addEventListener('DOMContentLoaded', () => {
     let modoSeleccionado = 'clasico'; // 'clasico' | 'imagen'
     let modoActual = 'clasico';
 
-    // Metadatos de cada modo para la pantalla de inicio (badge + tarjetas de reglas)
-    const iconoRegla = {
-        pencil: `<svg class="rules-icons" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>pencil</title><path d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z" /></svg>`,
-        reloj: `<svg class="rules-icons" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>clock-time-eight</title><path d="M12 2C6.5 2 2 6.5 2 12C2 17.5 6.5 22 12 22C17.5 22 22 17.5 22 12S17.5 2 12 2M7.7 15.5L7 14.2L11 11.9V7H12.5V12.8L7.7 15.5Z" /></svg>`,
-        foto: `<svg class="rules-icons" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>camera</title><path d="M4,4H7L9,2H15L17,4H20A2,2 0 0,1 22,6V18A2,2 0 0,1 20,20H4A2,2 0 0,1 2,18V6A2,2 0 0,1 4,4M12,7A5,5 0 0,0 7,12A5,5 0 0,0 12,17A5,5 0 0,0 17,12A5,5 0 0,0 12,7M12,9A3,3 0 0,1 15,12A3,3 0 0,1 12,15A3,3 0 0,1 9,12A3,3 0 0,1 12,9Z" /></svg>`,
-        teclado: `<svg class="rules-icons" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>keyboard</title><path d="M19,10H17V8H19M19,13H17V11H19M16,10H14V8H16M16,13H14V11H16M16,17H8V15H16M7,10H5V8H7M7,13H5V11H7M8,11H10V13H8M8,8H10V10H8M11,11H13V13H11M11,8H13V10H11M20,5H4C2.89,5 2,5.89 2,7V17A2,2 0 0,0 4,19H20A2,2 0 0,0 22,17V7C22,5.89 21.1,5 20,5Z" /></svg>`,
-        grilla: `<svg class="rules-icons" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>grid</title><path d="M3,3H11V11H3V3M13,3H21V11H13V3M3,13H11V21H3V13M13,13H21V21H13V13Z" /></svg>`,
-        lupa: `<svg class="rules-icons" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>magnify</title><path d="M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z" /></svg>`,
-        calendario: `<svg class="rules-icons" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>calendar</title><path d="M19,19H5V8H19M16,1V3H8V1H6V3H5C3.89,3 3,3.89 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5C21,3.89 20.1,3 19,3H18V1M17,12H12V17H17V12Z" /></svg>`
+    // Logos de cada modo (los mismos SVG que los iconos de la sección
+    // "Modos de juego"): representan de forma ultra simplificada lo que se
+    // ve en pantalla al jugar ese modo. Heredan el celeste del tema vía
+    // rgb(var(--blue-strong)), así funcionan en oscuro y en claro.
+    const logoModo = {
+        clasico: `<svg viewBox="0 0 100 100" aria-hidden="true"><g fill="rgb(var(--blue-strong))" fill-opacity="0.3"><circle cx="8.6" cy="17.2" r="8.6"/><rect x="25" y="8.6" width="75" height="17.2" rx="5.2"/><circle cx="8.6" cy="82.8" r="8.6"/><rect x="25" y="74.2" width="75" height="17.2" rx="5.2"/></g><g fill="rgb(var(--blue-strong))"><circle cx="8.6" cy="50" r="8.6"/><rect x="25" y="41.4" width="75" height="17.2" rx="5.2"/></g></svg>`,
+        imagen: `<svg viewBox="0 0 100 100" aria-hidden="true"><rect x="15" y="4" width="70" height="67" rx="11" fill="rgb(var(--blue-strong))" fill-opacity="0.22"/><g fill="rgb(var(--blue-strong))"><circle cx="50" cy="30.5" r="11.5"/><path d="M28 71V60a22 22 0 0 1 44 0v11z"/></g><rect x="15" y="85" width="13.7" height="6.4" rx="3.2" fill="rgb(var(--gold))"/><rect x="34" y="85" width="13.7" height="6.4" rx="3.2" fill="rgb(var(--blue-strong))" fill-opacity="0.34"/><rect x="53" y="85" width="13.7" height="6.4" rx="3.2" fill="rgb(var(--blue-strong))" fill-opacity="0.34"/><rect x="71.3" y="85" width="13.7" height="6.4" rx="3.2" fill="rgb(var(--blue-strong))" fill-opacity="0.34"/></svg>`,
+        sopa: `<svg viewBox="0 0 100 100" aria-hidden="true"><g fill="rgb(var(--blue-strong))" fill-opacity="0.34"><rect x="0" y="0" width="16" height="16" rx="3"/><rect x="21" y="0" width="16" height="16" rx="3"/><rect x="42" y="0" width="16" height="16" rx="3"/><rect x="63" y="0" width="16" height="16" rx="3"/><rect x="84" y="0" width="16" height="16" rx="3"/><rect x="21" y="21" width="16" height="16" rx="3"/><rect x="42" y="21" width="16" height="16" rx="3"/><rect x="63" y="21" width="16" height="16" rx="3"/><rect x="84" y="21" width="16" height="16" rx="3"/><rect x="0" y="42" width="16" height="16" rx="3"/><rect x="42" y="42" width="16" height="16" rx="3"/><rect x="63" y="42" width="16" height="16" rx="3"/><rect x="84" y="42" width="16" height="16" rx="3"/><rect x="0" y="63" width="16" height="16" rx="3"/><rect x="21" y="63" width="16" height="16" rx="3"/><rect x="63" y="63" width="16" height="16" rx="3"/><rect x="84" y="63" width="16" height="16" rx="3"/><rect x="0" y="84" width="16" height="16" rx="3"/><rect x="21" y="84" width="16" height="16" rx="3"/><rect x="42" y="84" width="16" height="16" rx="3"/><rect x="84" y="84" width="16" height="16" rx="3"/></g><g fill="#a78bfa"><rect x="0" y="21" width="16" height="16" rx="3"/><rect x="21" y="42" width="16" height="16" rx="3"/><rect x="42" y="63" width="16" height="16" rx="3"/><rect x="63" y="84" width="16" height="16" rx="3"/></g></svg>`,
+        crucigrama: `<svg viewBox="0 0 100 100" aria-hidden="true"><g fill="rgb(var(--blue-strong))" fill-opacity="0.34"><rect x="21" y="0" width="16" height="16" rx="3"/><rect x="63" y="0" width="16" height="16" rx="3"/><rect x="21" y="42" width="16" height="16" rx="3"/><rect x="63" y="42" width="16" height="16" rx="3"/><rect x="0" y="63" width="16" height="16" rx="3"/><rect x="21" y="63" width="16" height="16" rx="3"/><rect x="42" y="63" width="16" height="16" rx="3"/><rect x="63" y="63" width="16" height="16" rx="3"/><rect x="21" y="84" width="16" height="16" rx="3"/><rect x="63" y="84" width="16" height="16" rx="3"/></g><g fill="#8fd6a8"><rect x="0" y="21" width="16" height="16" rx="3"/><rect x="21" y="21" width="16" height="16" rx="3"/><rect x="42" y="21" width="16" height="16" rx="3"/><rect x="63" y="21" width="16" height="16" rx="3"/><rect x="84" y="21" width="16" height="16" rx="3"/></g></svg>`
     };
 
     const MODOS = {
         clasico: {
             badge: 'CLÁSICO',
-            reglas: [
-                { icono: iconoRegla.pencil, titulo: 'Llená los espacios en blanco', texto: 'Completá con los nombres de cada presidente según el periodo.' },
-                { icono: iconoRegla.reloj, titulo: 'Vencé al reloj', texto: 'Corré a contrarreloj para adivinar a todos los presidentes.' }
-            ]
+            nombre: 'Clásico',
+            descripcion: 'Completá la lista de presidencias con el apellido de cada presidente, a contrarreloj.'
         },
         imagen: {
             badge: 'ADIVINA LA IMAGEN',
-            reglas: [
-                { icono: iconoRegla.foto, titulo: 'Mirá la foto', texto: 'Reconocé al presidente que aparece en la imagen.' },
-                { icono: iconoRegla.teclado, titulo: 'Escribí el apellido', texto: 'Adiviná, uno por uno, la cantidad de presidentes que elijas al azar.' }
-            ]
+            nombre: 'Adiviná la imagen',
+            descripcion: 'Reconocé al presidente de la foto y escribí su apellido, uno tras otro.'
         },
         sopa: {
             badge: 'SOPA DE LETRAS',
-            reglas: [
-                { icono: iconoRegla.lupa, titulo: 'Encontrá los apellidos', texto: 'Arrastrá sobre la grilla para marcar el apellido de cada presidente (horizontal, vertical o diagonal).' },
-                { icono: iconoRegla.grilla, titulo: 'Guiate por las pistas', texto: 'Cada pista muestra la foto y los años de mandato. Encontralos todos antes de que se acabe el tiempo.' }
-            ]
+            nombre: 'Sopa de letras',
+            descripcion: 'Marcá en la grilla los apellidos escondidos, guiándote por la foto y los años de mandato.'
         },
         crucigrama: {
             badge: 'CRUCIGRAMA',
-            reglas: [
-                { icono: iconoRegla.calendario, titulo: 'Crucigrama del día', texto: 'Un crucigrama nuevo de presidentes cada día, igual para todos.' },
-                { icono: iconoRegla.pencil, titulo: 'Completá con los apellidos', texto: 'Cada pista es el período de gobierno; escribí el apellido del presidente en la grilla.' }
-            ]
+            nombre: 'Crucigrama',
+            descripcion: 'Un crucigrama nuevo cada día: cada pista es un período y la respuesta, el apellido.'
         }
     };
 
@@ -894,15 +886,16 @@ const listaPresidentes = [
     // "MODO DE JUEGO SELECCIONADO", las tarjetas de reglas y qué botón
     // queda resaltado. La partida arranca recién con "Iniciar Juego".
     function htmlReglas(modo) {
-        return MODOS[modo].reglas.map(regla => `
-            <div class="rule-container">
-                ${regla.icono}
-                <div class="rule-text-container">
-                    <h3>${regla.titulo}</h3>
-                    <p>${regla.texto}</p>
+        const datos = MODOS[modo];
+        return `
+            <div class="modo-card">
+                <div class="modo-card-logo">${logoModo[modo]}</div>
+                <div class="modo-card-text">
+                    <h3>${datos.nombre}</h3>
+                    <p>${datos.descripcion}</p>
                 </div>
             </div>
-        `).join('');
+        `;
     }
 
     // La tarjeta de reglas no debe cambiar de tamaño ni correr el separador

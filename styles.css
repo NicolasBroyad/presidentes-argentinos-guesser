@@ -748,19 +748,59 @@ h1 a {
 
 .rules-container {
     display: flex;
-    align-items: baseline;
-    gap: min(clamp(1.5rem, 4vw, 3rem), clamp(1.5rem, 4vh, 3rem));
-}
-
-.rule-container {
-    display: flex;
-    flex: 1 1 0;
-    gap: min(clamp(1rem, 3vw, 2rem), clamp(1rem, 3vh, 2rem));
     justify-content: center;
+    width: 100%;
 }
 
-.rule-container:nth-child(1) {
-    border-right: 1px solid rgb(var(--ink) / 0.4);
+.modo-card {
+    display: flex;
+    align-items: center;
+    gap: min(clamp(1rem, 3vw, 1.6rem), clamp(1rem, 3vh, 1.6rem));
+    max-width: 560px;
+    padding: 1.1rem 1.4rem;
+    border-radius: 16px;
+    background-color: rgb(var(--navy-light) / 0.55);
+    border: 1px solid rgb(var(--blue) / 0.28);
+}
+
+.modo-card-logo {
+    flex-shrink: 0;
+    display: grid;
+    place-items: center;
+    box-sizing: border-box;
+    width: min(clamp(72px, 13vw, 96px), clamp(72px, 13vh, 96px));
+    height: min(clamp(72px, 13vw, 96px), clamp(72px, 13vh, 96px));
+    padding: 14px;
+    border-radius: 22px;
+    background-color: rgb(var(--navy-light));
+    border: 1px solid rgb(var(--blue) / 0.55);
+}
+
+.modo-card-logo svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+.modo-card-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    min-width: 0;
+}
+
+.modo-card-text h3 {
+    margin: 0;
+    font-family: 'Cinzel', serif;
+    font-weight: 750;
+    letter-spacing: 0.02em;
+    line-height: 1.15;
+    font-size: min(clamp(1.15rem, 3.4vw, 1.35rem), clamp(1.15rem, 3.4vh, 1.35rem));
+    color: rgb(var(--gold));
+}
+
+.modo-card-text p {
+    margin: 0;
 }
 
 .modos-scroll-container a {
@@ -777,18 +817,6 @@ h1 a {
 
 svg {
     fill: rgb(var(--ink));
-}
-
-.rules-icons {
-    width: min(clamp(40px, 8vw, 80px), clamp(40px, 8vh, 80px));
-    height: min(clamp(40px, 8vw, 80px), clamp(40px, 8vh, 80px));
-    flex-shrink: 0;
-}
-
-.rule-text-container {
-    display: flex;
-    flex-direction: column;
-    width: min(90%, 200px); /* máximo 200px, pero adaptable */
 }
 
 h3 {
@@ -894,24 +922,15 @@ h3 {
         padding: 1rem;
     }
 
-    .rules-container {
+    .modo-card {
         flex-direction: column;
-        gap: 0;
-        align-items: center;
-    }
-
-    .rule-container {
-        padding: 1em;
-    }
-
-    .rule-container:nth-child(1) {
-        border-right: none;
-        border-bottom: 1px solid rgb(var(--ink) / 0.4);
-    }
-
-    .rule-text-container {
-        width: 100%;
         text-align: center;
+        gap: 0.9rem;
+        padding: 1rem 1.1rem;
+    }
+
+    .modo-card-text {
+        width: 100%;
     }
 
     .modos-de-juego-container {
@@ -1412,22 +1431,23 @@ td {
         padding: 0.8rem;
     }
 
-    .rules-icons {
-        width: 36px;
-        height: 36px;
+    .modo-card {
+        padding: 0.8rem 1rem;
     }
 
-    .rule-text-container h3 {
-        font-size: 1rem;
-        margin-bottom: 0.2rem;
+    .modo-card-logo {
+        width: 68px;
+        height: 68px;
+        padding: 11px;
+        border-radius: 16px;
+    }
+
+    .modo-card-text h3 {
+        font-size: 1.05rem;
     }
 
     .rules-section p {
         font-size: 0.8rem;
-    }
-
-    .rule-text-container {
-        width: min(90%, 170px);
     }
 
     .modos-scroll-container .scroll-icon {
