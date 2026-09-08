@@ -3392,6 +3392,13 @@ td {
     fill: rgb(var(--blue));
 }
 
+/* Logos personalizados por modo (images/modos logos/*.svg): traen sus
+   propios colores, a diferencia de los íconos genéricos de arriba. */
+.modo-card-icono img {
+    width: 38px;
+    height: 38px;
+}
+
 .modo-card-texto {
     display: flex;
     flex-direction: column;
@@ -3427,7 +3434,8 @@ td {
         height: 56px;
     }
 
-    .modo-card-icono svg {
+    .modo-card-icono svg,
+    .modo-card-icono img {
         width: 30px;
         height: 30px;
     }
