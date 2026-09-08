@@ -64,6 +64,28 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // En el header compacto de mobile durante la partida, el badge "JUGANDO
+    // MODO X" tiene que entrar completo (no se corta ni se oculta el
+    // prefijo): si el texto no entra en el ancho disponible, se va achicando
+    // la fuente de a poco hasta que entre, con un piso legible.
+    function ajustarBadgeModoAlAncho() {
+        const heading = document.querySelector(".jugando-modo-heading");
+        if (!heading) return;
+        heading.style.fontSize = ""; // vuelve al tamaño base definido en CSS
+        if (!window.matchMedia("(max-width: 768px)").matches) return;
+        const nombreModo = heading.querySelector(".modo-de-juego-seleccionado");
+        const desborda = () =>
+            heading.scrollWidth > heading.clientWidth + 1 ||
+            (nombreModo && nombreModo.scrollWidth > nombreModo.clientWidth + 1);
+        const pisoPx = 9;
+        let tamanioPx = parseFloat(getComputedStyle(heading).fontSize);
+        while (desborda() && tamanioPx > pisoPx) {
+            tamanioPx -= 1;
+            heading.style.fontSize = tamanioPx + "px";
+        }
+    }
+    window.addEventListener("resize", ajustarBadgeModoAlAncho);
+
     const botonSonido = document.querySelector(".sonido-toggle");
     const iconoSonidoOn = `<svg class="sonido-toggle-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>Silenciar sonido</title><path d="M3,9V15H7L12,20V4L7,9H3Z" /><path d="M16,8.5C17,9.5 17,14.5 16,15.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" /><path d="M18.5,6C20.5,8.5 20.5,15.5 18.5,18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" /></svg>`;
     const iconoSonidoOff = `<svg class="sonido-toggle-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>Activar sonido</title><path d="M3,9V15H7L12,20V4L7,9H3Z" /><path d="M16.5,9.5L20.5,13.5M20.5,9.5L16.5,13.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" /></svg>`;
@@ -513,7 +535,7 @@ const listaPresidentes = [
 
         if (esMobile) {
             return `
-                <h4 class="jugando-modo-heading">JUGANDO MODO <span class="modo-de-juego-seleccionado">CLÁSICO</span></h4>
+                <h4 class="jugando-modo-heading"><span class="jugando-modo-prefijo">JUGANDO MODO</span> <span class="modo-de-juego-seleccionado">CLÁSICO</span></h4>
                 <div class="tabla-container tabla-container-compacta">
                     <div class="tabla-wrapper" style="position:relative;">
                         ${tabla}
@@ -535,7 +557,7 @@ const listaPresidentes = [
         }
 
         return `
-            <h4 class="jugando-modo-heading">JUGANDO MODO <span class="modo-de-juego-seleccionado">CLÁSICO</span></h4>
+            <h4 class="jugando-modo-heading"><span class="jugando-modo-prefijo">JUGANDO MODO</span> <span class="modo-de-juego-seleccionado">CLÁSICO</span></h4>
             <div class="tabla-container">
                 <div class="tabla-wrapper" style="position:relative;">
                     ${tabla}
@@ -661,6 +683,7 @@ const listaPresidentes = [
             const jugandoModoHeading = document.querySelector(".jugando-modo-heading");
             if (navToggleEl && jugandoModoHeading) {
                 navToggleEl.insertAdjacentElement("afterend", jugandoModoHeading);
+                ajustarBadgeModoAlAncho();
             }
         }
 
@@ -909,7 +932,7 @@ const listaPresidentes = [
         aciertos = 0;
 
         const contenido = `
-            <h4 class="jugando-modo-heading">JUGANDO MODO <span class="modo-de-juego-seleccionado">IMAGEN</span></h4>
+            <h4 class="jugando-modo-heading"><span class="jugando-modo-prefijo">JUGANDO MODO</span> <span class="modo-de-juego-seleccionado">IMAGEN</span></h4>
             <div class="juego-imagen-container">
                 <div class="juego-imagen-foto-col">
                     <div class="juego-imagen-card">
@@ -944,6 +967,7 @@ const listaPresidentes = [
             const jugandoModoHeading = document.querySelector(".jugando-modo-heading");
             if (navToggleEl && jugandoModoHeading) {
                 navToggleEl.insertAdjacentElement("afterend", jugandoModoHeading);
+                ajustarBadgeModoAlAncho();
             }
         }
 
@@ -1365,7 +1389,7 @@ const listaPresidentes = [
         `).join("");
 
         const contenido = `
-            <h4 class="jugando-modo-heading">JUGANDO MODO <span class="modo-de-juego-seleccionado">SOPA</span></h4>
+            <h4 class="jugando-modo-heading"><span class="jugando-modo-prefijo">JUGANDO MODO</span> <span class="modo-de-juego-seleccionado">SOPA</span></h4>
             <div class="sopa-container">
                 <div class="sopa-grid-col">
                     <div class="sopa-grid" style="grid-template-columns: repeat(${sopaTam}, 1fr);">
@@ -1397,6 +1421,7 @@ const listaPresidentes = [
             const jugandoModoHeading = document.querySelector(".jugando-modo-heading");
             if (navToggleEl && jugandoModoHeading) {
                 navToggleEl.insertAdjacentElement("afterend", jugandoModoHeading);
+                ajustarBadgeModoAlAncho();
             }
         }
 
@@ -2048,7 +2073,7 @@ const listaPresidentes = [
         const pistasV = cruciEntradas.filter(e => e.dir === 'V');
 
         const contenido = `
-            <h4 class="jugando-modo-heading">JUGANDO MODO <span class="modo-de-juego-seleccionado">CRUCIGRAMA</span></h4>
+            <h4 class="jugando-modo-heading"><span class="jugando-modo-prefijo">JUGANDO MODO</span> <span class="modo-de-juego-seleccionado">CRUCIGRAMA</span></h4>
             <div class="cruci-container">
                 <div class="cruci-grid-col">
                     <div class="cruci-grid" style="--c:${cruciData.ancho}; --r:${cruciData.alto}; grid-template-columns: repeat(${cruciData.ancho}, 1fr);">
@@ -2083,6 +2108,7 @@ const listaPresidentes = [
             const jugandoModoHeading = document.querySelector(".jugando-modo-heading");
             if (navToggleEl && jugandoModoHeading) {
                 navToggleEl.insertAdjacentElement("afterend", jugandoModoHeading);
+                ajustarBadgeModoAlAncho();
             }
         }
 
