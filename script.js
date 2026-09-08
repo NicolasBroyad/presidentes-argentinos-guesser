@@ -674,10 +674,13 @@ const listaPresidentes = [
 
         // El contador de "se reinicia en..." solo tiene sentido para los
         // modos del día (Sopa de letras / Crucigrama); el texto lo pinta
-        // actualizarContadoresReinicioDiario() en su próximo tick.
+        // actualizarContadoresReinicioDiario() en su próximo tick. Se oculta
+        // con visibility (no con "hidden"/display:none) para que la tarjeta
+        // de reglas reserve siempre esa línea y no cambie de altura al
+        // pasar de un modo con contador a uno sin él.
         const contadorReinicio = document.getElementById("contadorReinicioDiario");
         if (contadorReinicio) {
-            contadorReinicio.hidden = !(modo === 'sopa' || modo === 'crucigrama');
+            contadorReinicio.style.visibility = (modo === 'sopa' || modo === 'crucigrama') ? 'visible' : 'hidden';
         }
     }
 

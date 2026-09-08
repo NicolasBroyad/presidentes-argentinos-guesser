@@ -496,8 +496,10 @@ h1 a {
 
 /* Cuenta regresiva hasta que se reinicien los modos "del día" (Sopa de
    letras / Crucigrama). Se actualiza en vivo desde script.js; en index.html
-   vive dentro de ".modo-de-juego-seleccionado-heading" y solo se muestra
-   cuando el modo elegido es uno de los dos diarios. */
+   vive dentro de ".modo-de-juego-seleccionado-heading" y se oculta con
+   "visibility" (no con display:none) cuando el modo elegido no es uno de
+   los dos diarios, así la línea queda siempre reservada y la tarjeta de
+   reglas no cambia de altura al cambiar de modo. */
 .contador-reinicio-diario {
     display: block;
     width: 100%;
@@ -506,13 +508,6 @@ h1 a {
     font-weight: 700;
     color: rgb(var(--gold-soft));
     font-variant-numeric: tabular-nums;
-}
-
-/* Un estilo de autor (display:block de arriba) le gana al [hidden] del user
-   agent aunque tengan la misma especificidad, así que sin esto el contador
-   quedaba visible en clásico/imagen a pesar del atributo "hidden". */
-.contador-reinicio-diario[hidden] {
-    display: none;
 }
 
 /* Fila con el selector de modo + la rosquita de configuración: flex con
