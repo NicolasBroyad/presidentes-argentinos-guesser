@@ -11,10 +11,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const kicker = document.querySelector(".kicker");
 
     // --- Sonido de acierto ---
-    // Sintetizado con Web Audio API: un barrido ascendente tipo "sparkle"
-    // (mismo estilo tonal que una referencia que se probó, pero comprimido a
-    // ~190ms con una envolvente completa, no un recorte a la mitad de un
-    // archivo). Se llama a reproducirSonidoAcierto() desde cada modo de
+    // Sintetizado con Web Audio API: un "thump" grave de cuerpo + un tono
+    // cálido corto por encima (mucho más grave que la versión "sparkle"
+    // anterior). Se llama a reproducirSonidoAcierto() desde cada modo de
     // juego (clásico, imagen, sopa de letras, crucigrama) justo cuando se
     // confirma una respuesta correcta.
     const SONIDO_ACIERTO_KEY = "pag-sonido-acierto";
@@ -32,34 +31,34 @@ document.addEventListener('DOMContentLoaded', () => {
             if (audioCtxAcierto.state === "suspended") audioCtxAcierto.resume();
 
             const ahora = audioCtxAcierto.currentTime;
-            const duracion = 0.19;
+            const duracion = 0.27;
 
-            // Voz principal: barrido de 750Hz a 2100Hz, el "sparkle" ascendente.
+            // "Thump" grave: le da cuerpo/peso al golpe, sin llegar a sonar
+            // como un bajo. Cae rápido, es solo el "impacto" inicial.
+            const thump = audioCtxAcierto.createOscillator();
+            const gananciaThump = audioCtxAcierto.createGain();
+            thump.type = "sine";
+            thump.frequency.setValueAtTime(180, ahora);
+            thump.frequency.exponentialRampToValueAtTime(90, ahora + 0.11);
+            gananciaThump.gain.setValueAtTime(0.28, ahora);
+            gananciaThump.gain.exponentialRampToValueAtTime(0.0001, ahora + 0.13);
+            thump.connect(gananciaThump).connect(audioCtxAcierto.destination);
+            thump.start(ahora);
+            thump.stop(ahora + 0.14);
+
+            // Tono cálido por encima del thump: un salto corto de 440Hz a
+            // 660Hz (quinta justa), bastante más grave que un "sparkle" agudo.
             const osc = audioCtxAcierto.createOscillator();
             const ganancia = audioCtxAcierto.createGain();
             osc.type = "sine";
-            osc.frequency.setValueAtTime(750, ahora);
-            osc.frequency.exponentialRampToValueAtTime(2100, ahora + 0.14);
-            ganancia.gain.setValueAtTime(0.0001, ahora);
-            ganancia.gain.exponentialRampToValueAtTime(0.26, ahora + 0.02);
+            osc.frequency.setValueAtTime(440, ahora + 0.02);
+            osc.frequency.exponentialRampToValueAtTime(660, ahora + 0.15);
+            ganancia.gain.setValueAtTime(0.0001, ahora + 0.02);
+            ganancia.gain.exponentialRampToValueAtTime(0.22, ahora + 0.06);
             ganancia.gain.exponentialRampToValueAtTime(0.0001, ahora + duracion);
             osc.connect(ganancia).connect(audioCtxAcierto.destination);
-            osc.start(ahora);
+            osc.start(ahora + 0.02);
             osc.stop(ahora + duracion + 0.02);
-
-            // Capa de brillo una octava arriba, más floja, para dar cuerpo de
-            // campanita al barrido principal.
-            const osc2 = audioCtxAcierto.createOscillator();
-            const ganancia2 = audioCtxAcierto.createGain();
-            osc2.type = "triangle";
-            osc2.frequency.setValueAtTime(1500, ahora);
-            osc2.frequency.exponentialRampToValueAtTime(4200, ahora + 0.14);
-            ganancia2.gain.setValueAtTime(0.0001, ahora + 0.01);
-            ganancia2.gain.exponentialRampToValueAtTime(0.1, ahora + 0.03);
-            ganancia2.gain.exponentialRampToValueAtTime(0.0001, ahora + duracion);
-            osc2.connect(ganancia2).connect(audioCtxAcierto.destination);
-            osc2.start(ahora + 0.01);
-            osc2.stop(ahora + duracion + 0.02);
         } catch (e) {
             // Web Audio no disponible en este navegador: fallamos en silencio.
         }
