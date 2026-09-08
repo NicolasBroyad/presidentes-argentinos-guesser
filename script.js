@@ -10,6 +10,81 @@ document.addEventListener('DOMContentLoaded', () => {
     const h1 = document.querySelector("h1");
     const kicker = document.querySelector(".kicker");
 
+    // --- Sonido de acierto ---
+    // Sintetizado con Web Audio API: un barrido ascendente tipo "sparkle"
+    // (mismo estilo tonal que una referencia que se probó, pero comprimido a
+    // ~190ms con una envolvente completa, no un recorte a la mitad de un
+    // archivo). Se llama a reproducirSonidoAcierto() desde cada modo de
+    // juego (clásico, imagen, sopa de letras, crucigrama) justo cuando se
+    // confirma una respuesta correcta.
+    const SONIDO_ACIERTO_KEY = "pag-sonido-acierto";
+    let sonidoAciertoActivado = localStorage.getItem(SONIDO_ACIERTO_KEY) !== "off";
+    let audioCtxAcierto = null;
+
+    function reproducirSonidoAcierto() {
+        if (!sonidoAciertoActivado) return;
+        try {
+            if (!audioCtxAcierto) {
+                const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                if (!AudioCtx) return;
+                audioCtxAcierto = new AudioCtx();
+            }
+            if (audioCtxAcierto.state === "suspended") audioCtxAcierto.resume();
+
+            const ahora = audioCtxAcierto.currentTime;
+            const duracion = 0.19;
+
+            // Voz principal: barrido de 750Hz a 2100Hz, el "sparkle" ascendente.
+            const osc = audioCtxAcierto.createOscillator();
+            const ganancia = audioCtxAcierto.createGain();
+            osc.type = "sine";
+            osc.frequency.setValueAtTime(750, ahora);
+            osc.frequency.exponentialRampToValueAtTime(2100, ahora + 0.14);
+            ganancia.gain.setValueAtTime(0.0001, ahora);
+            ganancia.gain.exponentialRampToValueAtTime(0.26, ahora + 0.02);
+            ganancia.gain.exponentialRampToValueAtTime(0.0001, ahora + duracion);
+            osc.connect(ganancia).connect(audioCtxAcierto.destination);
+            osc.start(ahora);
+            osc.stop(ahora + duracion + 0.02);
+
+            // Capa de brillo una octava arriba, más floja, para dar cuerpo de
+            // campanita al barrido principal.
+            const osc2 = audioCtxAcierto.createOscillator();
+            const ganancia2 = audioCtxAcierto.createGain();
+            osc2.type = "triangle";
+            osc2.frequency.setValueAtTime(1500, ahora);
+            osc2.frequency.exponentialRampToValueAtTime(4200, ahora + 0.14);
+            ganancia2.gain.setValueAtTime(0.0001, ahora + 0.01);
+            ganancia2.gain.exponentialRampToValueAtTime(0.1, ahora + 0.03);
+            ganancia2.gain.exponentialRampToValueAtTime(0.0001, ahora + duracion);
+            osc2.connect(ganancia2).connect(audioCtxAcierto.destination);
+            osc2.start(ahora + 0.01);
+            osc2.stop(ahora + duracion + 0.02);
+        } catch (e) {
+            // Web Audio no disponible en este navegador: fallamos en silencio.
+        }
+    }
+
+    const botonSonido = document.querySelector(".sonido-toggle");
+    const iconoSonidoOn = `<svg class="sonido-toggle-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>Silenciar sonido</title><path d="M3,9V15H7L12,20V4L7,9H3Z" /><path d="M16,8.5C17,9.5 17,14.5 16,15.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" /><path d="M18.5,6C20.5,8.5 20.5,15.5 18.5,18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" /></svg>`;
+    const iconoSonidoOff = `<svg class="sonido-toggle-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>Activar sonido</title><path d="M3,9V15H7L12,20V4L7,9H3Z" /><path d="M16.5,9.5L20.5,13.5M20.5,9.5L16.5,13.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" /></svg>`;
+
+    function actualizarBotonSonido() {
+        if (!botonSonido) return;
+        botonSonido.innerHTML = sonidoAciertoActivado ? iconoSonidoOn : iconoSonidoOff;
+        botonSonido.setAttribute("aria-label", sonidoAciertoActivado ? "Silenciar sonido" : "Activar sonido");
+    }
+
+    if (botonSonido) {
+        actualizarBotonSonido();
+        botonSonido.addEventListener("click", () => {
+            sonidoAciertoActivado = !sonidoAciertoActivado;
+            localStorage.setItem(SONIDO_ACIERTO_KEY, sonidoAciertoActivado ? "on" : "off");
+            actualizarBotonSonido();
+            if (sonidoAciertoActivado) reproducirSonidoAcierto();
+        });
+    }
+
     // --- Estado de configuración por defecto ---
     let configuracionJuego = {
         tiempo: 10, // minutos (modo clásico)
@@ -111,6 +186,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const iconoPlay = `
         <svg class="pause-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="rgb(10, 34, 53)"><title>Activar</title>
         <path d="M8,5.14V19.14L19,12.14L8,5.14Z" /></svg>`;
+
+    // Deriva la ruta a la versión con la cara centrada de una foto de
+    // presidente (carpeta "images/presidentes/presidentes centrados/"),
+    // pensada para encajar en los círculos del modo clásico, la sopa de
+    // letras y "Ver Presidencias" sin cortar la cabeza. El modo "Adivina la
+    // imagen" sigue usando las fotos originales sin cambios.
+    function imagenCentradaDe(rutaOriginal) {
+        const idx = rutaOriginal.lastIndexOf('/');
+        const carpeta = rutaOriginal.slice(0, idx);
+        const archivo = rutaOriginal.slice(idx + 1);
+        const punto = archivo.lastIndexOf('.');
+        const base = archivo.slice(0, punto);
+        const ext = archivo.slice(punto);
+        return `${carpeta}/presidentes%20centrados/${base}(centrado)${ext}`;
+    }
 
     // --- DATOS DE PRESIDENTES ---
 const listaPresidentes = [
@@ -510,7 +600,7 @@ const listaPresidentes = [
                     .filter(Boolean).join(" ");
 
                 if (celdaNombre.textContent === "?") {
-                    imagen.src = presidente.imagen;
+                    imagen.src = imagenCentradaDe(presidente.imagen);
                     imagen.alt = nombreParaMostrar;
                     celdaNombre.innerHTML = `${checkIcon} <span class="nombre-presidente-texto">${nombreParaMostrar}</span>`;
                     presidenteCard.style.backgroundColor = "rgb(27, 190, 241)";
@@ -520,6 +610,7 @@ const listaPresidentes = [
                     presidenteTexto.style.color = "rgb(10, 34, 53)";
 
                     aciertos++;
+                    reproducirSonidoAcierto();
                     const contador = document.getElementById("contador-presidentes");
                     if (contador) contador.textContent = `${aciertos} / ${window.listaFiltrada.length}`;
 
@@ -993,6 +1084,7 @@ const listaPresidentes = [
         // Acierto
         juegoImagenBloqueado = true;
         aciertos++;
+        reproducirSonidoAcierto();
         presidente.resultadoPartida = 'acierto';
 
         const card = document.querySelector(".juego-imagen-card");
@@ -1410,6 +1502,7 @@ const listaPresidentes = [
         marcarPistaSopa(sopaObjetivos.indexOf(obj), 'resuelta', obj.u, obj.color);
 
         aciertos++;
+        reproducirSonidoAcierto();
         const cont = document.getElementById("sopa-aciertos");
         if (cont) cont.textContent = aciertos;
 
@@ -2187,8 +2280,11 @@ const listaPresidentes = [
             if (ok) {
                 resueltasAhora.add(id);
                 e.celdas.forEach(({ r, c }) => okCeldas.add(`${r},${c}`));
-                // Animación al recién completarse (no en cada tecla posterior).
-                if (!cruciResueltasPrev.has(id) && !cruciTerminado) animarPalabraCrucigrama(e);
+                // Animación y sonido al recién completarse (no en cada tecla posterior).
+                if (!cruciResueltasPrev.has(id) && !cruciTerminado) {
+                    animarPalabraCrucigrama(e);
+                    reproducirSonidoAcierto();
+                }
             }
         });
         cruciResueltasPrev = resueltasAhora;
@@ -2679,7 +2775,7 @@ const listaPresidentes = [
                     const nombreParaMostrar = [presidente.nombre, presidente.segundoNombre, presidente.apellido]
                         .filter(Boolean).join(" ");
                     celdaNombre.innerHTML = `<span class="nombre-presidente-texto rendido">${nombreParaMostrar}</span>`;
-                    fila.querySelector('img').src = presidente.imagen;
+                    fila.querySelector('img').src = imagenCentradaDe(presidente.imagen);
                     fila.querySelector('img').alt = nombreParaMostrar;
                     fila.style.backgroundColor = "#111"; // fondo negro
                     const presidenteCard = fila.querySelector('.presidente-card');
@@ -2809,7 +2905,7 @@ function actualizarResumenPartida() {
             : '';
         return `
             <li class="resumen-partida-item ${acierto ? 'acierto' : 'error'}">
-                <img class="resumen-partida-foto" src="${u.imagen}" alt="" loading="lazy">
+                <img class="resumen-partida-foto" src="${imagenCentradaDe(u.imagen)}" alt="" loading="lazy">
                 ${puntoColor}
                 <span class="resumen-partida-nombre">${nombre}</span>
                 <span class="resumen-partida-icono" aria-hidden="true">${icono}</span>
@@ -2932,7 +3028,7 @@ function cargarLineaDeTiempo() {
                     <div class="timeline-card" role="button" tabindex="0" aria-expanded="false">
                         <div class="timeline-card-main">
                             <div class="timeline-imagen">
-                                <img src="${presidente.imagen}" alt="${nombreCompleto}" loading="lazy">
+                                <img src="${imagenCentradaDe(presidente.imagen)}" alt="${nombreCompleto}" loading="lazy">
                             </div>
                             <div class="timeline-info">
                                 <h3 class="timeline-nombre">${nombreCompleto}</h3>

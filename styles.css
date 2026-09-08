@@ -232,7 +232,9 @@ h1 a {
     cursor: pointer;
 }
 
-.theme-toggle {
+/* Agrupa el botón de sonido y el de tema en la esquina derecha del header,
+   uno al lado del otro, en vez de posicionar cada uno por separado. */
+.header-acciones {
     position: absolute;
     right: 1rem;
     /* "top: 50%" de un elemento absoluto se calcula sobre TODO el alto del
@@ -242,6 +244,31 @@ h1 a {
        que ambos queden a la misma altura en dispositivos con notch. */
     top: calc(50% + env(safe-area-inset-top, 0px) / 2);
     transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    gap: 0.2rem;
+    z-index: 101;
+}
+
+.theme-toggle {
+    /* Posición standalone, para las páginas que no agrupan botones en
+       ".header-acciones" (todas menos index.html). */
+    position: absolute;
+    right: 1rem;
+    top: calc(50% + env(safe-area-inset-top, 0px) / 2);
+    transform: translateY(-50%);
+}
+
+.header-acciones .theme-toggle,
+.header-acciones .sonido-toggle {
+    position: static;
+    top: auto;
+    right: auto;
+    transform: none;
+}
+
+.theme-toggle,
+.sonido-toggle {
     background: none;
     border: none;
     display: flex;
@@ -294,7 +321,9 @@ h1 a {
         flex: 1;
         min-width: 0;
         overflow: hidden;
-        margin: 0 3rem 0 0.5rem;
+        /* Espacio reservado a la derecha para ".header-acciones" (sonido +
+           tema, dos botones ahora en vez de uno solo). */
+        margin: 0 5.6rem 0 0.5rem;
         padding: 0.35rem 0.6rem;
         font-size: 0.8rem;
         white-space: nowrap;
@@ -307,7 +336,7 @@ h1 a {
 
 @media (max-width: 360px) {
     body.juego-activo .header .jugando-modo-heading {
-        margin-right: 2.5rem;
+        margin-right: 5.1rem;
         font-size: 0.7rem;
         padding: 0.3rem 0.5rem;
         gap: 0.3rem;
@@ -324,6 +353,20 @@ h1 a {
 .theme-toggle:hover .theme-toggle-icon {
     fill: rgb(var(--blue));
     transform: translateY(-2px) rotate(15deg);
+}
+
+.sonido-toggle-icon {
+    height: 22px;
+    width: 22px;
+    fill: rgb(var(--gold-soft));
+    color: rgb(var(--gold-soft)); /* los trazos del ícono usan stroke="currentColor" */
+    transition: transform 0.3s ease, fill 0.3s ease, color 0.3s ease;
+}
+
+.sonido-toggle:hover .sonido-toggle-icon {
+    fill: rgb(var(--blue));
+    color: rgb(var(--blue));
+    transform: scale(1.1);
 }
 
 /* --- Responsive --- */
