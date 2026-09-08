@@ -48,7 +48,7 @@
             <section class="modos-grupo">
                 <h2 class="modos-grupo-heading">Modos originales</h2>
                 <div class="modos-grid">
-                    <a class="modo-card" href="index.html?modo=clasico">
+                    <a class="modo-card" href="index.html?modo=clasico" data-modo="clasico">
                         <span class="modo-card-icono">
                             <img src="images/modos%20logos/clasico.svg" alt="" width="38" height="38">
                         </span>
@@ -57,7 +57,7 @@
                             <p>Completá con los nombres de cada presidente según el período, a contrarreloj.</p>
                         </span>
                     </a>
-                    <a class="modo-card" href="index.html?modo=imagen">
+                    <a class="modo-card" href="index.html?modo=imagen" data-modo="imagen">
                         <span class="modo-card-icono">
                             <img src="images/modos%20logos/adivina-imagen.svg" alt="" width="38" height="38">
                         </span>
@@ -72,7 +72,7 @@
             <section class="modos-grupo">
                 <h2 class="modos-grupo-heading">Modos diarios</h2>
                 <div class="modos-grid">
-                    <a class="modo-card" href="index.html?modo=sopa">
+                    <a class="modo-card" href="index.html?modo=sopa" data-modo="sopa">
                         <span class="modo-card-icono">
                             <img src="images/modos%20logos/sopa-letras.svg" alt="" width="38" height="38">
                         </span>
@@ -82,7 +82,7 @@
                             <span class="contador-reinicio-diario modo-card-contador"></span>
                         </span>
                     </a>
-                    <a class="modo-card" href="index.html?modo=crucigrama">
+                    <a class="modo-card" href="index.html?modo=crucigrama" data-modo="crucigrama">
                         <span class="modo-card-icono">
                             <img src="images/modos%20logos/crucigrama.svg" alt="" width="38" height="38">
                         </span>
@@ -109,6 +109,19 @@
             </nav>
         </div>
     </footer>
+
+    <!-- Vista previa del modo tocado: aparece al elegir una tarjeta, en vez
+         de navegar directo a index.html. -->
+    <dialog id="modoModal" class="modo-modal">
+        <span class="modo-modal-icono" id="modoModalIcono"></span>
+        <h2 class="modo-modal-titulo" id="modoModalTitulo"></h2>
+        <p class="modo-modal-descripcion" id="modoModalDescripcion"></p>
+        <div class="modo-modal-buttons buttons">
+            <button class="modo-modal-jugar" type="button" id="modoModalJugar">Jugar</button>
+            <button class="modo-modal-configurar" type="button" id="modoModalConfigurar">Configurar</button>
+            <button class="modo-modal-cerrar" type="button" id="modoModalCerrar">Cerrar</button>
+        </div>
+    </dialog>
 
 </body>
 </html>

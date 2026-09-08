@@ -82,6 +82,58 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // --- Modal de vista previa en "Ver modos de juego" (modos.html) ---
+    // Al tocar una tarjeta de modo, en vez de navegar directo a index.html
+    // se abre un modal con ese modo y dos acciones: "Jugar" (arranca la
+    // partida al toque) y "Configurar" (abre el mismo diálogo de
+    // configuración que existe en el inicio). Ambas navegan a index.html
+    // con ?modo=X&accion=jugar|configurar; index.html lee esos parámetros
+    // al cargar y actúa automáticamente (ver más abajo, "accionDesdeUrl").
+    const modoModal = document.getElementById("modoModal");
+    if (modoModal) {
+        const modoModalIcono = document.getElementById("modoModalIcono");
+        const modoModalTitulo = document.getElementById("modoModalTitulo");
+        const modoModalDescripcion = document.getElementById("modoModalDescripcion");
+        const modoModalJugar = document.getElementById("modoModalJugar");
+        const modoModalConfigurar = document.getElementById("modoModalConfigurar");
+        const modoModalCerrar = document.getElementById("modoModalCerrar");
+        let modoElegidoEnModal = null;
+
+        document.querySelectorAll(".modo-card").forEach(card => {
+            card.addEventListener("click", (e) => {
+                e.preventDefault();
+                reproducirSonidoBoton();
+                modoElegidoEnModal = card.dataset.modo;
+                const icono = card.querySelector(".modo-card-icono");
+                const titulo = card.querySelector(".modo-de-juego-seleccionado");
+                const descripcion = card.querySelector(".modo-card-texto p");
+                if (modoModalIcono && icono) modoModalIcono.innerHTML = icono.innerHTML;
+                if (modoModalTitulo && titulo) modoModalTitulo.innerHTML = titulo.outerHTML;
+                if (modoModalDescripcion && descripcion) modoModalDescripcion.textContent = descripcion.textContent;
+                modoModal.showModal();
+            });
+        });
+
+        if (modoModalJugar) {
+            modoModalJugar.addEventListener("click", () => {
+                reproducirSonidoBoton();
+                if (modoElegidoEnModal) window.location.href = `index.html?modo=${modoElegidoEnModal}&accion=jugar`;
+            });
+        }
+        if (modoModalConfigurar) {
+            modoModalConfigurar.addEventListener("click", () => {
+                reproducirSonidoBoton();
+                if (modoElegidoEnModal) window.location.href = `index.html?modo=${modoElegidoEnModal}&accion=configurar`;
+            });
+        }
+        if (modoModalCerrar) {
+            modoModalCerrar.addEventListener("click", () => modoModal.close());
+        }
+        modoModal.addEventListener("click", (e) => {
+            if (e.target === modoModal) modoModal.close(); // click fuera de la tarjeta
+        });
+    }
+
     // En el header compacto de mobile durante la partida, el badge "JUGANDO
     // MODO X" tiene que entrar completo (no se corta ni se oculta el
     // prefijo): si el texto no entra en el ancho disponible, se va achicando
@@ -189,8 +241,12 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // Permite llegar a la pantalla de inicio con un modo ya elegido desde
-    // otra página (ej. "Ver modos de juego" linkea a index.html?modo=sopa).
-    const modoDesdeUrl = new URLSearchParams(window.location.search).get("modo");
+    // otra página (ej. "Ver modos de juego" linkea a index.html?modo=sopa),
+    // y opcionalmente actuar directo sobre ese modo: "jugar" arranca la
+    // partida al toque, "configurar" abre el diálogo de configuración.
+    const paramsUrl = new URLSearchParams(window.location.search);
+    const modoDesdeUrl = paramsUrl.get("modo");
+    const accionDesdeUrl = paramsUrl.get("accion");
     if (modoDesdeUrl && MODOS[modoDesdeUrl]) {
         modoSeleccionado = modoDesdeUrl;
     }
@@ -3115,6 +3171,19 @@ cargarLineaDeTiempo();
 
 // Configurar event listeners del modal de fin de juego
 agregarEventListenersModalFinJuego();
+
+// Acción automática al llegar desde el modal de "Ver modos de juego"
+// (?modo=X&accion=jugar|configurar). Va al final de todo el setup: las
+// funciones de cada modo (iniciarJuegoSopa, iniciarJuegoCrucigrama, etc.)
+// usan variables "let" declaradas más abajo en este mismo archivo, así que
+// llamarlas antes de que el script entero termine de correr una vez
+// (aunque las funciones ya estén "hoisteadas") tira ReferenceError por
+// temporal dead zone.
+if (accionDesdeUrl === "jugar") {
+    iniciarModoSeleccionado();
+} else if (accionDesdeUrl === "configurar" && botonConfiguracion) {
+    abrirConfig();
+}
 }); // ← Este es el cierre del primer DOMContentLoaded
 
 // --- Hamburger menu toggle - FUERA del DOMContentLoaded del juego ---
