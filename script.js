@@ -90,6 +90,14 @@ document.addEventListener('DOMContentLoaded', () => {
         return modo !== "sopa" && modo !== "crucigrama";
     }
 
+    // Cuando "Configurar" se toca desde el modal de vista previa de "Ver
+    // modos de juego", al cerrar #configDialog (Guardar o Cancelar) hay que
+    // volver a ese modal en vez de dejar todo cerrado. cerrarConfig() (más
+    // abajo) se fija en estas dos variables, seteadas por el bloque del
+    // modal a continuación.
+    let modoModalPendienteTrasConfig = null;
+    let mostrarModoModalRef = null;
+
     // --- Modal de vista previa en "Ver modos de juego" (modos.html) ---
     // Al tocar una tarjeta de modo, en vez de navegar directo a index.html
     // se abre un modal con ese modo y dos acciones: "Jugar" (navega a
@@ -107,21 +115,65 @@ document.addEventListener('DOMContentLoaded', () => {
         const modoModalCerrar = document.getElementById("modoModalCerrar");
         let modoElegidoEnModal = null;
 
+        // Si el título (la placa dorada) no entra en una sola línea, se va
+        // achicando la fuente hasta que entre (mismo truco que
+        // ajustarBadgeModoAlAncho para el badge "JUGANDO MODO X"). Ojo: NO
+        // comparamos contra el clientWidth de la propia placa (columna del
+        // grid con minmax(0, auto)) porque, recién mostrado el modal, ese
+        // ancho todavía no está resuelto y da valores erróneos (mucho más
+        // chicos que el real). En cambio, calculamos el ancho disponible a
+        // partir del de toda la fila (una caja simple, sin sizing
+        // intrínseco raro), que sí es correcto desde el primer momento.
+        function ajustarModoModalTitulo() {
+            const placa = modoModalTitulo.querySelector(".modo-de-juego-seleccionado");
+            const fila = modoModal.querySelector(".modo-modal-fila-titulo");
+            if (!placa || !fila) return;
+            placa.style.fontSize = "";
+            const gearVisible = modoModalConfigurar && modoModalConfigurar.style.display !== "none";
+            const anchoGear = gearVisible ? modoModalConfigurar.offsetWidth + 8 : 0;
+            const disponible = fila.clientWidth - anchoGear * 2; // la columna vacía de la izquierda espeja el ancho de la rosquita
+            const pisoPx = 12;
+            let tamanioPx = parseFloat(getComputedStyle(placa).fontSize);
+            let intentos = 0;
+            while (placa.scrollWidth > disponible && tamanioPx > pisoPx && intentos < 30) {
+                tamanioPx -= 1;
+                placa.style.fontSize = tamanioPx + "px";
+                intentos++;
+            }
+        }
+
+        function mostrarModoModal(modo) {
+            const card = document.querySelector(`.modo-card[data-modo="${modo}"]`);
+            if (!card) return;
+            modoElegidoEnModal = modo;
+            const icono = card.querySelector(".modo-card-icono");
+            const titulo = card.querySelector(".modo-de-juego-seleccionado");
+            const descripcion = card.querySelector(".modo-card-texto p");
+            if (modoModalIcono && icono) modoModalIcono.innerHTML = icono.innerHTML;
+            if (modoModalTitulo && titulo) modoModalTitulo.innerHTML = titulo.outerHTML;
+            if (modoModalDescripcion && descripcion) modoModalDescripcion.textContent = descripcion.textContent;
+            if (modoModalConfigurar) {
+                modoModalConfigurar.style.display = modoTieneConfiguracion(modo) ? "" : "none";
+            }
+            modoModal.showModal();
+            // Justo después de showModal() el layout del <dialog> (que se
+            // pinta en el "top layer") todavía no está estabilizado: medir
+            // el ancho acá mismo puede dar valores erróneos (de hecho, mucho
+            // más chicos de lo real) y terminar recortando el texto en vez
+            // de achicarlo. Se reintenta unas cuantas veces (setTimeout, no
+            // requestAnimationFrame: éste se pausa del todo si la pestaña
+            // queda en segundo plano) para asegurar que corra ya con el
+            // layout estable.
+            ajustarModoModalTitulo();
+            [0, 50, 150].forEach(ms => setTimeout(ajustarModoModalTitulo, ms));
+        }
+        mostrarModoModalRef = mostrarModoModal;
+
         document.querySelectorAll(".modo-card").forEach(card => {
             card.addEventListener("click", (e) => {
                 e.preventDefault();
                 reproducirSonidoBoton();
-                modoElegidoEnModal = card.dataset.modo;
-                const icono = card.querySelector(".modo-card-icono");
-                const titulo = card.querySelector(".modo-de-juego-seleccionado");
-                const descripcion = card.querySelector(".modo-card-texto p");
-                if (modoModalIcono && icono) modoModalIcono.innerHTML = icono.innerHTML;
-                if (modoModalTitulo && titulo) modoModalTitulo.innerHTML = titulo.outerHTML;
-                if (modoModalDescripcion && descripcion) modoModalDescripcion.textContent = descripcion.textContent;
-                if (modoModalConfigurar) {
-                    modoModalConfigurar.style.display = modoTieneConfiguracion(modoElegidoEnModal) ? "" : "none";
-                }
-                modoModal.showModal();
+                mostrarModoModal(card.dataset.modo);
             });
         });
 
@@ -136,6 +188,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 reproducirSonidoBoton();
                 if (!modoElegidoEnModal) return;
                 seleccionarModo(modoElegidoEnModal);
+                modoModalPendienteTrasConfig = modoElegidoEnModal;
                 modoModal.close();
                 abrirConfig();
             });
@@ -146,6 +199,9 @@ document.addEventListener('DOMContentLoaded', () => {
         modoModal.addEventListener("click", (e) => {
             if (e.target === modoModal) modoModal.close(); // click fuera de la tarjeta
         });
+        window.addEventListener("resize", ajustarModoModalTitulo);
+        // La reapertura al guardar/cancelar la vuelve a mostrar cerrarConfig()
+        // (ver más abajo), usando modoModalPendienteTrasConfig/mostrarModoModalRef.
     }
 
     // En el header compacto de mobile durante la partida, el badge "JUGANDO
@@ -191,7 +247,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Estado de configuración por defecto ---
-    let configuracionJuego = {
+    // Se guarda en localStorage: configurar un modo desde el modal de "Ver
+    // modos de juego" y despues tocar "Jugar" navega a index.html, que es
+    // una carga de página nueva (JS desde cero). Sin persistir esto, esa
+    // configuración se perdía apenas se navegaba y "Jugar" arrancaba
+    // siempre con los valores por defecto.
+    const CONFIG_JUEGO_LS_KEY = "pag-configuracion-juego";
+    const CONFIG_JUEGO_DEFAULT = {
         tiempo: 10, // minutos (modo clásico)
         tiempoImagen: 5, // minutos (modo "Adivina la imagen")
         eliminarDeFacto: false,
@@ -205,6 +267,16 @@ document.addEventListener('DOMContentLoaded', () => {
         tiempoSopa: 4, // minutos (modo "Sopa de letras")
         cantidad: 10 // presidentes por partida (solo modo "Adivina la imagen")
     };
+    function cargarConfiguracionGuardada() {
+        try {
+            const guardada = JSON.parse(localStorage.getItem(CONFIG_JUEGO_LS_KEY));
+            if (guardada && typeof guardada === "object") {
+                return { ...CONFIG_JUEGO_DEFAULT, ...guardada };
+            }
+        } catch (e) { /* localStorage no disponible, JSON corrupto, etc. */ }
+        return { ...CONFIG_JUEGO_DEFAULT };
+    }
+    let configuracionJuego = cargarConfiguracionGuardada();
 
     let configuracionTemporal = {}; // Para snapshot temporal al abrir modal
 
@@ -2821,6 +2893,12 @@ const listaPresidentes = [
 
     function cerrarConfig() {
         document.getElementById("configDialog").close(); // Cambio aquí
+
+        if (modoModalPendienteTrasConfig && mostrarModoModalRef) {
+            const modo = modoModalPendienteTrasConfig;
+            modoModalPendienteTrasConfig = null;
+            mostrarModoModalRef(modo);
+        }
     }
 
     function guardarConfig() {
@@ -2830,6 +2908,10 @@ const listaPresidentes = [
         if (sliderCantidad) {
             configuracionJuego.cantidad = parseInt(sliderCantidad.value);
         }
+
+        try {
+            localStorage.setItem(CONFIG_JUEGO_LS_KEY, JSON.stringify(configuracionJuego));
+        } catch (e) { /* modo privado, localStorage lleno, etc. */ }
 
         cerrarConfig();
     }

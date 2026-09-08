@@ -3547,6 +3547,16 @@ td {
     border: 3px solid rgb(var(--blue));
     border-radius: 12px;
     padding: 2rem 1.8rem 1.8rem;
+    /* "width" fijo (no solo max-width): al ser position:fixed sin ancho
+       explícito, el modal se autoajusta al contenido ("shrink-to-fit"), y
+       como la fila del título tiene una columna que puede achicarse a 0
+       (minmax(0, auto), para poder detectar cuándo no entra y achicar la
+       fuente), ese shrink-to-fit terminaba resolviendo un modal mucho más
+       angosto de lo que se ve/necesita. Con un ancho fijo, la fila del
+       título siempre mide lo mismo (no depende de su propio contenido) y
+       el cálculo de cuánto achicar la fuente deja de ser un problema
+       circular. */
+    width: min(360px, calc(100vw - 2rem));
     max-width: min(360px, calc(100vw - 2rem));
     box-sizing: border-box;
     color: rgb(var(--ink));
@@ -3627,15 +3637,32 @@ td {
    igual, así que el centrado no cambia. */
 .modo-modal-fila-titulo {
     display: grid;
-    grid-template-columns: 1fr auto 1fr;
+    grid-template-columns: 1fr minmax(0, auto) 1fr;
     align-items: center;
     width: 100%;
 }
 
+/* minmax(0, auto) en la columna deja que se achique por debajo de su ancho
+   natural si no entra; overflow:hidden + nowrap en la placa es lo que
+   permite medir el desborde (scrollWidth vs. clientWidth) en
+   ajustarModoModalTitulo() y achicar la fuente hasta que entre en una sola
+   línea, en vez de recortarse o pasarse del modal. */
 .modo-modal-titulo {
     grid-column: 2;
     margin: 0;
     justify-self: center;
+    max-width: 100%;
+    overflow: hidden;
+}
+
+.modo-modal-titulo .modo-de-juego-seleccionado {
+    display: inline-block;
+    max-width: 100%;
+    /* Tamaño base explícito (en vez de heredar el default de <h2>, bastante
+       grande): así, aunque el ajuste por JS no llegue a correr a tiempo,
+       arranca de un tamaño más razonable y el peor caso es menos feo. */
+    font-size: 1.3rem;
+    white-space: nowrap;
 }
 
 .modo-modal-configurar-gear {
