@@ -65,13 +65,17 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Sonido de click de botón ---
-    // Archivo de audio (sonido-boton.mpeg) para "Iniciar Juego" y el botón
-    // que abre/cierra el selector de modo. Respeta el mismo mute que el
-    // sonido de acierto (un solo botón de "silenciar sonido" para todo el sitio).
+    // Archivo de audio (sonido-boton.wav) para "Iniciar Juego" y el botón
+    // que abre/cierra el selector de modo. Es WAV (no MP3) a propósito: en
+    // un clip tan corto, el "priming delay" que agrega el encoder MP3 al
+    // principio del archivo (unos ms de silencio de por sí, propios del
+    // formato) se nota como un delay al tocar el botón. WAV no tiene ese
+    // problema. Respeta el mismo mute que el sonido de acierto (un solo
+    // botón de "silenciar sonido" para todo el sitio).
     function reproducirSonidoBoton() {
         if (!sonidoAciertoActivado) return;
         try {
-            const audio = new Audio("sonido-boton.mpeg");
+            const audio = new Audio("sonido-boton.wav");
             audio.play().catch(() => {}); // autoplay bloqueado, modo privado, etc.
         } catch (e) {
             // Audio no disponible en este navegador: fallamos en silencio.
