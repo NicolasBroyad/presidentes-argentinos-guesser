@@ -82,13 +82,21 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // Sopa de letras y Crucigrama no tienen nada configurable (el desafío
+    // del día es fijo para todos), así que la rosquita de "Configurar" no
+    // se muestra para esos modos, ni en el inicio ni en el modal de
+    // "Ver modos de juego".
+    function modoTieneConfiguracion(modo) {
+        return modo !== "sopa" && modo !== "crucigrama";
+    }
+
     // --- Modal de vista previa en "Ver modos de juego" (modos.html) ---
     // Al tocar una tarjeta de modo, en vez de navegar directo a index.html
-    // se abre un modal con ese modo y dos acciones: "Jugar" (arranca la
-    // partida al toque) y "Configurar" (abre el mismo diálogo de
-    // configuración que existe en el inicio). Ambas navegan a index.html
-    // con ?modo=X&accion=jugar|configurar; index.html lee esos parámetros
-    // al cargar y actúa automáticamente (ver más abajo, "accionDesdeUrl").
+    // se abre un modal con ese modo y dos acciones: "Jugar" (navega a
+    // index.html y arranca la partida al toque) y "Configurar" (abre el
+    // mismo diálogo de configuración que existe en el inicio, PERO sin salir
+    // de esta página — modos.html tiene su propia copia de #configDialog,
+    // que script.js maneja igual que la del inicio).
     const modoModal = document.getElementById("modoModal");
     if (modoModal) {
         const modoModalIcono = document.getElementById("modoModalIcono");
@@ -110,6 +118,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (modoModalIcono && icono) modoModalIcono.innerHTML = icono.innerHTML;
                 if (modoModalTitulo && titulo) modoModalTitulo.innerHTML = titulo.outerHTML;
                 if (modoModalDescripcion && descripcion) modoModalDescripcion.textContent = descripcion.textContent;
+                if (modoModalConfigurar) {
+                    modoModalConfigurar.style.display = modoTieneConfiguracion(modoElegidoEnModal) ? "" : "none";
+                }
                 modoModal.showModal();
             });
         });
@@ -123,7 +134,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (modoModalConfigurar) {
             modoModalConfigurar.addEventListener("click", () => {
                 reproducirSonidoBoton();
-                if (modoElegidoEnModal) window.location.href = `index.html?modo=${modoElegidoEnModal}&accion=configurar`;
+                if (!modoElegidoEnModal) return;
+                seleccionarModo(modoElegidoEnModal);
+                modoModal.close();
+                abrirConfig();
             });
         }
         if (modoModalCerrar) {
@@ -868,6 +882,11 @@ const listaPresidentes = [
         const contadorReinicio = document.getElementById("contadorReinicioDiario");
         if (contadorReinicio) {
             contadorReinicio.style.visibility = (modo === 'sopa' || modo === 'crucigrama') ? 'visible' : 'hidden';
+        }
+
+        // Sopa de letras y Crucigrama no tienen nada configurable.
+        if (botonConfiguracion) {
+            botonConfiguracion.style.display = modoTieneConfiguracion(modo) ? "" : "none";
         }
     }
 
@@ -3172,17 +3191,16 @@ cargarLineaDeTiempo();
 // Configurar event listeners del modal de fin de juego
 agregarEventListenersModalFinJuego();
 
-// Acción automática al llegar desde el modal de "Ver modos de juego"
-// (?modo=X&accion=jugar|configurar). Va al final de todo el setup: las
-// funciones de cada modo (iniciarJuegoSopa, iniciarJuegoCrucigrama, etc.)
-// usan variables "let" declaradas más abajo en este mismo archivo, así que
-// llamarlas antes de que el script entero termine de correr una vez
-// (aunque las funciones ya estén "hoisteadas") tira ReferenceError por
-// temporal dead zone.
+// Acción automática al llegar desde el modal de "Ver modos de juego" con
+// ?modo=X&accion=jugar (el botón "Jugar" del modal es lo único que navega a
+// index.html; "Configurar" se resuelve ahí mismo, sin salir de la página).
+// Va al final de todo el setup: las funciones de cada modo (iniciarJuegoSopa,
+// iniciarJuegoCrucigrama, etc.) usan variables "let" declaradas más abajo en
+// este mismo archivo, así que llamarlas antes de que el script entero
+// termine de correr una vez (aunque las funciones ya estén "hoisteadas")
+// tira ReferenceError por temporal dead zone.
 if (accionDesdeUrl === "jugar") {
     iniciarModoSeleccionado();
-} else if (accionDesdeUrl === "configurar" && botonConfiguracion) {
-    abrirConfig();
 }
 }); // ← Este es el cierre del primer DOMContentLoaded
 

@@ -507,7 +507,15 @@ h1 a {
     }
 }
 
-.configuracion-link {
+/* .modo-modal-configurar-gear (rosquita del modal de "Ver modos de juego")
+   comparte este mismo estilo visual, pero con clase propia: script.js
+   ubica el botón de configuración del inicio con
+   document.querySelector(".configuracion-link"), y si el modal reutilizara
+   esa clase, en modos.html ese querySelector encontraría la rosquita del
+   modal en vez de (o además de) la real, enganchándole el mismo listener
+   dos veces. */
+.configuracion-link,
+.modo-modal-configurar-gear {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -523,19 +531,22 @@ h1 a {
     transition: all 0.25s ease;
 }
 
-.configuracion-link .configuracion-icon {
+.configuracion-link .configuracion-icon,
+.modo-modal-configurar-gear .configuracion-icon {
     height: 100%;
     width: 100%;
     opacity: 0.7;
     transition: all 0.25s ease;
 }
 
-.configuracion-link:hover {
+.configuracion-link:hover,
+.modo-modal-configurar-gear:hover {
     color: rgb(var(--gold-soft));
     background-color: rgb(var(--glass-soft) / 0.4);
 }
 
-.configuracion-link:hover .configuracion-icon {
+.configuracion-link:hover .configuracion-icon,
+.modo-modal-configurar-gear:hover .configuracion-icon {
     fill: rgb(var(--gold-soft));
     opacity: 1;
     transform: rotate(25deg);
@@ -3606,16 +3617,31 @@ td {
     fill: rgb(var(--blue));
 }
 
-/* Título (placa dorada) + rosquita de "Configurar" al lado, igual que en
-   el selector de modo del inicio. */
+/* Título (placa dorada) centrado debajo del ícono del modo, con la
+   rosquita de "Configurar" acomodada a la derecha SIN correr el centrado
+   de la placa. Grid de 3 columnas donde las de los costados miden lo
+   mismo (1fr cada una): con la rosquita únicamente en la columna derecha,
+   la placa (columna del medio) queda con su propio centro exactamente en
+   el centro del modal, sea cual sea su ancho. Si la rosquita está oculta
+   (modos sin configuración) las dos columnas de afuera quedan vacías por
+   igual, así que el centrado no cambia. */
 .modo-modal-fila-titulo {
-    display: flex;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
     align-items: center;
-    gap: 0.5rem;
+    width: 100%;
 }
 
 .modo-modal-titulo {
+    grid-column: 2;
     margin: 0;
+    justify-self: center;
+}
+
+.modo-modal-configurar-gear {
+    grid-column: 3;
+    justify-self: start;
+    margin-left: 0.4rem;
 }
 
 .modo-modal-descripcion {
