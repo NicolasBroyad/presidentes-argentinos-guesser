@@ -426,7 +426,17 @@ h1 a {
     flex: 1;
 }
 
-.iniciar-juego-button {
+/* .modo-modal-jugar ("Jugar" en el modal de "Ver modos de juego") comparte
+   todo este estilo (líquido animado + reflejo + color), pero con clase
+   propia: script.js ubica el botón real de "Iniciar Juego" con
+   document.querySelector(".iniciar-juego-button"), y si el modal reutilizara
+   esa clase, en modos.html ese querySelector encontraría el botón del modal
+   en su lugar y le engancharía el arranque de partida (que ahí rompe: usa
+   elementos que solo existen en index.html). Solo el border-radius difiere
+   (ver más abajo), para acompañar los bordes del modal en vez de ser tan
+   redondo como en el inicio. */
+.iniciar-juego-button,
+.modo-modal-jugar {
     font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
     position: relative;
     overflow: hidden;
@@ -447,6 +457,19 @@ h1 a {
     transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 
+/* Acompaña los bordes redondeados del modal (12px) en vez del pill 999px
+   del botón del inicio, y queda más chico (tamaño parecido al botón de
+   texto que tenía antes) ya que dentro de un modal chico el tamaño del
+   botón del inicio queda desproporcionado. */
+.modo-modal-jugar {
+    border-radius: 10px;
+    padding: 0.6rem 1.6rem;
+}
+
+.modo-modal-jugar-texto {
+    font-size: 0.9rem;
+}
+
 @keyframes iniciar-juego-liquido {
     0%   { background-position: 0% 50%; }
     50%  { background-position: 100% 50%; }
@@ -454,7 +477,8 @@ h1 a {
 }
 
 /* Brillo tipo vidrio que se desliza en diagonal por encima del líquido. */
-.iniciar-juego-button::after {
+.iniciar-juego-button::after,
+.modo-modal-jugar::after {
     content: "";
     position: absolute;
     top: -60%;
@@ -474,7 +498,8 @@ h1 a {
     100% { left: 120%; }
 }
 
-.iniciar-juego-texto {
+.iniciar-juego-texto,
+.modo-modal-jugar-texto {
     position: relative;
     z-index: 2;
     display: inline-block;
@@ -486,7 +511,8 @@ h1 a {
     text-shadow: 0 1px 2px rgb(var(--iniciar-text-shadow));
 }
 
-.iniciar-juego-button:hover {
+.iniciar-juego-button:hover,
+.modo-modal-jugar:hover {
     transform: translateY(-4px) scale(1.05);
     animation-duration: 3s;
     box-shadow:
@@ -496,13 +522,16 @@ h1 a {
         inset 0 -10px 16px rgb(9 60 88 / 0.32);
 }
 
-.iniciar-juego-button:active {
+.iniciar-juego-button:active,
+.modo-modal-jugar:active {
     transform: translateY(-1px) scale(0.99);
 }
 
 @media (prefers-reduced-motion: reduce) {
     .iniciar-juego-button,
-    .iniciar-juego-button::after {
+    .iniciar-juego-button::after,
+    .modo-modal-jugar,
+    .modo-modal-jugar::after {
         animation: none;
     }
 }
@@ -3658,10 +3687,13 @@ td {
 .modo-modal-titulo .modo-de-juego-seleccionado {
     display: inline-block;
     max-width: 100%;
-    /* Tamaño base explícito (en vez de heredar el default de <h2>, bastante
-       grande): así, aunque el ajuste por JS no llegue a correr a tiempo,
-       arranca de un tamaño más razonable y el peor caso es menos feo. */
-    font-size: 1.3rem;
+    /* Mismo tamaño fijo para todos los modos (antes cada uno arrancaba de
+       un tamaño más grande y "Adivina la imagen" terminaba más chico que
+       el resto por ser el único que necesitaba achicarse para entrar).
+       ajustarModoModalTitulo() en script.js lo sigue pudiendo achicar más
+       todavía como red de seguridad en pantallas muy angostas, pero de
+       partida ya arranca en el tamaño que se veía mejor. */
+    font-size: 1.1rem;
     white-space: nowrap;
 }
 
@@ -3682,21 +3714,6 @@ td {
     display: flex;
     gap: 0.8rem;
     margin-top: 0.4rem;
-}
-
-/* Mismo color que .jugar-otra-vez (fin de partida), pero con clase propia:
-   script.js busca esa clase por querySelector y, si el modal la reutilizara,
-   en modos.html engancharía sin querer el comportamiento del diálogo de fin
-   de partida (que no existe en esta página) a este botón. */
-.modo-modal-jugar {
-    background: #2ecc71;
-    color: #fff;
-    font-size: 0.9rem;
-    padding: 0.6rem 1.6rem;
-}
-
-.modo-modal-jugar:hover {
-    background: #27ae60;
 }
 
 footer {
