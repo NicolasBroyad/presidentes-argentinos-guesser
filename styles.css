@@ -466,10 +466,6 @@ h1 a {
     padding: 0.6rem 1.6rem;
 }
 
-.modo-modal-jugar-texto {
-    font-size: 0.9rem;
-}
-
 @keyframes iniciar-juego-liquido {
     0%   { background-position: 0% 50%; }
     50%  { background-position: 100% 50%; }
@@ -509,6 +505,12 @@ h1 a {
     letter-spacing: 0.07em;
     color: rgb(var(--iniciar-text));
     text-shadow: 0 1px 2px rgb(var(--iniciar-text-shadow));
+}
+
+/* Más chico que el de "Iniciar Juego" del inicio (va después a propósito:
+   misma especificidad que la regla de arriba, así que el orden decide). */
+.modo-modal-jugar-texto {
+    font-size: 0.9rem;
 }
 
 .iniciar-juego-button:hover,
