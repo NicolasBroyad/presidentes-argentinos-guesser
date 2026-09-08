@@ -1107,8 +1107,7 @@ const listaPresidentes = [
     let sopaTam = 0;             // lado de la grilla
     let sopaTimer = null;
     let sopaTerminado = false;
-    let sopaSegundosTotales = 0;    // duración del countdown (para calcular el tiempo jugado)
-    let sopaSegundosRestantes = 0;  // countdown en curso
+    let sopaSegundos = 0;         // cronómetro: tiempo transcurrido (cuenta hacia arriba, sin límite)
     let sopaResultadoOficial = null; // resultado guardado de la sopa de hoy
     let sopaEsRejugada = false;      // ya se completó hoy y se está rejugando
     let sopaFinInfo = null;          // datos para el dialog de fin
@@ -1271,8 +1270,6 @@ const listaPresidentes = [
             </li>
         `).join("");
 
-        const tiempoInicial = `${configuracionJuego.tiempoSopa.toString().padStart(2, "0")}:00`;
-
         const contenido = `
             <h4 class="jugando-modo-heading">JUGANDO MODO <span class="modo-de-juego-seleccionado">SOPA</span></h4>
             <div class="sopa-container">
@@ -1290,7 +1287,7 @@ const listaPresidentes = [
                     </div>
                     ${sopaEsRejugada ? `<p class="cruci-rejugada-banner">Ya jugaste la de hoy${sopaResultadoOficial.gano ? ` en ${formatoCronometro(sopaResultadoOficial.segundos)}` : " (no la resolviste)"}. La estás rejugando — no cambia tu resultado.</p>` : ""}
                     <div class="sopa-hud">
-                        <span class="sopa-timer" id="sopa-timer">${tiempoInicial}</span>
+                        <span class="sopa-timer" id="sopa-timer">00:00</span>
                         <span class="sopa-contador"><span id="sopa-aciertos">0</span> / <span id="sopa-total">${sopaObjetivos.length}</span></span>
                     </div>
                     <p class="sopa-instruccion">Encontrá el apellido de cada presidente</p>
@@ -1310,7 +1307,7 @@ const listaPresidentes = [
         }
 
         wireSopaEventos();
-        iniciarTemporizadorSopa(configuracionJuego.tiempoSopa * 60);
+        iniciarCronometroSopa();
     }
 
     function wireSopaEventos() {
@@ -1428,27 +1425,16 @@ const listaPresidentes = [
         if (nombre) nombre.textContent = nombreCompletoPresidente(u);
     }
 
-    function iniciarTemporizadorSopa(segundos) {
+    // Cronómetro sin límite (como el crucigrama): cuenta hacia arriba desde
+    // cero; el tiempo que tardaste se guarda al resolverlo la primera vez del día.
+    function iniciarCronometroSopa() {
         detenerTemporizadorSopa();
-        sopaSegundosTotales = Math.max(1, Math.floor(segundos));
-        sopaSegundosRestantes = sopaSegundosTotales;
+        sopaSegundos = 0;
         const div = document.getElementById("sopa-timer");
-        const pintar = () => {
-            const m = String(Math.floor(sopaSegundosRestantes / 60)).padStart(2, "0");
-            const s = String(sopaSegundosRestantes % 60).padStart(2, "0");
-            if (div) {
-                div.textContent = `${m}:${s}`;
-                div.classList.toggle("por-terminar", sopaSegundosRestantes <= 30);
-            }
-        };
-        pintar();
+        if (div) div.textContent = "00:00";
         sopaTimer = setInterval(() => {
-            sopaSegundosRestantes--;
-            pintar();
-            if (sopaSegundosRestantes <= 0) {
-                detenerTemporizadorSopa();
-                finalizarSopa(false, 'tiempo');
-            }
+            sopaSegundos++;
+            if (div) div.textContent = formatoCronometro(sopaSegundos);
         }, 1000);
     }
 
@@ -1468,7 +1454,7 @@ const listaPresidentes = [
         });
     }
 
-    function finalizarSopa(gano, motivo) {
+    function finalizarSopa(gano) {
         if (sopaTerminado) return;
         sopaTerminado = true;
         sopaArrastrando = false;
@@ -1478,7 +1464,7 @@ const listaPresidentes = [
         if (botonRendirse) botonRendirse.disabled = true;
         if (!gano) revelarSopaNoEncontradas();
 
-        const segundos = sopaSegundosTotales - sopaSegundosRestantes;
+        const segundos = sopaSegundos;
         const total = sopaObjetivos.length;
         const aciertosPartida = aciertos;
         const hoyISO = fechaHoyISO();
@@ -1502,11 +1488,11 @@ const listaPresidentes = [
             oficial: sopaResultadoOficial
         };
 
-        mostrarFinJuego(gano ? 'victoria' : (motivo === 'tiempo' ? 'tiempo' : 'rendicion'));
+        mostrarFinJuego(gano ? 'victoria' : 'rendicion');
     }
 
     function rendirseSopa() {
-        finalizarSopa(false, 'rendicion');
+        finalizarSopa(false);
     }
 
 
@@ -2593,15 +2579,19 @@ const listaPresidentes = [
             refrescarMaxCantidad();
         }
 
-        // El temporizador aplica a los tres modos jugables; la cantidad de
-        // presidentes, solo a "Adivina la imagen". Los filtros de gobiernos
-        // no tienen efecto en sopa/crucigrama (el desafío del día es fijo
-        // para todos), así que se ocultan en esos modos.
+        // El temporizador con límite solo aplica a clásico e imagen (sopa y
+        // crucigrama son cronómetros sin límite); la cantidad de presidentes,
+        // solo a "Adivina la imagen". Los filtros de gobiernos no tienen
+        // efecto en sopa/crucigrama (el desafío del día es fijo para todos).
+        // Todos esos controles se ocultan en los modos donde no aplican.
+        const esModoDiario = modoSeleccionado === 'sopa' || modoSeleccionado === 'crucigrama';
+        if (contenedorTemporizador) {
+            contenedorTemporizador.style.display = esModoDiario ? 'none' : '';
+        }
         if (contenedorCantidad) {
             contenedorCantidad.style.display = modoSeleccionado === 'imagen' ? '' : 'none';
         }
         if (contenedorFiltros) {
-            const esModoDiario = modoSeleccionado === 'sopa' || modoSeleccionado === 'crucigrama';
             contenedorFiltros.style.display = esModoDiario ? 'none' : '';
         }
 

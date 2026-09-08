@@ -1976,17 +1976,6 @@ td {
     transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-.sopa-timer.por-terminar {
-    background-color: rgb(141, 3, 3);
-    color: #fff;
-    border-color: #fff;
-    animation: pulso-timer 1s ease-in-out infinite;
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .sopa-timer.por-terminar { animation: none; }
-}
-
 .sopa-contador {
     font-weight: bold;
     font-size: 1.05rem;
