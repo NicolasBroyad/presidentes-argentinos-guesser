@@ -508,6 +508,13 @@ h1 a {
     font-variant-numeric: tabular-nums;
 }
 
+/* Un estilo de autor (display:block de arriba) le gana al [hidden] del user
+   agent aunque tengan la misma especificidad, así que sin esto el contador
+   quedaba visible en clásico/imagen a pesar del atributo "hidden". */
+.contador-reinicio-diario[hidden] {
+    display: none;
+}
+
 /* Fila con el selector de modo + la rosquita de configuración: flex con
    align-items:center para que ambos queden centrados en altura entre sí,
    sin importar que tengan alturas de contenido distintas (texto vs ícono). */
