@@ -197,6 +197,31 @@ h1 a {
     background-color: rgb(var(--glass-soft) / 0.75);
 }
 
+/* Marca en el header, solo en desktop (en mobile ese lugar ya lo ocupa el
+   botón hamburguesa). Posicionada absoluta como .theme-toggle, en la
+   esquina opuesta, para no alterar el centrado del nav. */
+.header-logo {
+    position: absolute;
+    left: 1rem;
+    top: calc(50% + env(safe-area-inset-top, 0px) / 2);
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    z-index: 101;
+}
+
+.header-logo img {
+    display: block;
+    width: 32px;
+    height: 32px;
+}
+
+@media (max-width: 992px) {
+    .header-logo {
+        display: none;
+    }
+}
+
 /* Botón hamburguesa oculto en desktop */
 .nav-toggle {
     display: none;
