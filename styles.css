@@ -697,6 +697,10 @@ h1 a {
     display: flex;
     align-items: center;
     justify-content: center;
+    /* Pisa el padding por defecto de "button" (8px 16px): con ese padding
+       intacto casi no queda lugar para el ícono adentro de un círculo de
+       2.2rem, y el SVG termina aplastado a un par de px de ancho. */
+    padding: 0;
     width: 2.2rem;
     height: 2.2rem;
     border-radius: 50%;
@@ -708,8 +712,11 @@ h1 a {
 }
 
 .modo-carrusel-flecha svg {
-    width: 60%;
-    height: 60%;
+    /* Ancho/alto fijos: un % acá no se resuelve bien en un SVG dentro de un
+       botón flex (queda casi invisible, aplastado a un par de px). */
+    width: 1.2rem;
+    height: 1.2rem;
+    display: block;
     fill: currentColor;
 }
 
@@ -925,8 +932,34 @@ h3 {
         width: 100%;
     }
 
+    /* En columna, la fila con la placa + la rosquita: si se centrara toda
+       la fila como bloque (justify-content:center), la placa quedaría
+       corrida del centro real (el ancho de la rosquita la empuja de un
+       lado). Con grid de 3 columnas simétricas (1fr a cada lado) la placa
+       queda siempre centrada de verdad, y la rosquita se ubica aparte, al
+       lado, sin afectar ese centrado (mismo truco que ".modo-modal-fila-titulo"
+       en el modal de "Ver modos de juego"). */
     .modo-card-titulo-fila {
-        justify-content: center;
+        display: grid;
+        /* Las dos columnas de los costados reservan el mismo mínimo
+           (el ancho de la rosquita) estén ocupadas o no: si una quedara en
+           "1fr" pelado (mínimo 0) y la otra con la rosquita adentro
+           (mínimo ~33px), dejan de ser simétricas apenas la placa no entra
+           en una sola línea y el achique de columnas se reparte distinto a
+           cada lado, corriendo la placa del centro real. */
+        grid-template-columns: minmax(2.1rem, 1fr) minmax(0, auto) minmax(2.1rem, 1fr);
+        justify-content: initial;
+        width: 100%;
+    }
+
+    .modo-card-titulo {
+        grid-column: 2;
+        justify-self: center;
+    }
+
+    .modo-card-titulo-fila .configuracion-link {
+        grid-column: 3;
+        justify-self: start;
     }
 
     .modos-de-juego-container {
