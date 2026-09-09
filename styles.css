@@ -595,33 +595,38 @@ h1 a {
     backdrop-filter: blur(10px); /* El efecto de vidrio borroso */
     justify-content: center;
     align-items: center;
+    /* ".main" usa align-items:center (no stretch): sin ancho explícito acá
+       ".modo-carrusel" (que tiene su propio width:100%) queda atrapado en
+       un cálculo circular de fit-content y termina expandiendo esta
+       sección hasta su max-width (560px) aunque la pantalla sea angosta. */
+    width: 100%;
+    min-width: 0;
 }
 
+/* Ahora solo envuelve el texto "MODO DE JUEGO SELECCIONADO:", sin la placa
+   ni la rosquita (que se mudaron a la tarjeta del carrusel de abajo): por
+   eso hereda el ancho de su propio contenido, con poco padding, y no hay
+   ninguna relación de ancho forzada con ".modo-carrusel" (a propósito
+   queda más angosto que el carrusel en desktop). */
 .modo-de-juego-seleccionado-heading {
     font-weight: 700;
     font-size: 1.1rem;
     display: flex;
-    flex-wrap: wrap;
-    gap: 0.7rem 1rem;
-    padding: 0.5rem 0.8rem;
+    padding: 0.35rem 0.7rem;
     background-color: rgb(var(--glass-soft) / 0.75);
     backdrop-filter: blur(10px); /* El efecto de vidrio borroso */
     border-radius: 10px;
     align-items: center;
     justify-content: center;
     text-align: center;
-    /* El "width" real lo fija igualarAlturaReglas() en script.js (igual que
-       ".modo-actual-card", para que ambos midan exactamente lo mismo); esto
-       es solo un techo para no desbordar en pantallas angostas. */
     max-width: 100%;
 }
 
 /* Cuenta regresiva hasta que se reinicien los modos "del día" (Sopa de
-   letras / Crucigrama). Se actualiza en vivo desde script.js; en index.html
-   vive dentro de ".modo-de-juego-seleccionado-heading" y se oculta con
-   "visibility" (no con display:none) cuando el modo elegido no es uno de
-   los dos diarios, así la línea queda siempre reservada y la tarjeta de
-   reglas no cambia de altura al cambiar de modo. */
+   letras / Crucigrama). Se actualiza en vivo desde script.js. Solo existe
+   en el DOM dentro de la tarjeta de un modo "del día" (ver htmlReglas() en
+   script.js): los modos sin temporizador no la incluyen, así no reservan
+   ese espacio de más. */
 .contador-reinicio-diario {
     display: block;
     width: 100%;
@@ -630,15 +635,6 @@ h1 a {
     font-weight: 700;
     color: rgb(var(--gold-soft));
     font-variant-numeric: tabular-nums;
-}
-
-/* Fila con el selector de modo + la rosquita de configuración: flex con
-   align-items:center para que ambos queden centrados en altura entre sí,
-   sin importar que tengan alturas de contenido distintas (texto vs ícono). */
-.modo-selector-fila {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
 }
 
 .jugando-modo-heading{
@@ -666,106 +662,97 @@ h1 a {
     font-weight: 800;
 }
 
-/* --- Badge desplegable "MODO DE JUEGO SELECCIONADO" --- */
-.modo-selector {
-    position: relative;
-    display: inline-block;
-}
-
-.modo-selector-trigger {
-    display: inline-flex;
+/* --- Carrusel de modos ("Ver modos de juego" en miniatura, navegable) ---
+   Reemplaza al viejo selector desplegable: en vez de elegir el modo en un
+   menú y ver sus reglas aparte, se navega directamente entre las 4
+   tarjetas con flechas, swipe (mobile) o los puntitos de abajo. A
+   diferencia de ".modo-de-juego-seleccionado-heading" (arriba), este
+   contenedor NO comparte ancho con nada: tiene el suyo propio, más ancho
+   que el heading, con un techo razonable para no estirarse de más en
+   pantallas grandes. */
+.modo-carrusel {
+    display: flex;
     align-items: center;
-    gap: 0.4rem;
-    padding: 0.25rem 0.6rem;
-    background-color: goldenrod;
-    border: 2px solid rgb(var(--gold) / 0.6);
-    border-radius: 6px;
-    color: black;
-    font-weight: 800;
-    font-size: 1rem;
-    cursor: pointer;
-}
-
-.modo-selector-trigger:hover {
-    background-color: rgb(var(--gold-soft));
-}
-
-.modo-selector-caret {
-    font-size: 0.8em;
-    line-height: 1;
-    transition: transform 0.2s ease;
-}
-
-.modo-selector-trigger[aria-expanded="true"] .modo-selector-caret {
-    transform: rotate(180deg);
-}
-
-.modo-selector-menu {
-    position: absolute;
-    top: calc(100% + 0.4rem);
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 50;
-    margin: 0;
-    padding: 0.3rem;
-    list-style: none;
-    min-width: max(100%, 210px);
-    background-color: rgb(var(--navy) / 0.97);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: 2px solid rgb(var(--blue));
-    border-radius: 10px;
-    box-shadow: 0 18px 40px -16px rgba(0, 0, 0, 0.8);
-}
-
-.modo-selector-menu[hidden] {
-    display: none;
-}
-
-.modo-selector-opcion {
-    display: block;
+    gap: 0.6rem;
     width: 100%;
-    text-align: left;
-    padding: 0.55rem 0.7rem;
-    background: transparent;
-    border: none;
-    border-radius: 7px;
-    color: rgb(var(--ink));
-    font-weight: 600;
-    font-size: 0.95rem;
+    max-width: 560px;
+    min-width: 0;
+}
+
+.modo-carrusel-viewport {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    border-radius: 10px;
+    transition: height 0.35s ease;
+}
+
+.modo-carrusel-track {
+    display: flex;
+    transition: transform 0.35s ease;
+}
+
+.modo-carrusel-flecha {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.2rem;
+    height: 2.2rem;
+    border-radius: 50%;
+    background: none;
+    border: 1px solid rgb(var(--ink) / 0.2);
+    color: rgb(var(--ink) / 0.8);
     cursor: pointer;
+    transition: all 0.25s ease;
 }
 
-.modo-selector-opcion:not(:disabled):hover {
-    background-color: rgb(var(--blue) / 0.25);
+.modo-carrusel-flecha svg {
+    width: 60%;
+    height: 60%;
+    fill: currentColor;
 }
 
-.modo-selector-opcion.seleccionado {
-    background-color: rgb(var(--blue));
-    color: rgb(5, 20, 35);
+.modo-carrusel-flecha:hover {
+    color: rgb(var(--gold-soft));
+    border-color: rgb(var(--gold-soft) / 0.6);
+    background-color: rgb(var(--glass-soft) / 0.4);
 }
 
-.modo-selector-opcion:disabled {
-    opacity: 0.45;
-    cursor: not-allowed;
-}
-
-.rules-container {
+.modo-carrusel-puntos {
     display: flex;
     justify-content: center;
-    width: 100%;
+    align-items: center;
+    gap: 0.55rem;
+}
+
+.modo-carrusel-punto {
+    width: 8px;
+    height: 8px;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background-color: rgb(var(--ink) / 0.25);
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.modo-carrusel-punto:hover {
+    background-color: rgb(var(--ink) / 0.45);
+}
+
+.modo-carrusel-punto.activo {
+    background-color: rgb(var(--gold));
+    transform: scale(1.35);
 }
 
 .modo-actual-card {
     display: flex;
     align-items: center;
-    gap: min(clamp(1rem, 3vw, 1.6rem), clamp(1rem, 3vh, 1.6rem));
-    /* Ocupa el 100% de ".rules-container": igualarAlturaReglas() en
-       script.js fija el ancho de ESE contenedor (no de la tarjeta, que se
-       reemplaza cada vez que se cambia de modo), así que la tarjeta hereda
-       ese ancho fijo automáticamente sea cual sea el modo. */
+    flex: 0 0 100%;
     width: 100%;
-    max-width: 100%;
+    box-sizing: border-box;
+    gap: min(clamp(1rem, 3vw, 1.6rem), clamp(1rem, 3vh, 1.6rem));
     padding: 1.1rem 1.4rem;
     /* Mismo border-radius que ".modo-de-juego-seleccionado-heading" (10px),
        para que ambos contenedores luzcan como parte del mismo conjunto. */
@@ -800,14 +787,23 @@ h1 a {
     min-width: 0;
 }
 
+/* Fila con el título (la placa dorada ".modo-de-juego-seleccionado", mismo
+   formato que en las tarjetas de "Ver modos de juego") + la rosquita de
+   configurar, cuando el modo tiene algo configurable. */
+.modo-card-titulo-fila {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.6rem;
+}
+
 .modo-card-text h3 {
     margin: 0;
-    font-family: 'Cinzel', serif;
-    font-weight: 800;
-    letter-spacing: 0.02em;
     line-height: 1.15;
-    font-size: min(clamp(1.15rem, 3.4vw, 1.35rem), clamp(1.15rem, 3.4vh, 1.35rem));
-    color: rgb(var(--gold));
+}
+
+.modo-card-text h3 .modo-de-juego-seleccionado {
+    font-size: min(clamp(1rem, 3vw, 1.15rem), clamp(1rem, 3vh, 1.15rem));
 }
 
 .modo-card-text p {
@@ -904,33 +900,18 @@ h3 {
 
 @media (max-width: 768px) {
 
-    /* En mobile el label ("MODO DE JUEGO SELECCIONADO:") suele ocupar su
-       propia línea y abajo queda la fila con el selector desplegable. La
-       rosquita se posiciona respecto a ".modo-selector-fila" (no respecto a
-       toda la tarjeta) para que quede a la misma altura que el botón
-       "CLÁSICO", y absoluta para que el selector se siga centrando solo,
-       sin que el ancho de la rosquita lo corra del centro. */
     .modo-de-juego-seleccionado-heading {
-        flex-direction: column;
         font-size: 1rem;
     }
 
-    .modo-selector-fila {
-        position: relative;
-        justify-content: center;
-        width: 100%;
-    }
-
-    .configuracion-link {
-        position: absolute;
-        top: 50%;
-        right: 0.5rem;
-        transform: translateY(-50%);
-    }
-
     .rules-section {
-        gap: 0;
+        gap: 0.8rem;
         padding: 1rem;
+    }
+
+    .modo-carrusel-flecha {
+        width: 1.9rem;
+        height: 1.9rem;
     }
 
     .modo-actual-card {
@@ -942,6 +923,10 @@ h3 {
 
     .modo-card-text {
         width: 100%;
+    }
+
+    .modo-card-titulo-fila {
+        justify-content: center;
     }
 
     .modos-de-juego-container {
@@ -1453,8 +1438,8 @@ td {
         border-radius: 16px;
     }
 
-    .modo-card-text h3 {
-        font-size: 1.05rem;
+    .modo-card-text h3 .modo-de-juego-seleccionado {
+        font-size: 0.95rem;
     }
 
     .rules-section p {

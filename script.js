@@ -5,7 +5,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const buttonSection = document.querySelector(".button-section");
     const rulesSection = document.querySelector(".rules-section");
     const botonIniciar = document.querySelector(".iniciar-juego-button");
-    const botonConfiguracion = document.querySelector(".configuracion-link");
     const main = document.querySelector(".main");
     const h1 = document.querySelector("h1");
     const kicker = document.querySelector(".kicker");
@@ -882,64 +881,103 @@ const listaPresidentes = [
         window.temporizadorInterval = temporizadorInterval;
     }
     // --- Elegir modo de juego en la pantalla de inicio ---
-    // Elegir un modo NO arranca la partida: solo actualiza el badge
-    // "MODO DE JUEGO SELECCIONADO", las tarjetas de reglas y qué botón
-    // queda resaltado. La partida arranca recién con "Iniciar Juego".
+    // Elegir un modo NO arranca la partida: solo mueve el carrusel a esa
+    // tarjeta y marca su puntito. La partida arranca recién con "Iniciar
+    // Juego". El orden acá define el orden de navegación del carrusel
+    // (flechas y swipe van y vienen en este mismo orden).
+    const ORDEN_MODOS = Object.keys(MODOS);
+
+    // Cada modo es una tarjeta del carrusel de "Ver modos de juego": mismo
+    // formato de título (placa dorada ".modo-de-juego-seleccionado") que en
+    // esas tarjetas. La rosquita de configurar solo aparece si el modo
+    // tiene algo configurable, y el contador de reinicio solo si es un modo
+    // "del día" (así ninguno reserva espacio de más que no necesita).
     function htmlReglas(modo) {
         const datos = MODOS[modo];
+        const esDiario = modo === "sopa" || modo === "crucigrama";
+        const gear = modoTieneConfiguracion(modo) ? `
+                    <button class="configuracion-link" type="button" aria-label="Configurar ${datos.nombre}">
+                        <svg class="configuracion-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>Configuración</title><path d="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.21,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.21,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.67 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z" /></svg>
+                    </button>` : "";
+        const contador = esDiario ? `<span class="contador-reinicio-diario modo-card-contador"></span>` : "";
         return `
-            <div class="modo-actual-card">
+            <div class="modo-actual-card" data-modo="${modo}">
                 <div class="modo-card-logo">${logoModo[modo]}</div>
                 <div class="modo-card-text">
-                    <h3>${datos.nombre}</h3>
+                    <div class="modo-card-titulo-fila">
+                        <h3 class="modo-card-titulo"><span class="modo-de-juego-seleccionado">${datos.badge}</span></h3>${gear}
+                    </div>
                     <p>${datos.descripcion}</p>
+                    ${contador}
                 </div>
             </div>
         `;
     }
 
-    // La tarjeta de reglas no debe cambiar de tamaño ni correr el separador
-    // central al cambiar de modo. En vez de adivinar cuántas líneas puede
-    // llegar a ocupar el texto más largo (frágil: se rompe cada vez que se
-    // agrega un modo o se edita el texto), medimos en el DOM la altura real
-    // que necesita CADA modo y usamos la más alta como piso para todos.
-    function igualarAlturaReglas() {
-        const contenedorReglas = document.querySelector(".rules-container");
-        const heading = document.querySelector(".modo-de-juego-seleccionado-heading");
-        const badge = document.querySelector(".modo-selector-actual");
-        if (!contenedorReglas) return;
+    // Arma, una sola vez, las 4 tarjetas del carrusel y sus 4 puntitos.
+    // A diferencia del esquema anterior (que reemplazaba el HTML de una
+    // sola tarjeta al cambiar de modo), acá las 4 quedan siempre en el DOM
+    // y el carrusel solo se desplaza entre ellas: así cada una conserva su
+    // propio contador/rosquita sin volver a generarse en cada cambio.
+    function renderCarrusel() {
+        const track = document.querySelector(".modo-carrusel-track");
+        const puntos = document.querySelector(".modo-carrusel-puntos");
+        if (!track || !puntos) return;
 
-        contenedorReglas.style.minHeight = "";
-        contenedorReglas.style.width = "";
-        if (heading) heading.style.width = "";
+        track.innerHTML = ORDEN_MODOS.map(htmlReglas).join("");
+        puntos.innerHTML = ORDEN_MODOS.map(modo =>
+            `<button class="modo-carrusel-punto" type="button" role="tab" data-modo="${modo}" aria-label="${MODOS[modo].nombre}"></button>`
+        ).join("");
 
-        // 1) Ancho: sin un ancho fijo todavía, el heading acomoda en una
-        // sola línea el label "MODO DE JUEGO SELECCIONADO:" + la placa del
-        // modo + la rosquita de configurar (así quedan agrupados, no la
-        // placa/rosquita sueltas en una fila aparte). Se mide ese ancho
-        // natural con el badge de CADA modo (cambia de largo) y se usa el
-        // más ancho; el contenedor de reglas de abajo se ajusta a ese
-        // mismo ancho.
-        let maxAncho = 0;
-        Object.keys(MODOS).forEach(modo => {
-            if (badge) badge.textContent = MODOS[modo].badge;
-            if (heading) maxAncho = Math.max(maxAncho, heading.getBoundingClientRect().width);
+        // Delegado: la rosquita de cada tarjeta se regenera con el resto de
+        // la tarjeta, así que un solo listener en el contenedor (en vez de
+        // uno por botón) sigue funcionando pase lo que pase con el HTML.
+        track.addEventListener("click", (e) => {
+            const gear = e.target.closest(".configuracion-link");
+            if (!gear) return;
+            const tarjeta = gear.closest(".modo-actual-card");
+            if (!tarjeta) return;
+            reproducirSonidoBoton();
+            seleccionarModo(tarjeta.dataset.modo);
+            abrirConfig();
         });
-        contenedorReglas.style.width = `${maxAncho}px`;
-        if (heading) heading.style.width = `${maxAncho}px`;
 
-        // 2) Alto: con el ancho ya fijo (así el texto de cada modo envuelve
-        // igual que en producción), se mide la altura real que necesita
-        // cada modo y se usa la más alta como piso para todos.
-        let maxAltura = 0;
-        Object.keys(MODOS).forEach(modo => {
-            contenedorReglas.innerHTML = htmlReglas(modo);
-            maxAltura = Math.max(maxAltura, contenedorReglas.getBoundingClientRect().height);
+        puntos.querySelectorAll(".modo-carrusel-punto").forEach(punto => {
+            punto.addEventListener("click", () => {
+                reproducirSonidoBoton();
+                seleccionarModo(punto.dataset.modo);
+            });
         });
-        contenedorReglas.style.minHeight = `${maxAltura}px`;
+    }
 
-        contenedorReglas.innerHTML = htmlReglas(modoSeleccionado);
-        if (badge) badge.textContent = MODOS[modoSeleccionado].badge;
+    // Desliza el carrusel hasta el modo actualmente seleccionado, marca su
+    // puntito y ajusta la altura del viewport a la de ESA tarjeta nada más
+    // (no a la más alta de las 4), para no reservarle espacio de sobra a
+    // los modos sin contador de reinicio.
+    function actualizarCarrusel() {
+        const viewport = document.querySelector(".modo-carrusel-viewport");
+        const track = document.querySelector(".modo-carrusel-track");
+        if (!viewport || !track) return;
+
+        const indice = ORDEN_MODOS.indexOf(modoSeleccionado);
+        if (indice === -1) return;
+
+        track.style.transform = `translateX(-${indice * viewport.getBoundingClientRect().width}px)`;
+
+        const tarjetaActual = track.children[indice];
+        if (tarjetaActual) viewport.style.height = `${tarjetaActual.getBoundingClientRect().height}px`;
+
+        document.querySelectorAll(".modo-carrusel-punto").forEach(punto => {
+            const activo = punto.dataset.modo === modoSeleccionado;
+            punto.classList.toggle("activo", activo);
+            punto.setAttribute("aria-selected", String(activo));
+        });
+    }
+
+    function irAModoRelativo(delta) {
+        const n = ORDEN_MODOS.length;
+        const actual = ORDEN_MODOS.indexOf(modoSeleccionado);
+        seleccionarModo(ORDEN_MODOS[(actual + delta + n) % n]);
     }
 
     function seleccionarModo(modo) {
@@ -950,92 +988,59 @@ const listaPresidentes = [
             boton.classList.toggle("seleccionado", boton.dataset.modo === modo);
         });
 
-        // Badge desplegable
-        const actual = document.querySelector(".modo-selector-actual");
-        if (actual) actual.textContent = MODOS[modo].badge;
-        document.querySelectorAll(".modo-selector-opcion").forEach(op => {
-            op.classList.toggle("seleccionado", op.dataset.modo === modo);
-        });
-
-        const contenedorReglas = document.querySelector(".rules-container");
-        if (contenedorReglas) {
-            contenedorReglas.innerHTML = htmlReglas(modo);
-        }
-
-        // El contador de "se reinicia en..." solo tiene sentido para los
-        // modos del día (Sopa de letras / Crucigrama); el texto lo pinta
-        // actualizarContadoresReinicioDiario() en su próximo tick. Se oculta
-        // con visibility (no con "hidden"/display:none) para que la tarjeta
-        // de reglas reserve siempre esa línea y no cambie de altura al
-        // pasar de un modo con contador a uno sin él.
-        const contadorReinicio = document.getElementById("contadorReinicioDiario");
-        if (contadorReinicio) {
-            contadorReinicio.style.visibility = (modo === 'sopa' || modo === 'crucigrama') ? 'visible' : 'hidden';
-        }
-
-        // Sopa de letras y Crucigrama no tienen nada configurable.
-        if (botonConfiguracion) {
-            botonConfiguracion.style.display = modoTieneConfiguracion(modo) ? "" : "none";
-        }
+        actualizarCarrusel();
     }
 
     botonesModo.forEach(boton => {
         boton.addEventListener("click", () => seleccionarModo(boton.dataset.modo));
     });
 
-    // --- Badge desplegable "MODO DE JUEGO SELECCIONADO" ---
-    const modoSelectorTrigger = document.querySelector(".modo-selector-trigger");
-    const modoSelectorMenu = document.querySelector(".modo-selector-menu");
+    // --- Carrusel "MODO DE JUEGO SELECCIONADO" ---
+    const flechaModoIzq = document.querySelector(".modo-carrusel-flecha-izq");
+    const flechaModoDer = document.querySelector(".modo-carrusel-flecha-der");
+    if (flechaModoIzq) flechaModoIzq.addEventListener("click", () => { reproducirSonidoBoton(); irAModoRelativo(-1); });
+    if (flechaModoDer) flechaModoDer.addEventListener("click", () => { reproducirSonidoBoton(); irAModoRelativo(1); });
 
-    function cerrarModoSelector() {
-        if (!modoSelectorMenu) return;
-        modoSelectorMenu.hidden = true;
-        if (modoSelectorTrigger) modoSelectorTrigger.setAttribute("aria-expanded", "false");
-    }
-
-    if (modoSelectorTrigger && modoSelectorMenu) {
-        modoSelectorTrigger.addEventListener("click", (e) => {
-            e.stopPropagation();
-            reproducirSonidoBoton();
-            const abrir = modoSelectorMenu.hidden;
-            modoSelectorMenu.hidden = !abrir;
-            modoSelectorTrigger.setAttribute("aria-expanded", String(abrir));
-        });
-        document.querySelectorAll(".modo-selector-opcion").forEach(op => {
-            op.addEventListener("click", () => {
-                seleccionarModo(op.dataset.modo);
-                cerrarModoSelector();
-            });
-        });
-        document.addEventListener("click", (e) => {
-            if (!modoSelectorMenu.hidden && !e.target.closest(".modo-selector")) {
-                cerrarModoSelector();
+    // Swipe táctil: solo dispara si el arrastre es predominantemente
+    // horizontal (si no, sería un scroll vertical normal de la página).
+    const carruselViewport = document.querySelector(".modo-carrusel-viewport");
+    if (carruselViewport) {
+        let swipeX = null;
+        let swipeY = null;
+        carruselViewport.addEventListener("touchstart", (e) => {
+            swipeX = e.changedTouches[0].clientX;
+            swipeY = e.changedTouches[0].clientY;
+        }, { passive: true });
+        carruselViewport.addEventListener("touchend", (e) => {
+            if (swipeX === null) return;
+            const dx = e.changedTouches[0].clientX - swipeX;
+            const dy = e.changedTouches[0].clientY - swipeY;
+            swipeX = null;
+            if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) {
+                irAModoRelativo(dx < 0 ? 1 : -1);
             }
-        });
-        document.addEventListener("keydown", (e) => {
-            if (e.key === "Escape") cerrarModoSelector();
-        });
+        }, { passive: true });
     }
 
+    renderCarrusel();
     seleccionarModo(modoSeleccionado);
-    igualarAlturaReglas();
 
     // La tipografía (Cinzel, vía @import de Google Fonts) carga en forma
-    // asíncrona. Si igualarAlturaReglas() mide antes de que esté lista, el
-    // texto todavía está en la fuente de reemplazo (más angosta) y el
-    // resultado queda corto. Recalculamos apenas terminan de cargar las
-    // fuentes para corregir esa medición inicial.
+    // asíncrona. Si actualizarCarrusel() mide antes de que esté lista, el
+    // texto todavía está en la fuente de reemplazo (más angosta) y la
+    // altura calculada queda corta. Se recalcula apenas terminan de cargar
+    // las fuentes para corregir esa medición inicial.
     if (document.fonts && document.fonts.ready) {
-        document.fonts.ready.then(igualarAlturaReglas);
+        document.fonts.ready.then(actualizarCarrusel);
     }
 
     // Recalcular ante cambios de tamaño de ventana (rotar el celular, cambiar
-    // de mobile a desktop, etc.), ya que el ancho/alto afecta cuántas líneas
-    // ocupa cada texto de regla.
-    let resizeReglasTimeout = null;
+    // de mobile a desktop, etc.): tanto la altura de la tarjeta actual como
+    // la posición en píxeles del carrusel dependen del ancho disponible.
+    let resizeCarruselTimeout = null;
     window.addEventListener("resize", () => {
-        clearTimeout(resizeReglasTimeout);
-        resizeReglasTimeout = setTimeout(igualarAlturaReglas, 150);
+        clearTimeout(resizeCarruselTimeout);
+        resizeCarruselTimeout = setTimeout(actualizarCarrusel, 150);
     });
 
     function iniciarModoSeleccionado() {
@@ -2947,9 +2952,6 @@ const listaPresidentes = [
         cerrarConfig();
     }
 
-    if (botonConfiguracion) {
-        botonConfiguracion.addEventListener("click", abrirConfig);
-    }
     if (botonGuardar) {
         botonGuardar.addEventListener("click", guardarConfig);
     }
