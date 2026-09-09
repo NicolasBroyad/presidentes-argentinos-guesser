@@ -906,7 +906,6 @@ const listaPresidentes = [
     function igualarAlturaReglas() {
         const contenedorReglas = document.querySelector(".rules-container");
         const heading = document.querySelector(".modo-de-juego-seleccionado-heading");
-        const fila = document.querySelector(".modo-selector-fila");
         const badge = document.querySelector(".modo-selector-actual");
         if (!contenedorReglas) return;
 
@@ -914,28 +913,18 @@ const listaPresidentes = [
         contenedorReglas.style.width = "";
         if (heading) heading.style.width = "";
 
-        // 1) Ancho: lo define el contenido real de "MODO DE JUEGO
-        // SELECCIONADO" (la placa del modo + la rosquita de configurar, no
-        // el texto del label ni el de las reglas), más el padding propio
-        // del heading, para que no quede espacio libre de más a los
-        // costados. El ancho de la placa cambia según el largo del nombre
-        // de cada modo, así que se mide con los 4 y se usa el más ancho;
-        // el contenedor de reglas de abajo se ajusta a ese mismo ancho.
-        let maxAnchoFila = 0;
+        // 1) Ancho: sin un ancho fijo todavía, el heading acomoda en una
+        // sola línea el label "MODO DE JUEGO SELECCIONADO:" + la placa del
+        // modo + la rosquita de configurar (así quedan agrupados, no la
+        // placa/rosquita sueltas en una fila aparte). Se mide ese ancho
+        // natural con el badge de CADA modo (cambia de largo) y se usa el
+        // más ancho; el contenedor de reglas de abajo se ajusta a ese
+        // mismo ancho.
+        let maxAncho = 0;
         Object.keys(MODOS).forEach(modo => {
             if (badge) badge.textContent = MODOS[modo].badge;
-            if (fila) maxAnchoFila = Math.max(maxAnchoFila, fila.getBoundingClientRect().width);
+            if (heading) maxAncho = Math.max(maxAncho, heading.getBoundingClientRect().width);
         });
-        // Un poco de aire extra además del padding propio del heading: sin
-        // esto, la descripción de los modos con nombres más largos (p. ej.
-        // "Crucigrama") queda tan angosta al lado del logo que el texto
-        // envuelve palabra por palabra.
-        const AIRE_EXTRA_ANCHO = 96;
-        let maxAncho = maxAnchoFila;
-        if (heading) {
-            const estilosHeading = getComputedStyle(heading);
-            maxAncho = maxAnchoFila + parseFloat(estilosHeading.paddingLeft) + parseFloat(estilosHeading.paddingRight) + AIRE_EXTRA_ANCHO;
-        }
         contenedorReglas.style.width = `${maxAncho}px`;
         if (heading) heading.style.width = `${maxAncho}px`;
 
