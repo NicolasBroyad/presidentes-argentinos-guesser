@@ -349,6 +349,17 @@ body.juego-activo .header-logo {
         flex-shrink: 0;
     }
 
+    /* En este header compacto ".nav-toggle" ya vive en el flujo normal,
+       pegado al borde izquierdo (mismo lugar donde ".volver-atras-juego"
+       se posiciona absoluto para desktop) — sacarlo de "absolute" acá y
+       ponerlo antes en el flujo evita que las dos cosas queden una encima
+       de la otra. */
+    body.juego-activo .volver-atras-juego {
+        position: static;
+        flex-shrink: 0;
+        margin-right: 0.5rem;
+    }
+
     body.juego-activo .header-nav {
         display: none;
         position: absolute;
