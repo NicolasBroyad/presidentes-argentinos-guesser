@@ -903,50 +903,54 @@ const listaPresidentes = [
     // llegar a ocupar el texto más largo (frágil: se rompe cada vez que se
     // agrega un modo o se edita el texto), medimos en el DOM la altura real
     // que necesita CADA modo y usamos la más alta como piso para todos.
-    // De paso, igualamos el ANCHO de la tarjeta con el del contenedor
-    // "MODO DE JUEGO SELECCIONADO" de arriba (que también varía según el
-    // largo del badge de cada modo), así ambos quedan del mismo ancho
-    // exacto sin importar el modo elegido.
     function igualarAlturaReglas() {
         const contenedorReglas = document.querySelector(".rules-container");
         const heading = document.querySelector(".modo-de-juego-seleccionado-heading");
+        const fila = document.querySelector(".modo-selector-fila");
         const badge = document.querySelector(".modo-selector-actual");
         if (!contenedorReglas) return;
 
         contenedorReglas.style.minHeight = "";
-        // Se resetea también el ancho del contenedor: si quedara fijo de una
-        // corrida anterior, la tarjeta (que por CSS ocupa el 100% de este
-        // contenedor) mediría ese ancho fijo en vez de su ancho de
-        // contenido real, y maxAncho terminaría calculado mal.
         contenedorReglas.style.width = "";
         if (heading) heading.style.width = "";
 
+        // 1) Ancho: lo define el contenido real de "MODO DE JUEGO
+        // SELECCIONADO" (la placa del modo + la rosquita de configurar, no
+        // el texto del label ni el de las reglas), más el padding propio
+        // del heading, para que no quede espacio libre de más a los
+        // costados. El ancho de la placa cambia según el largo del nombre
+        // de cada modo, así que se mide con los 4 y se usa el más ancho;
+        // el contenedor de reglas de abajo se ajusta a ese mismo ancho.
+        let maxAnchoFila = 0;
+        Object.keys(MODOS).forEach(modo => {
+            if (badge) badge.textContent = MODOS[modo].badge;
+            if (fila) maxAnchoFila = Math.max(maxAnchoFila, fila.getBoundingClientRect().width);
+        });
+        // Un poco de aire extra además del padding propio del heading: sin
+        // esto, la descripción de los modos con nombres más largos (p. ej.
+        // "Crucigrama") queda tan angosta al lado del logo que el texto
+        // envuelve palabra por palabra.
+        const AIRE_EXTRA_ANCHO = 96;
+        let maxAncho = maxAnchoFila;
+        if (heading) {
+            const estilosHeading = getComputedStyle(heading);
+            maxAncho = maxAnchoFila + parseFloat(estilosHeading.paddingLeft) + parseFloat(estilosHeading.paddingRight) + AIRE_EXTRA_ANCHO;
+        }
+        contenedorReglas.style.width = `${maxAncho}px`;
+        if (heading) heading.style.width = `${maxAncho}px`;
+
+        // 2) Alto: con el ancho ya fijo (así el texto de cada modo envuelve
+        // igual que en producción), se mide la altura real que necesita
+        // cada modo y se usa la más alta como piso para todos.
         let maxAltura = 0;
-        let maxAncho = 0;
         Object.keys(MODOS).forEach(modo => {
             contenedorReglas.innerHTML = htmlReglas(modo);
-            if (badge) badge.textContent = MODOS[modo].badge;
-            const tarjeta = contenedorReglas.querySelector(".modo-actual-card");
-            // Para medir el ancho de CONTENIDO de la tarjeta (no el 100% de
-            // un contenedor que todavía no está fijado) se la achica al
-            // contenido momentáneamente; se descarta solo, ya que esta
-            // tarjeta se reemplaza en la próxima vuelta del loop.
-            if (tarjeta) tarjeta.style.width = "fit-content";
             maxAltura = Math.max(maxAltura, contenedorReglas.getBoundingClientRect().height);
-            if (tarjeta) maxAncho = Math.max(maxAncho, tarjeta.getBoundingClientRect().width);
-            if (heading) maxAncho = Math.max(maxAncho, heading.getBoundingClientRect().width);
         });
         contenedorReglas.style.minHeight = `${maxAltura}px`;
-        // El ancho se fija en el CONTENEDOR (estable, no se reemplaza al
-        // cambiar de modo) y no en la tarjeta en sí (que sí se reemplaza
-        // cada vez que se elige un modo): la tarjeta ocupa el 100% de este
-        // contenedor por CSS, así que hereda el ancho fijo automáticamente
-        // sin importar cuántas veces se regenere su HTML después.
-        contenedorReglas.style.width = `${maxAncho}px`;
 
         contenedorReglas.innerHTML = htmlReglas(modoSeleccionado);
         if (badge) badge.textContent = MODOS[modoSeleccionado].badge;
-        if (heading) heading.style.width = `${maxAncho}px`;
     }
 
     function seleccionarModo(modo) {

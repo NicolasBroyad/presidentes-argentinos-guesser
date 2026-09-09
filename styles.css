@@ -770,11 +770,8 @@ h1 a {
     /* Mismo border-radius que ".modo-de-juego-seleccionado-heading" (10px),
        para que ambos contenedores luzcan como parte del mismo conjunto. */
     border-radius: 10px;
-    /* Mismo tono "vidrio" oscuro que el resto de .rules-section (antes era
-       un navy más saturado con borde celeste fuerte, que quedaba como una
-       pieza aparte en vez de integrada al entorno). */
-    background-color: rgb(var(--glass-soft) / 0.35);
-    border: 1px solid rgb(var(--ink) / 0.12);
+    background-color: rgb(var(--navy-light) / 0.55);
+    border: 1px solid rgb(var(--blue) / 0.28);
 }
 
 .modo-card-logo {
