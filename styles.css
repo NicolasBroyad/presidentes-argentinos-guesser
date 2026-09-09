@@ -77,6 +77,13 @@ html, body {
     background-color: rgb(var(--bg-mid));
 }
 
+/* Ver el script inline en el <head> de index.html: oculta la página entera
+   mientras se arma el juego al llegar con "?...&accion=jugar", para que no
+   se alcance a ver un flash de la pantalla de inicio antes de la partida. */
+html[data-cargando-juego] body {
+    visibility: hidden;
+}
+
 .index-body {
     background-image:
         url("images/sol-watermark.svg"),
@@ -214,6 +221,50 @@ h1 a {
     display: block;
     width: 32px;
     height: 32px;
+}
+
+/* Botón "volver" durante una partida: mismo lugar que el logo (que se
+   oculta mientras se juega), en cualquier modo y en cualquier ancho de
+   pantalla. Lleva al inicio o a "Ver modos de juego" según desde dónde se
+   haya empezado a jugar (ver volverA en script.js). */
+.volver-atras-juego {
+    display: none;
+    position: absolute;
+    left: 1rem;
+    top: calc(50% + env(safe-area-inset-top, 0px) / 2);
+    transform: translateY(-50%);
+    z-index: 101;
+    align-items: center;
+    justify-content: center;
+    width: 2.1rem;
+    height: 2.1rem;
+    padding: 0;
+    border-radius: 50%;
+    background: none;
+    border: 1px solid rgb(var(--ink) / 0.2);
+    color: rgb(var(--ink) / 0.8);
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+.volver-atras-juego svg {
+    width: 1.2rem;
+    height: 1.2rem;
+    fill: currentColor;
+}
+
+.volver-atras-juego:hover {
+    color: rgb(var(--gold-soft));
+    border-color: rgb(var(--gold-soft) / 0.6);
+    background-color: rgb(var(--glass-soft) / 0.4);
+}
+
+body.juego-activo .volver-atras-juego {
+    display: flex;
+}
+
+body.juego-activo .header-logo {
+    display: none;
 }
 
 @media (max-width: 992px) {

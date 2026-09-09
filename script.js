@@ -328,6 +328,20 @@ document.addEventListener('DOMContentLoaded', () => {
         modoSeleccionado = modoDesdeUrl;
     }
 
+    // El botón "volver" del header (solo visible durante una partida, ver
+    // ".volver-atras-juego" en el CSS) vuelve a donde se empezó a jugar:
+    // "?modo=X&accion=jugar" es justo la marca que deja el botón "Jugar"
+    // del modal de "Ver modos de juego" al navegar acá, así que es la
+    // única señal que distingue "vine de ahí" de "arranqué desde el inicio".
+    const volverA = accionDesdeUrl === "jugar" ? "modos.html" : "index.html";
+    const botonVolverAtrasJuego = document.querySelector(".volver-atras-juego");
+    if (botonVolverAtrasJuego) {
+        botonVolverAtrasJuego.addEventListener("click", () => {
+            reproducirSonidoBoton();
+            window.location.href = volverA;
+        });
+    }
+
     const botonesModo = document.querySelectorAll(".modo-de-juego-button");
 
     // --- Elementos del modal ---
@@ -3303,6 +3317,11 @@ agregarEventListenersModalFinJuego();
 if (accionDesdeUrl === "jugar") {
     iniciarModoSeleccionado();
 }
+
+// Recién acá se sabe que, si esta carga venía oculta por el script inline
+// del <head> (ver ahí), el juego ya está armado: se puede volver a mostrar
+// la página sin que se haya visto la pantalla de inicio en el medio.
+document.documentElement.removeAttribute("data-cargando-juego");
 }); // ← Este es el cierre del primer DOMContentLoaded
 
 // --- Hamburger menu toggle - FUERA del DOMContentLoaded del juego ---

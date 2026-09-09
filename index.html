@@ -3,6 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <script src="theme-init.js?v=20260821g"></script>
+    <!-- Al llegar acá con "?...&accion=jugar" (el botón "Jugar" del modal de
+         "Ver modos de juego") el juego arranca recién al final de todo el
+         script.js, así que sin esto se alcanza a ver la pantalla de inicio
+         durante unos milisegundos antes de que la partida la reemplace.
+         Oculta la página entera apenas se sabe (antes del primer pintado,
+         igual que theme-init.js con el tema) y script.js la vuelve a
+         mostrar recién cuando el juego ya está armado. -->
+    <script>
+        (function () {
+            try {
+                if (new URLSearchParams(window.location.search).get("accion") === "jugar") {
+                    document.documentElement.setAttribute("data-cargando-juego", "");
+                }
+            } catch (e) {}
+        })();
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content, viewport-fit=cover">
     <title>Presidentes Argentinos Guesser - Juego de Historia Argentina</title>
     <meta name="description" content="Juego online para adivinar los presidentes argentinos por período. Compite contra el reloj y poné a prueba tu conocimiento de historia argentina.">
@@ -49,6 +65,9 @@
                         <a href="index.html" class="header-logo" aria-label="Presidentes Argentinos Guesser - Inicio">
                 <img src="images/logo-nav-64.png?v=20260907a" srcset="images/logo-nav-64.png?v=20260907a 64w, images/logo-nav-128.png?v=20260907a 128w, images/logo-nav-256.png?v=20260907a 256w" sizes="32px" width="32" height="32" alt="">
             </a>
+            <button class="volver-atras-juego" type="button" aria-label="Volver">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg>
+            </button>
             <button class="nav-toggle" aria-label="Abrir menú">
             ☰
             </button>
