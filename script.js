@@ -338,7 +338,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (botonVolverAtrasJuego) {
         botonVolverAtrasJuego.addEventListener("click", () => {
             reproducirSonidoBoton();
-            window.location.href = volverA;
+            // Al volver al inicio (no a "Ver modos de juego"), lleva el modo
+            // que se estaba jugando en la URL para que el carrusel del
+            // inicio arranque en ese mismo modo (si no, seleccionarModo()
+            // siempre arranca en "clasico", el default).
+            window.location.href = volverA === "index.html" ? `index.html?modo=${modoActual}` : volverA;
         });
     }
 
