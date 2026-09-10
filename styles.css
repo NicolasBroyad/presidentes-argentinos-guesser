@@ -3668,6 +3668,18 @@ td {
     margin-top: 0.4rem;
 }
 
+/* Racha de días consecutivos jugados (Sopa de letras / Crucigrama): la
+   pinta actualizarRachaEnTarjetas() en script.js, tanto acá (grilla de
+   "Ver modos de juego") como en la tarjeta del carrusel del inicio. Antes
+   solo se veía adentro de la partida. */
+.modo-card-racha {
+    display: block;
+    margin-top: 0.3rem;
+    font-weight: 800;
+    font-size: 0.8rem;
+    color: rgb(var(--gold-soft));
+}
+
 @media (max-width: 768px) {
     .modos-grid {
         grid-template-columns: 1fr;
