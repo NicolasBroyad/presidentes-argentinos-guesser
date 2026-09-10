@@ -2328,22 +2328,21 @@ td {
 }
 
 /* Vista ampliada de la foto de una pista al pasar el mouse (o tocarla en
-   mobile) -ver wireZoomFotosSopa() en script.js-. El overlay cubre toda la
-   pantalla para oscurecerla como un modal; la imagen es una COPIA fija,
-   aparte de la miniatura real (que no se toca ni se agranda), animada con
-   un transform calculado en JS para que "vuele" desde el lugar exacto de
-   la miniatura hasta agrandada en el centro. */
+   mobile) -ver wireZoomFotosSopa() en script.js-. El overlay solo ubica la
+   imagen y da el área táctil para cerrar en mobile: el resto de la
+   página se ve normal, sin oscurecer ni desenfocar nada detrás (la
+   imagen agrandada se distingue sola, por su propio marco/sombra). La
+   imagen es una COPIA fija, aparte de la miniatura real (que no se toca
+   ni se agranda), animada con un transform calculado en JS para que
+   "vuele" desde el lugar exacto de la miniatura hasta el centro. */
 .sopa-foto-zoom-overlay {
     position: fixed;
     inset: 0;
     z-index: 2000;
-    background-color: rgb(var(--navy) / 0);
-    transition: background-color 0.3s ease;
     pointer-events: none;
 }
 
 .sopa-foto-zoom-overlay.activo {
-    background-color: rgb(var(--navy) / 0.78);
     pointer-events: auto;
 }
 
