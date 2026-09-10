@@ -1354,6 +1354,9 @@ th, td {
     overflow: hidden;
     width: min(clamp(40px, 6vw, 60px),clamp(40px, 6vh, 60px));
     height: min(clamp(40px, 6vw, 60px),clamp(40px, 6vh, 60px));
+    /* Mismo marco dorado, fino y sutil, que las fotos de presidentes en
+       otros modos (p. ej. ".sopa-pista-foto" en Sopa de letras). */
+    border: 1px solid rgb(var(--gold) / 0.5);
 }
 
 img {
