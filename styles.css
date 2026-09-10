@@ -356,6 +356,14 @@ body.juego-activo .header-logo {
        de la otra. */
     body.juego-activo .volver-atras-juego {
         position: static;
+        /* "transform" no es exclusivo de elementos posicionados: el
+           translateY(-50%) de la regla base (pensado para el centrado
+           vertical de la versión "position:absolute" de desktop) se sigue
+           aplicando acá aunque ya esté en flujo normal, y lo corre de
+           lugar hacia arriba (llegaba a cortarse con el borde de la
+           pantalla). Se anula para que "align-items:center" del header
+           sea lo único que lo centre. */
+        transform: none;
         flex-shrink: 0;
         margin-right: 0.5rem;
     }
