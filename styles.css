@@ -1254,7 +1254,10 @@ table {
         position: relative;
         z-index: 2;
         justify-content: center;
-        background-color: rgb(var(--navy) / 0.6);
+        /* Mismo degradé líquido en movimiento que el resto de los relojes
+           (ver más abajo, junto a ".sopa-timer"/".cruci-timer"): acá nomás
+           se resetea el background-color sólido que traía antes, para que
+           no compita con ese degradé. */
         backdrop-filter: blur(8px);
         -webkit-backdrop-filter: blur(8px);
         border: 1px solid rgb(var(--gold) / 0.5);
@@ -1268,12 +1271,15 @@ table {
         height: 21px;
         width: 21px;
         flex-shrink: 0;
-        fill: rgb(var(--ink));
+        /* Navy (no --ink): el fondo pasó a ser el degradé líquido claro de
+           los relojes -ver más abajo-, y --ink es blanco en tema oscuro
+           (poco contraste ahí encima). */
+        fill: rgb(var(--navy));
     }
 
     .hud-timer .temporizador {
         font-size: 0.95rem;
-        color: rgb(var(--ink));
+        color: rgb(var(--navy));
     }
 
     .hud-timer #contador-presidentes {
@@ -1287,7 +1293,7 @@ table {
         border-radius: 0 !important;
         font-size: 0.8rem;
         font-weight: 600;
-        color: rgb(var(--ink) / 0.85) !important;
+        color: rgb(var(--navy) / 0.85) !important;
     }
 
     .hud-bottom {
@@ -1952,7 +1958,11 @@ td {
 }
 
 .juego-imagen-timer.por-terminar {
-    background-color: rgb(141, 3, 3);
+    /* "background" (no solo background-color): el degradé líquido de más
+       abajo pinta con "background" también, así que si acá solo se
+       pisara el color, la imagen del degradé seguiría de fondo tapando
+       el rojo de urgencia. */
+    background: rgb(141, 3, 3);
     color: #fff;
     border-color: #fff;
     animation: pulso-timer 1s ease-in-out infinite;
@@ -2614,6 +2624,36 @@ td {
     background-color: rgb(var(--blue-strong));
     padding: 0.25rem 0.7rem;
     border-radius: 999px;
+}
+
+/* Mismo degradé "líquido" en movimiento del botón de Iniciar Juego (misma
+   paleta/keyframe: --iniciar-*, iniciar-juego-liquido), aplicado a los
+   relojes de los 4 modos de juego, para que se sientan parte del mismo
+   lenguaje visual. Va DESPUÉS de las reglas de arriba (mismo selector
+   simple, así que el orden decide) para pisar su background-color con
+   este degradé. Sin el reflejo diagonal del botón (::after): ahí el
+   texto vive en un span con z-index propio para no taparse con el
+   reflejo; acá el texto de los relojes se actualiza directo con
+   textContent, sin ese span, así que el reflejo pasaría por encima de
+   los números — el degradé moviéndose ya es el efecto principal. */
+.input-container-first-row,
+.hud-timer,
+.juego-imagen-timer,
+.sopa-timer,
+.cruci-timer {
+    background: linear-gradient(115deg, var(--iniciar-c1) 0%, var(--iniciar-c2) 22%, var(--iniciar-c3) 45%, var(--iniciar-c4) 68%, var(--iniciar-c5) 88%, var(--iniciar-c2) 100%);
+    background-size: 320% 320%;
+    animation: iniciar-juego-liquido 7s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .input-container-first-row,
+    .hud-timer,
+    .juego-imagen-timer,
+    .sopa-timer,
+    .cruci-timer {
+        animation: none;
+    }
 }
 
 .cruci-hud-right {
