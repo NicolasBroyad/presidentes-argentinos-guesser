@@ -1438,6 +1438,10 @@ body.juego-activo footer {
     padding: 0 0.6em;
   }
 
+  .imagen-presidente-cell::after {
+    width: 0.6em;
+  }
+
   .nombre-presidente-cell {
     padding: 0.4em;
     min-height: 26px;
@@ -1471,7 +1475,27 @@ td {
 }
 
 .imagen-presidente-cell {
+    position: relative;
     padding: 0 1em;
+}
+
+/* Lineíta celeste que conecta la foto del presidente con su card: ocupa
+   justo el ancho del padding-right de esta celda (de acá sale la imagen,
+   ahí empieza ".presidente-card"), a la altura del centro vertical de
+   ambas (ya centradas entre sí por "tr{align-items:center}"). Va acá, no
+   como ::after de ".imagen-presidente-desconocido-container" (el círculo
+   de la foto), porque ese tiene overflow:hidden para recortar la imagen
+   en círculo, y recortaría también la línea. */
+.imagen-presidente-cell::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    right: 0;
+    width: 1em;
+    height: 1px;
+    background-color: rgb(var(--blue));
+    transform: translateY(-50%);
+    pointer-events: none;
 }
 
 .presidente-card {
