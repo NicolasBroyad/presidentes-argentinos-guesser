@@ -459,6 +459,30 @@ body.juego-activo .header-logo {
         display: block; /* mostramos el botón (display: block) */
     }
 
+    /* Mismo ajuste que a 768px: ".nav-toggle" ya aparece desde 992px, así
+       que ".volver-atras-juego" (position:absolute;left:1rem por defecto,
+       pensado para desktop sin hamburguesa) tiene que sumarse al flujo acá
+       también — si no, entre 769px y 992px (p. ej. la mitad de una pantalla
+       ancha dividida en dos) quedan las dos cosas superpuestas en la misma
+       esquina. */
+    body.juego-activo .volver-atras-juego {
+        position: static;
+        transform: none;
+        flex-shrink: 0;
+        margin-right: 0.5rem;
+    }
+
+    /* Con ".volver-atras-juego" sumado al flujo, sólo queda ese botón y el
+       hamburguesa como hijos flex visibles de ".header" en este rango de
+       ancho (el badge "jugando modo X" recién se muda al header más abajo,
+       a 768px) — con "space-between" (la regla de arriba) esos dos únicos
+       ítems se van cada uno a un extremo, y el hamburguesa termina
+       superpuesto con ".header-acciones" (sonido/tema) del lado derecho.
+       Alineados a la izquierda quedan uno al lado del otro, lejos de eso. */
+    body.juego-activo .header {
+        justify-content: flex-start;
+    }
+
     .header-nav {
         display: none; /* ocultamos nav */
         position: absolute;
@@ -2492,6 +2516,11 @@ td {
     gap: 2rem;
     padding: 1.25rem 1rem;
     flex: 1;
+    /* Ancho del panel de pistas, en una sola variable: la usan tanto
+       ".cruci-panel" (su propio ancho) como ".cruci-grid" de abajo (para
+       descontarlo del viewport y saber cuánto le queda libre a la
+       grilla), así los dos números nunca se desincronizan. */
+    --cruci-panel-w: min(340px, 92vw);
     /* ".main" usa align-items:center (no stretch), así que sin un ancho
        explícito este contenedor se dimensiona por su propio contenido
        (shrink-to-fit) en vez de ocupar el 100% disponible — si ese contenido
@@ -2517,7 +2546,20 @@ td {
     display: grid;
     grid-auto-rows: 1fr;
     gap: 2px;
-    height: min(64vh, calc(90vw * var(--r) / var(--c)));
+    /* Ancho = el menor entre "lo que queda libre en la fila" (todo el
+       viewport, menos el panel de pistas, el gap entre los dos y el padding
+       horizontal de ".cruci-container") y "lo que le corresponde por el
+       techo de alto de 64vh, convertido a ancho según su relación de
+       aspecto". Calcularlo así (en vez de darle flex-grow a la columna de
+       la grilla para que "se coma" todo el sobrante) es lo que mantiene el
+       panel PEGADO al lado de la grilla en pantallas anchas: si la columna
+       creciera para llenar todo el espacio, la grilla (más chica, limitada
+       por el alto) quedaría centrada ahí en el medio y el panel se iría
+       solo hasta el borde derecho de la pantalla. */
+    width: min(
+        calc(100vw - var(--cruci-panel-w) - 2rem - 2rem),
+        calc(64vh * var(--c) / var(--r))
+    );
     aspect-ratio: var(--c) / var(--r);
     padding: 4px;
     background-color: rgb(var(--navy) / 0.55);
@@ -2617,7 +2659,7 @@ td {
     display: flex;
     flex-direction: column;
     gap: 0.8rem;
-    width: min(340px, 92vw);
+    width: var(--cruci-panel-w);
     max-height: 100%;
     padding: 1.1rem;
     background-color: rgb(var(--navy-light) / 0.85);
@@ -2916,12 +2958,19 @@ td {
 
     .cruci-grid-col {
         flex: 0 1 auto;
+        /* En columna (apilado), ".cruci-grid" ya no comparte fila con el
+           panel de pistas — pero necesita igual una base de "100%" real
+           para su propio cálculo de ancho de abajo, y sin esto el ítem
+           flex se encoge a su contenido (align-items:center heredado). */
+        width: 100%;
     }
 
     .cruci-grid {
         /* Más chico que antes (era 46vh) para dejarle aire real al panel de
-           pistas de abajo; el grid nunca es lo único que hay que ver. */
-        height: min(34vh, calc(88vw * var(--r) / var(--c)));
+           pistas de abajo; el grid nunca es lo único que hay que ver. Mismo
+           esquema "el menor entre ancho disponible y ancho por techo de
+           alto" que la regla base, con el techo de alto más bajo. */
+        width: min(100%, calc(34vh * var(--c) / var(--r)));
     }
 
     .cruci-panel {

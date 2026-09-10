@@ -466,6 +466,28 @@ const listaPresidentes = [
             .trim();
     }
 
+    // Como normalizarTexto pero preservando la \u00d1 (que normalize("NFD") tambi\u00e9n
+    // descompone en "n" + tilde combinada, perdi\u00e9ndola con el replace de
+    // arriba). Se usa para armar las palabras que se VEN en sopa de letras y
+    // crucigrama, donde si el apellido lleva \u00f1 (p. ej. "Cama\u00f1o") corresponde
+    // mostrarla en el tablero en vez de una "n".
+    function letraGrillaDe(texto) {
+        return texto
+            .toUpperCase()
+            .replace(/\u00d1/g, "\ue000")
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .replace(/\ue000/g, "\u00d1")
+            .replace(/[^A-Z\u00d1]/g, "");
+    }
+
+    // En crucigrama, aceptar "N" como acierto para una celda que pide "\u00d1" (y
+    // viceversa): hay teclados que no tienen la tecla \u00f1.
+    function letraCoincide(valor, requerida) {
+        if (valor === requerida) return true;
+        return (valor === "N" && requerida === "\u00d1") || (valor === "\u00d1" && requerida === "N");
+    }
+
     // --- Opciones de texto que cuentan como acierto para un presidente ---
     // (mismas reglas para todos los modos de juego)
     // Para apellidos compuestos con preposición ("de Alvear", "de la Plaza",
@@ -1563,7 +1585,7 @@ const listaPresidentes = [
 
     // Apellido "sopeable": una sola palabra, sin tildes, en MAYÚSCULAS.
     function palabraSopaDe(u) {
-        return normalizarTexto(u.apellido).replace(/[^a-z]/g, "").toUpperCase();
+        return letraGrillaDe(u.apellido);
     }
 
     // Presidentes elegibles: apellido de una sola palabra y de largo razonable
@@ -2137,7 +2159,7 @@ const listaPresidentes = [
         const pool = [];
         presidentesUnicos.forEach(u => {
             if (u.apellido.trim().includes(" ")) return;
-            const palabra = normalizarTexto(u.apellido).replace(/[^a-z]/g, "").toUpperCase();
+            const palabra = letraGrillaDe(u.apellido);
             if (palabra.length < 4 || palabra.length > 10) return;
             if (vistas.has(palabra)) return;
             vistas.add(palabra);
@@ -2648,7 +2670,7 @@ const listaPresidentes = [
     function palabraLlenaYCorrecta(ent) {
         return ent.celdas.every(({ r, c }) => {
             const i = inputCruci(r, c);
-            return i && i.value.toUpperCase() === cruciData.grilla[r][c].letra;
+            return i && letraCoincide(i.value.toUpperCase(), cruciData.grilla[r][c].letra);
         });
     }
 
@@ -2669,8 +2691,7 @@ const listaPresidentes = [
     function onCruciInput(e) {
         const inp = e.target.closest(".cruci-input");
         if (!inp || cruciTerminado) return;
-        const limpio = inp.value.toUpperCase().normalize("NFD")
-            .replace(/[̀-ͯ]/g, "").replace(/[^A-ZÑ]/g, "");
+        const limpio = letraGrillaDe(inp.value);
         inp.value = limpio.slice(-1);
         inp.classList.remove("cruci-input--mal");
         refrescarEstadoCrucigrama();
@@ -2692,7 +2713,7 @@ const listaPresidentes = [
         cruciEntradas.forEach(e => {
             const ok = e.celdas.every(({ r, c }) => {
                 const inp = inputCruci(r, c);
-                return inp && inp.value.toUpperCase() === cruciData.grilla[r][c].letra;
+                return inp && letraCoincide(inp.value.toUpperCase(), cruciData.grilla[r][c].letra);
             });
             const id = `${e.numero}-${e.dir}`;
             const li = document.querySelector(`.cruci-pista[data-entrada="${id}"]`);
@@ -2783,7 +2804,7 @@ const listaPresidentes = [
                 const cel = cruciData.grilla[r][c];
                 if (!cel) continue;
                 const inp = inputCruci(r, c);
-                if (!inp || inp.value.toUpperCase() !== cel.letra) return;
+                if (!inp || !letraCoincide(inp.value.toUpperCase(), cel.letra)) return;
             }
         }
         finalizarCrucigrama(true);
@@ -2794,7 +2815,7 @@ const listaPresidentes = [
         cruciEntradas.forEach(e => {
             const ok = e.celdas.every(({ r, c }) => {
                 const inp = inputCruci(r, c);
-                return inp && inp.value.toUpperCase() === cruciData.grilla[r][c].letra;
+                return inp && letraCoincide(inp.value.toUpperCase(), cruciData.grilla[r][c].letra);
             });
             e.u.resultadoPartida = ok ? 'acierto' : 'error';
             if (ok) aciertos++;
@@ -2835,7 +2856,7 @@ const listaPresidentes = [
             // Revelar la solución en las celdas mal o vacías
             document.querySelectorAll(".cruci-input").forEach(inp => {
                 const cel = cruciData.grilla[+inp.dataset.r][+inp.dataset.c];
-                if (cel && inp.value.toUpperCase() !== cel.letra) {
+                if (cel && !letraCoincide(inp.value.toUpperCase(), cel.letra)) {
                     inp.value = cel.letra;
                     inp.classList.add("cruci-input--revelada");
                 }
