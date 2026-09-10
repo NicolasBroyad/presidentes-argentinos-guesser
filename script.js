@@ -254,7 +254,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const CONFIG_JUEGO_LS_KEY = "pag-configuracion-juego";
     const CONFIG_JUEGO_DEFAULT = {
         tiempo: 10, // minutos (modo clásico)
-        tiempoImagen: 5, // minutos (modo "Adivina la imagen")
+        tiempoImagen: 2, // minutos (modo "Adivina la imagen")
         eliminarDeFacto: false,
         // El filtro de "gobiernos de menos de 1 año" tiene un default distinto
         // por modo: en clásico se incluyen (como siempre), en "Adivina la
