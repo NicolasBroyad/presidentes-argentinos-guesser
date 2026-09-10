@@ -1447,6 +1447,102 @@ const listaPresidentes = [
     let sopaCeldaInicio = null;  // {r,c}
     let sopaCeldasMarcadas = []; // celdas resaltadas mientras se arrastra
 
+    // --- Vista ampliada de la foto al pasar el mouse (o tocar) una pista ---
+    // No agranda la card ni la miniatura en su lugar: es una copia de la
+    // imagen en un overlay position:fixed, aparte del layout de la lista,
+    // que "vuela" (animación FLIP) desde el tamaño/posición exactos de la
+    // miniatura hasta agrandada en el centro de la pantalla, y de vuelta al
+    // cerrarse. Un solo overlay compartido por todas las pistas (se crea
+    // una vez y se reutiliza, no uno por card).
+    let zoomFotoOverlayEl = null;
+    let zoomFotoImgEl = null;
+    let zoomFotoCardAbierta = null;
+
+    function obtenerZoomFotoOverlay() {
+        if (zoomFotoOverlayEl) return zoomFotoOverlayEl;
+        zoomFotoOverlayEl = document.createElement("div");
+        zoomFotoOverlayEl.className = "sopa-foto-zoom-overlay";
+        zoomFotoImgEl = document.createElement("img");
+        zoomFotoImgEl.className = "sopa-foto-zoom-img";
+        zoomFotoImgEl.alt = "";
+        zoomFotoOverlayEl.appendChild(zoomFotoImgEl);
+        document.body.appendChild(zoomFotoOverlayEl);
+        // Tocar el overlay (fuera de la imagen) lo cierra: en mobile es la
+        // forma de "tocar cualquier parte de la pantalla" para achicarla de
+        // nuevo (en desktop el overlay no intercepta clicks -ver CSS-, así
+        // que ahí cerrar es siempre por mouseleave de la card original).
+        zoomFotoOverlayEl.addEventListener("click", cerrarZoomFoto);
+        return zoomFotoOverlayEl;
+    }
+
+    // Mide dónde terminaría la imagen agrandada "en reposo" (centrada,
+    // tamaño final) y devuelve el transform que la hace lucir exactamente
+    // como "rectOrigen" (la miniatura): es el estado inicial de la
+    // animación de apertura, y el estado final de la de cierre.
+    function calcularTransformFlipDesde(rectOrigen) {
+        zoomFotoImgEl.style.transition = "none";
+        zoomFotoImgEl.style.transform = "translate(-50%, -50%)";
+        const rectDestino = zoomFotoImgEl.getBoundingClientRect();
+        const dx = (rectOrigen.left + rectOrigen.width / 2) - (rectDestino.left + rectDestino.width / 2);
+        const dy = (rectOrigen.top + rectOrigen.height / 2) - (rectDestino.top + rectDestino.height / 2);
+        const sx = rectOrigen.width / rectDestino.width;
+        const sy = rectOrigen.height / rectDestino.height;
+        return `translate(-50%, -50%) translate(${dx}px, ${dy}px) scale(${sx}, ${sy})`;
+    }
+
+    function abrirZoomFoto(card) {
+        const foto = card.querySelector(".sopa-pista-foto");
+        if (!foto || !foto.src) return;
+        const overlay = obtenerZoomFotoOverlay();
+        zoomFotoCardAbierta = card;
+        zoomFotoImgEl.src = foto.src;
+        overlay.classList.add("activo");
+
+        const transformInicial = calcularTransformFlipDesde(foto.getBoundingClientRect());
+        zoomFotoImgEl.style.transform = transformInicial;
+        // Fuerza el reflow para que el navegador registre este estado
+        // inicial (sin transición) antes de animar al de reposo.
+        zoomFotoImgEl.getBoundingClientRect();
+        zoomFotoImgEl.style.transition = "transform 0.35s cubic-bezier(0.22, 0.9, 0.3, 1)";
+        requestAnimationFrame(() => {
+            zoomFotoImgEl.style.transform = "translate(-50%, -50%)";
+        });
+    }
+
+    function cerrarZoomFoto() {
+        if (!zoomFotoCardAbierta || !zoomFotoOverlayEl) return;
+        const foto = zoomFotoCardAbierta.querySelector(".sopa-pista-foto");
+        zoomFotoCardAbierta = null;
+        zoomFotoOverlayEl.classList.remove("activo");
+        if (!foto) return;
+        const transformCierre = calcularTransformFlipDesde(foto.getBoundingClientRect());
+        zoomFotoImgEl.style.transition = "transform 0.3s ease";
+        requestAnimationFrame(() => {
+            zoomFotoImgEl.style.transform = transformCierre;
+        });
+    }
+
+    // Desktop (mouse de verdad): hover en cualquier parte de la card abre,
+    // sacar el mouse de la card cierra. Mobile/táctil: tocar la imagen
+    // abre, tocar cualquier parte de la pantalla (el overlay) cierra -ver
+    // obtenerZoomFotoOverlay()-. Ramas separadas para que un mismo toque no
+    // dispare las dos lógicas a la vez.
+    function wireZoomFotosSopa() {
+        const esHoverCapaz = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+        document.querySelectorAll(".sopa-pista").forEach(card => {
+            if (esHoverCapaz) {
+                card.addEventListener("mouseenter", () => abrirZoomFoto(card));
+                card.addEventListener("mouseleave", cerrarZoomFoto);
+            } else {
+                const foto = card.querySelector(".sopa-pista-foto");
+                if (foto) foto.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    abrirZoomFoto(card);
+                });
+            }
+        });
+    }
+
     // Apellido "sopeable": una sola palabra, sin tildes, en MAYÚSCULAS.
     function palabraSopaDe(u) {
         return normalizarTexto(u.apellido).replace(/[^a-z]/g, "").toUpperCase();
@@ -1546,6 +1642,11 @@ const listaPresidentes = [
         sopaArrastrando = false;
         sopaCeldaInicio = null;
         sopaCeldasMarcadas = [];
+        // Por si quedó abierta de una partida anterior (poco probable, pero
+        // el overlay vive en document.body, fuera de lo que se reemplaza
+        // acá abajo).
+        if (zoomFotoOverlayEl) zoomFotoOverlayEl.classList.remove("activo");
+        zoomFotoCardAbierta = null;
 
         const hoyISO = fechaHoyISO();
         sopaResultadoOficial = lsLeer(SOPA_LS_RES(hoyISO));
@@ -1642,6 +1743,8 @@ const listaPresidentes = [
     }
 
     function wireSopaEventos() {
+        wireZoomFotosSopa();
+
         const grid = document.querySelector(".sopa-grid");
         if (!grid) return;
 

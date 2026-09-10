@@ -2327,6 +2327,62 @@ td {
     opacity: 0.7;
 }
 
+/* Vista ampliada de la foto de una pista al pasar el mouse (o tocarla en
+   mobile) -ver wireZoomFotosSopa() en script.js-. El overlay cubre toda la
+   pantalla para oscurecerla como un modal; la imagen es una COPIA fija,
+   aparte de la miniatura real (que no se toca ni se agranda), animada con
+   un transform calculado en JS para que "vuele" desde el lugar exacto de
+   la miniatura hasta agrandada en el centro. */
+.sopa-foto-zoom-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    background-color: rgb(var(--navy) / 0);
+    transition: background-color 0.3s ease;
+    pointer-events: none;
+}
+
+.sopa-foto-zoom-overlay.activo {
+    background-color: rgb(var(--navy) / 0.78);
+    pointer-events: auto;
+}
+
+/* En desktop cerrar es siempre por mouseleave de la card original: si el
+   overlay interceptara clicks acá también, aparecer encima de esa card
+   dispararía un mouseleave falso (el navegador pasa a considerar que el
+   mouse está sobre el overlay, no sobre la card) apenas se abre. */
+@media (hover: hover) and (pointer: fine) {
+    .sopa-foto-zoom-overlay.activo {
+        pointer-events: none;
+    }
+}
+
+.sopa-foto-zoom-img {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    height: min(360px, 55vh);
+    aspect-ratio: 3 / 4;
+    width: auto;
+    object-fit: cover;
+    object-position: top center;
+    border-radius: 16px;
+    border: 2px solid rgb(var(--gold) / 0.6);
+    background-color: rgb(var(--navy) / 0.94);
+    box-shadow:
+        0 35px 80px -25px rgba(0, 0, 0, 0.85),
+        0 0 55px -15px rgb(var(--gold) / 0.25);
+    opacity: 0;
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+    transition: opacity 0.2s ease;
+    will-change: transform;
+}
+
+.sopa-foto-zoom-overlay.activo .sopa-foto-zoom-img {
+    opacity: 1;
+}
+
 @media (max-width: 768px) {
     .sopa-container {
         flex-direction: column;
