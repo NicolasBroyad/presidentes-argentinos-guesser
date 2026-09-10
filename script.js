@@ -752,6 +752,20 @@ const listaPresidentes = [
     function scrollFilaAlCentro(fila) {
         const contenedor = fila.closest('tbody');
         if (!contenedor) return;
+        // En mobile el HUD del reloj/input queda flotando superpuesto sobre
+        // la parte de abajo de la tabla (ver ".hud-bottom-group"): si la
+        // fila a centrar es de las últimas de la lista, no hay scroll
+        // disponible para subirla hasta la mitad y termina tapada detrás
+        // de ese HUD. Se reserva como padding-bottom la mitad de la altura
+        // visible del contenedor -lo máximo que puede llegar a hacer falta
+        // para centrar la última fila-, así cualquier fila se puede
+        // centrar, aunque eso deje un tramo vacío al final de la lista.
+        if (window.matchMedia('(max-width: 768px)').matches) {
+            const alturaExtra = contenedor.clientHeight / 2;
+            if (parseFloat(getComputedStyle(contenedor).paddingBottom) < alturaExtra) {
+                contenedor.style.paddingBottom = `${alturaExtra}px`;
+            }
+        }
         const contenedorRect = contenedor.getBoundingClientRect();
         const filaRect = fila.getBoundingClientRect();
         const desplazamiento = (filaRect.top - contenedorRect.top) - (contenedorRect.height / 2) + (filaRect.height / 2);
