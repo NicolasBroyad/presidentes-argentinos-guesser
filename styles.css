@@ -3667,6 +3667,22 @@ td {
 
 /* MODOS DE JUEGO (página modos.html) */
 
+/* Envuelve TODO lo de arriba del footer (header incluido, como ".main" en
+   index.html), aparte del footer: eso permite que ocupe una pantalla
+   completa como mínimo sin que ese mínimo le sume el alto del header al
+   de la pantalla, cosa que si ese min-height se pusiera en ".modos-container"
+   (adentro del header) pasaba: el total terminaba siendo 100dvh + el alto
+   del header, y quedaba un tramo de scroll de más antes de que apareciera
+   el footer. Así, en vez, el footer queda a un solo scroll de 1px del
+   final de esa primera pantalla, igual que en el inicio. */
+.modos-pantalla {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    min-height: 100dvh;
+}
+
 .modos-container {
     width: 100%;
     max-width: 900px;
@@ -3675,12 +3691,6 @@ td {
     display: flex;
     flex-direction: column;
     gap: 2.5rem;
-    /* Fuerza a que el contenido de arriba del footer ocupe una pantalla
-       completa como mínimo, igual que ".main" en index.html (que por eso
-       hay que scrollear para llegar al footer): sin esto, "main" (flex:1
-       dentro de ".linea-tiempo-body") se achica para que el footer entre
-       en la misma pantalla cuando el contenido es corto. */
-    min-height: 100dvh;
 }
 
 .modos-grupo-heading {
