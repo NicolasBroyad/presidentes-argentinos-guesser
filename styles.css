@@ -3675,6 +3675,12 @@ td {
     display: flex;
     flex-direction: column;
     gap: 2.5rem;
+    /* Fuerza a que el contenido de arriba del footer ocupe una pantalla
+       completa como mínimo, igual que ".main" en index.html (que por eso
+       hay que scrollear para llegar al footer): sin esto, "main" (flex:1
+       dentro de ".linea-tiempo-body") se achica para que el footer entre
+       en la misma pantalla cuando el contenido es corto. */
+    min-height: 100dvh;
 }
 
 .modos-grupo-heading {
