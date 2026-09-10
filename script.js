@@ -2332,18 +2332,34 @@ const listaPresidentes = [
         if (!anio || !nom) return null;
         return `El presidente de nombre ${nom} que asumió en ${anio}`;
     }
+    // Algunos apellidos los comparten dos presidentes distintos (p. ej.
+    // Cristina Fernández y Alberto Fernández): una pista que solo diga
+    // "Fernández" queda ambigua. Si el apellido se repite en alguien con
+    // otro nombre, la pista usa "nombre apellido" en vez de solo el apellido.
+    function apellidoEsAmbiguo(persona) {
+        const clavePersona = normalizarTexto(nombreCompletoPresidente(persona));
+        return listaPresidentes.some(p =>
+            p.apellido === persona.apellido &&
+            normalizarTexto(nombreCompletoPresidente(p)) !== clavePersona
+        );
+    }
+    function cruciNombreParaPista(persona) {
+        return apellidoEsAmbiguo(persona)
+            ? `${persona.nombre} ${persona.apellido}`
+            : persona.apellido;
+    }
     function cruciPistaAntecesor(u) {
         const idxs = cruciIndicesEnLista(u);
         if (!idxs.length || idxs[0] === 0) return null;
         const ant = listaPresidentes[idxs[0] - 1];
         const anio = cruciAnioAsuncion(u);
-        return `Asumió después de ${ant.apellido}${anio ? ` en ${anio}` : ""}`;
+        return `Asumió después de ${cruciNombreParaPista(ant)}${anio ? ` en ${anio}` : ""}`;
     }
     function cruciPistaSucesor(u) {
         const idxs = cruciIndicesEnLista(u);
         const ultimo = idxs[idxs.length - 1];
         if (ultimo === undefined || ultimo >= listaPresidentes.length - 1) return null;
-        return `Lo sucedió en el cargo ${listaPresidentes[ultimo + 1].apellido}`;
+        return `Lo sucedió en el cargo ${cruciNombreParaPista(listaPresidentes[ultimo + 1])}`;
     }
     function cruciPistaTipoGobierno(u) {
         const anio = cruciAnioAsuncion(u);
