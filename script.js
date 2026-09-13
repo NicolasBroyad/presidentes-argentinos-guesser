@@ -298,17 +298,17 @@ document.addEventListener('DOMContentLoaded', () => {
         clasico: {
             badge: 'CLÁSICO',
             nombre: 'Clásico',
-            descripcion: 'Completá la lista de presidencias con el apellido de cada presidente, a contrarreloj.'
+            descripcion: 'Escribí los apellidos de todos los presidentes que puedas antes de que se termine el tiempo.'
         },
         imagen: {
             badge: 'ADIVINA LA IMAGEN',
             nombre: 'Adiviná la imagen',
-            descripcion: 'Reconocé al presidente de la foto y escribí su apellido, uno tras otro.'
+            descripcion: 'Reconocé a los presidentes de las imágenes y escribí sus apellidos, antes de que se termine el tiempo.'
         },
         sopa: {
             badge: 'SOPA DE LETRAS',
             nombre: 'Sopa de letras',
-            descripcion: 'Marcá en la grilla los apellidos escondidos, guiándote por la foto y los años de mandato.',
+            descripcion: 'Marcá en la grilla los apellidos de presidentes escondidos, guiándote por las imágenes y los años de mandato.',
             // Textos del estado del desafío diario en la tarjeta del inicio
             // (ver actualizarEstadoDiarioEnTarjetas): femenino, "la sopa".
             etiquetaNuevo: 'NUEVA',
@@ -319,7 +319,7 @@ document.addEventListener('DOMContentLoaded', () => {
         crucigrama: {
             badge: 'CRUCIGRAMA',
             nombre: 'Crucigrama',
-            descripcion: 'Un crucigrama nuevo cada día: cada pista es un período y la respuesta, el apellido.',
+            descripcion: 'Completá las filas y columnas con apellidos de presidentes argentinos, guiándote por las pistas.',
             // Masculino: "el crucigrama".
             etiquetaNuevo: 'NUEVO',
             textoPendiente: 'No resuelto',
@@ -3465,6 +3465,18 @@ function agregarEventListenersModalFinJuego() {
     if (botonCerrarModal) {
         botonCerrarModal.addEventListener("click", () => {
             cerrarFinJuego();
+        });
+    }
+
+    // Cerrar también al tocar fuera del modal (el backdrop): en un <dialog>
+    // nativo, un click ahí (no en su contenido) llega con target === el
+    // propio <dialog> — mismo patrón que ya usan #configDialog y #modoModal.
+    const finJuegoDialog = document.getElementById("finJuegoDialog");
+    if (finJuegoDialog) {
+        finJuegoDialog.addEventListener("click", (e) => {
+            if (e.target === finJuegoDialog) {
+                cerrarFinJuego();
+            }
         });
     }
 }
