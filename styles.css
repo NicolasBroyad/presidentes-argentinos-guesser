@@ -9,6 +9,7 @@
     --blue-strong: 27 190 241;
     --gold: 232 200 116;
     --gold-soft: 243 223 160;
+    --green: 88 214 141;
     --glass: 0 0 0;
     --glass-soft: 53 53 53;
     --ink: 255 255 255;
@@ -38,6 +39,7 @@
     --blue-strong: 74 144 217;
     --gold: 196 149 40;
     --gold-soft: 150 108 20;
+    --green: 30 132 73;
     --glass: 255 255 255;
     --glass-soft: 214 231 247;
     --ink: 15 40 61;
@@ -862,6 +864,22 @@ body.juego-activo .header-logo {
     border: 1px solid rgb(var(--blue) / 0.28);
 }
 
+/* --- Estado del desafío diario (sopa / crucigrama) en la tarjeta del
+   carrusel del inicio. Lo pinta actualizarEstadoDiarioEnTarjetas() en
+   script.js; clásico y adiviná la imagen no llevan estas clases. --- */
+
+.modo-actual-card.is-resuelto {
+    /* El fondo celeste/navy queda igual que en cualquier otra tarjeta (el
+       de la regla base ".modo-actual-card"): lo único que cambia al estar
+       resuelto es el logo atenuado y el texto de estado en verde, no el
+       color de fondo de la card. */
+    border-color: rgb(var(--blue) / 0.18);
+}
+
+.modo-actual-card.is-resuelto .modo-card-logo {
+    opacity: 0.75;
+}
+
 .modo-card-logo {
     flex-shrink: 0;
     display: grid;
@@ -873,6 +891,124 @@ body.juego-activo .header-logo {
     border-radius: 22px;
     background-color: rgb(var(--navy-light));
     border: 1px solid rgb(var(--blue) / 0.55);
+}
+
+/* El logo necesita ser el contenedor de referencia de la insignia
+   (NUEVA/NUEVO dorada, o el tilde verde de resuelto) que cuelga de su
+   esquina superior derecha. */
+.modo-card-logo-wrap {
+    position: relative;
+    flex-shrink: 0;
+    display: flex;
+}
+
+.modo-card-badge-estado {
+    position: absolute;
+    top: -9px;
+    right: -9px;
+}
+
+.modo-card-badge-nuevo {
+    display: inline-block;
+    padding: 5px 8px;
+    border-radius: 999px;
+    background-color: rgb(var(--gold));
+    color: rgb(var(--navy));
+    border: 2.5px solid rgb(var(--navy-light));
+    box-shadow: 0 0 0 5px rgb(var(--gold) / 0.18);
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    font-size: 0.62rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .modo-card-badge-nuevo {
+        animation: modo-card-badge-latido 2.4s ease-in-out infinite;
+    }
+}
+
+@keyframes modo-card-badge-latido {
+    0%, 100% { box-shadow: 0 0 0 5px rgb(var(--gold) / 0.18); }
+    50% { box-shadow: 0 0 0 9px rgb(var(--gold) / 0.06); }
+}
+
+.modo-card-badge-ok {
+    display: grid;
+    place-items: center;
+    width: 27px;
+    height: 27px;
+    border-radius: 50%;
+    background-color: rgb(var(--green));
+    border: 3px solid rgb(var(--navy-light));
+}
+
+/* Especificidad reforzada (dos clases) a propósito: en la grilla de "Ver
+   modos de juego" esta insignia queda anidada dentro de ".modo-card-icono",
+   que en mobile (media query más abajo) fija ".modo-card-icono svg" a
+   30x30px — con la misma especificidad que un simple ".modo-card-badge-ok
+   svg", esa regla de mobile terminaba ganando y el tick se salía del
+   círculo verde. */
+.modo-card-badge-estado.modo-card-badge-ok svg {
+    width: 15px;
+    height: 15px;
+    display: block;
+}
+
+/* Línea de estado ("No resuelta · próxima en HH:MM:SS" / "Resuelta ·
+   próxima en HH:MM:SS"), con el mismo contador de siempre adentro. */
+.modo-card-estado {
+    display: block;
+    margin-top: 0.4rem;
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    font-size: 0.8rem;
+    line-height: 1.3;
+    font-variant-numeric: tabular-nums;
+}
+
+/* El "*{color:rgb(var(--ink))}" global de arriba fija el color en CADA
+   elemento de forma directa (no por herencia), así que ".modo-card-estado-
+   texto" necesita su propio color explícito acá — igual que ya lo tiene
+   ".contador-reinicio-diario" — porque de otro modo esa regla universal le
+   gana a la herencia desde ".modo-card-estado" y el texto queda blanco. */
+.modo-card-estado.es-pendiente,
+.modo-card-estado.es-pendiente .modo-card-estado-texto {
+    font-weight: 800;
+    color: rgb(var(--gold-soft));
+}
+
+.modo-card-estado.es-resuelto,
+.modo-card-estado.es-resuelto .modo-card-estado-texto {
+    font-weight: 700;
+    color: rgb(var(--green) / 0.9);
+}
+
+/* ".contador-reinicio-diario" (compartida con la tarjeta de modos.html) trae
+   su propio display:block/width:100%/color fijo para ir en su propia línea
+   ahí — acá, adentro de la línea de estado, tiene que fluir en el mismo
+   renglón que "No resuelta · próxima en" y heredar el color de esa línea
+   (dorado si falta, verde si ya está resuelto), no quedar siempre dorado
+   en una línea aparte. */
+.modo-card-estado .contador-reinicio-diario {
+    display: inline;
+    width: auto;
+    font: inherit;
+    color: inherit;
+}
+
+/* La racha (🔥) va en el mismo renglón que el resto de la línea de estado,
+   a la derecha del contador — ".modo-card-racha" de por sí es block/margin-
+   top (para cuando va en su propia línea, como en la grilla de "Ver modos
+   de juego"), así que acá adentro se pisa por un inline con separación
+   horizontal en vez de vertical. Mantiene su propio color dorado fijo
+   (no cambia con el estado resuelto/pendiente): es un logro aparte, no el
+   estado del desafío de hoy. */
+.modo-card-estado .modo-card-racha {
+    display: inline;
+    margin-top: 0;
+    margin-left: 0.5rem;
 }
 
 .modo-card-logo svg {
@@ -3812,6 +3948,7 @@ td {
 }
 
 .modo-card-icono {
+    position: relative;
     flex-shrink: 0;
     display: flex;
     align-items: center;
@@ -3827,6 +3964,14 @@ td {
     width: 38px;
     height: 38px;
     fill: rgb(var(--blue));
+}
+
+/* Estado del desafío diario (sopa / crucigrama) en la grilla de "Ver modos
+   de juego": mismas clases/estilos que ya usa la tarjeta del carrusel del
+   inicio (".modo-card-badge-estado", ".modo-card-estado", etc., definidas
+   más arriba) — acá solo hace falta que el ícono se atenúe al resolver. */
+.modo-card.is-resuelto .modo-card-icono img {
+    opacity: 0.75;
 }
 
 /* Logos personalizados por modo (images/modos logos/*.svg): traen sus
@@ -4094,6 +4239,13 @@ footer {
 .footer-nav span {
     color: rgb(var(--ink) / 0.3);
     font-size: 0.7rem;
+}
+
+.footer-disclaimer {
+    font-size: 0.65rem;
+    color: rgb(var(--ink) / 0.45);
+    max-width: 46ch;
+    line-height: 1.4;
 }
 
 /* Dialog de fin de juego */

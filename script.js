@@ -288,7 +288,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // ve en pantalla al jugar ese modo. Heredan el celeste del tema vía
     // rgb(var(--blue-strong)), así funcionan en oscuro y en claro.
     const logoModo = {
-        clasico: `<svg viewBox="0 0 100 100" aria-hidden="true"><g fill="rgb(var(--blue-strong))" fill-opacity="0.3"><circle cx="8.6" cy="17.2" r="8.6"/><rect x="25" y="8.6" width="75" height="17.2" rx="5.2"/><circle cx="8.6" cy="82.8" r="8.6"/><rect x="25" y="74.2" width="75" height="17.2" rx="5.2"/></g><g fill="rgb(var(--blue-strong))"><circle cx="8.6" cy="50" r="8.6"/><rect x="25" y="41.4" width="75" height="17.2" rx="5.2"/></g></svg>`,
+        clasico: `<svg viewBox="0 0 100 100" aria-hidden="true"><g fill="rgb(var(--blue-strong))"><circle cx="8.6" cy="17.2" r="8.6"/><rect x="25" y="8.6" width="75" height="17.2" rx="5.2"/><circle cx="8.6" cy="50" r="8.6"/><rect x="25" y="41.4" width="75" height="17.2" rx="5.2"/></g><rect x="25" y="74.2" width="75" height="17.2" rx="5.2" fill="rgb(var(--blue-strong))" fill-opacity="0.22"/><circle cx="8.6" cy="82.8" r="6.5" fill="none" stroke="rgb(var(--blue-strong))" stroke-width="3.6" opacity="0.55"/><rect x="30.3" y="77.4" width="3.6" height="11" rx="1.8" fill="rgb(var(--blue-strong))" opacity="0.85"/><g fill="none" stroke="white" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4.4 17.2 L7.6 20.6 L13 12.8"/><path d="M4.4 50 L7.6 53.4 L13 45.6"/></g></svg>`,
         imagen: `<svg viewBox="0 0 100 100" aria-hidden="true"><rect x="15" y="4" width="70" height="67" rx="11" fill="rgb(var(--blue-strong))" fill-opacity="0.22"/><g fill="rgb(var(--blue-strong))"><circle cx="50" cy="30.5" r="11.5"/><path d="M28 71V60a22 22 0 0 1 44 0v11z"/></g><rect x="15" y="85" width="13.7" height="6.4" rx="3.2" fill="rgb(var(--gold))"/><rect x="34" y="85" width="13.7" height="6.4" rx="3.2" fill="rgb(var(--blue-strong))" fill-opacity="0.34"/><rect x="53" y="85" width="13.7" height="6.4" rx="3.2" fill="rgb(var(--blue-strong))" fill-opacity="0.34"/><rect x="71.3" y="85" width="13.7" height="6.4" rx="3.2" fill="rgb(var(--blue-strong))" fill-opacity="0.34"/></svg>`,
         sopa: `<svg viewBox="0 0 100 100" aria-hidden="true"><g fill="rgb(var(--blue-strong))" fill-opacity="0.34"><rect x="0" y="0" width="16" height="16" rx="3"/><rect x="21" y="0" width="16" height="16" rx="3"/><rect x="42" y="0" width="16" height="16" rx="3"/><rect x="63" y="0" width="16" height="16" rx="3"/><rect x="84" y="0" width="16" height="16" rx="3"/><rect x="21" y="21" width="16" height="16" rx="3"/><rect x="42" y="21" width="16" height="16" rx="3"/><rect x="63" y="21" width="16" height="16" rx="3"/><rect x="84" y="21" width="16" height="16" rx="3"/><rect x="0" y="42" width="16" height="16" rx="3"/><rect x="42" y="42" width="16" height="16" rx="3"/><rect x="63" y="42" width="16" height="16" rx="3"/><rect x="84" y="42" width="16" height="16" rx="3"/><rect x="0" y="63" width="16" height="16" rx="3"/><rect x="21" y="63" width="16" height="16" rx="3"/><rect x="63" y="63" width="16" height="16" rx="3"/><rect x="84" y="63" width="16" height="16" rx="3"/><rect x="0" y="84" width="16" height="16" rx="3"/><rect x="21" y="84" width="16" height="16" rx="3"/><rect x="42" y="84" width="16" height="16" rx="3"/><rect x="84" y="84" width="16" height="16" rx="3"/></g><g fill="#a78bfa"><rect x="0" y="21" width="16" height="16" rx="3"/><rect x="21" y="42" width="16" height="16" rx="3"/><rect x="42" y="63" width="16" height="16" rx="3"/><rect x="63" y="84" width="16" height="16" rx="3"/></g></svg>`,
         crucigrama: `<svg viewBox="0 0 100 100" aria-hidden="true"><g fill="rgb(var(--blue-strong))" fill-opacity="0.34"><rect x="21" y="0" width="16" height="16" rx="3"/><rect x="63" y="0" width="16" height="16" rx="3"/><rect x="21" y="42" width="16" height="16" rx="3"/><rect x="63" y="42" width="16" height="16" rx="3"/><rect x="0" y="63" width="16" height="16" rx="3"/><rect x="21" y="63" width="16" height="16" rx="3"/><rect x="42" y="63" width="16" height="16" rx="3"/><rect x="63" y="63" width="16" height="16" rx="3"/><rect x="21" y="84" width="16" height="16" rx="3"/><rect x="63" y="84" width="16" height="16" rx="3"/></g><g fill="#8fd6a8"><rect x="0" y="21" width="16" height="16" rx="3"/><rect x="21" y="21" width="16" height="16" rx="3"/><rect x="42" y="21" width="16" height="16" rx="3"/><rect x="63" y="21" width="16" height="16" rx="3"/><rect x="84" y="21" width="16" height="16" rx="3"/></g></svg>`
@@ -308,12 +308,23 @@ document.addEventListener('DOMContentLoaded', () => {
         sopa: {
             badge: 'SOPA DE LETRAS',
             nombre: 'Sopa de letras',
-            descripcion: 'Marcá en la grilla los apellidos escondidos, guiándote por la foto y los años de mandato.'
+            descripcion: 'Marcá en la grilla los apellidos escondidos, guiándote por la foto y los años de mandato.',
+            // Textos del estado del desafío diario en la tarjeta del inicio
+            // (ver actualizarEstadoDiarioEnTarjetas): femenino, "la sopa".
+            etiquetaNuevo: 'NUEVA',
+            textoPendiente: 'No resuelta',
+            textoResuelto: 'Resuelta',
+            textoProxima: 'próxima en'
         },
         crucigrama: {
             badge: 'CRUCIGRAMA',
             nombre: 'Crucigrama',
-            descripcion: 'Un crucigrama nuevo cada día: cada pista es un período y la respuesta, el apellido.'
+            descripcion: 'Un crucigrama nuevo cada día: cada pista es un período y la respuesta, el apellido.',
+            // Masculino: "el crucigrama".
+            etiquetaNuevo: 'NUEVO',
+            textoPendiente: 'No resuelto',
+            textoResuelto: 'Resuelto',
+            textoProxima: 'próximo en'
         }
     };
 
@@ -953,23 +964,35 @@ const listaPresidentes = [
                     <button class="configuracion-link" type="button" aria-label="Configurar ${datos.nombre}">
                         <svg class="configuracion-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>Configuración</title><path d="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.21,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.21,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.67 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z" /></svg>
                     </button>` : "";
-        const contador = esDiario ? `<span class="contador-reinicio-diario modo-card-contador"></span>` : "";
-        // La racha (días consecutivos jugados) se completa recién en
-        // actualizarRachaEnTarjetas(): acá arriba, en la construcción
-        // inicial del carrusel, las claves/funciones de racha todavía no
-        // están definidas más abajo en este mismo archivo (temporal dead
-        // zone), así que el span arranca vacío/oculto y se llena después.
-        const racha = esDiario ? `<span class="modo-card-racha" hidden></span>` : "";
+        // La racha (días consecutivos jugados) y el estado del desafío de
+        // hoy (resuelto/no resuelto) se completan recién en
+        // actualizarRachaEnTarjetas()/actualizarEstadoDiarioEnTarjetas():
+        // acá arriba, en la construcción inicial del carrusel, las
+        // claves/funciones que necesitan (SOPA_LS_RES, fechaHoyISO, etc.)
+        // todavía no están definidas más abajo en este mismo archivo
+        // (temporal dead zone), así que estos elementos arrancan
+        // vacíos/ocultos y se completan después.
+        const insigniaEstado = esDiario ? `<span class="modo-card-badge-estado" hidden></span>` : "";
+        // La racha va DENTRO de la línea de estado, a la derecha del
+        // contador (mismo renglón) — no debajo, como antes.
+        const lineaEstado = esDiario ? `
+                    <span class="modo-card-estado" hidden>
+                        <span class="modo-card-estado-texto"></span>
+                        <span class="contador-reinicio-diario modo-card-contador"></span>
+                        <span class="modo-card-racha" hidden></span>
+                    </span>` : "";
         return `
             <div class="modo-actual-card" data-modo="${modo}">
-                <div class="modo-card-logo">${logoModo[modo]}</div>
+                <div class="modo-card-logo-wrap">
+                    <div class="modo-card-logo">${logoModo[modo]}</div>
+                    ${insigniaEstado}
+                </div>
                 <div class="modo-card-text">
                     <div class="modo-card-titulo-fila">
                         <h3 class="modo-card-titulo"><span class="modo-de-juego-seleccionado">${datos.badge}</span></h3>${gear}
                     </div>
                     <p>${datos.descripcion}</p>
-                    ${contador}
-                    ${racha}
+                    ${lineaEstado}
                 </div>
             </div>
         `;
@@ -1956,6 +1979,9 @@ const listaPresidentes = [
                 racha = sumarRacha(SOPA_LS_STREAK, hoyISO);
                 record = evaluarRecord(SOPA_LS_RECORD, segundos, hoyISO);
             }
+            // La tarjeta del carrusel del inicio pasa a "resuelto" ya mismo,
+            // sin esperar a volver al inicio ni recargar la página.
+            actualizarEstadoDiarioEnTarjetas();
         }
 
         sopaFinInfo = {
@@ -2079,6 +2105,62 @@ const listaPresidentes = [
         });
     }
     actualizarRachaEnTarjetas();
+
+    // Estado del desafío diario (resuelto / no resuelto) en la tarjeta del
+    // carrusel del inicio: mismo esquema que actualizarRachaEnTarjetas() de
+    // arriba, con las mismas restricciones de orden (necesita SOPA_LS_RES/
+    // CRUCI_LS_RES/lsLeer/fechaHoyISO, ya definidas acá arriba). Se
+    // re-ejecuta al terminar una partida de sopa o crucigrama (ver
+    // finalizarSopa/finalizarCrucigrama) para que la tarjeta pase a
+    // "resuelto" sin recargar la página, y en cada tick del contador de
+    // medianoche (actualizarContadoresReinicioDiario) para que, pasada la
+    // medianoche, un modo resuelto vuelva solo a pendiente.
+    const TILDE_SVG_ESTADO_DIARIO = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.2 4.2L19 7" fill="none" stroke="rgb(var(--navy))" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+    // Aplica el estado (insignia + línea "No resuelta/Resuelta · próxima
+    // en...") a UNA tarjeta ya encontrada en el DOM — la usan tanto la del
+    // carrusel del inicio (".modo-actual-card") como la de la grilla de
+    // "Ver modos de juego" (".modo-card"), que comparten los mismos nombres
+    // de clase internos (".modo-card-badge-estado", ".modo-card-estado",
+    // ".modo-card-estado-texto").
+    function aplicarEstadoDiarioATarjeta(card, modo, resuelto) {
+        const datos = MODOS[modo];
+        card.classList.toggle("is-pendiente", !resuelto);
+        card.classList.toggle("is-resuelto", resuelto);
+
+        const insignia = card.querySelector(".modo-card-badge-estado");
+        if (insignia) {
+            insignia.hidden = false;
+            insignia.className = "modo-card-badge-estado " + (resuelto ? "modo-card-badge-ok" : "modo-card-badge-nuevo");
+            insignia.innerHTML = resuelto ? TILDE_SVG_ESTADO_DIARIO : datos.etiquetaNuevo;
+        }
+
+        const estado = card.querySelector(".modo-card-estado");
+        if (estado) {
+            estado.hidden = false;
+            estado.classList.toggle("es-pendiente", !resuelto);
+            estado.classList.toggle("es-resuelto", resuelto);
+            const texto = estado.querySelector(".modo-card-estado-texto");
+            if (texto) texto.textContent = `${resuelto ? datos.textoResuelto : datos.textoPendiente} · ${datos.textoProxima}`;
+        }
+    }
+
+    function actualizarEstadoDiarioEnTarjetas() {
+        const hoyISO = fechaHoyISO();
+        [
+            { modo: "sopa", claveRes: SOPA_LS_RES },
+            { modo: "crucigrama", claveRes: CRUCI_LS_RES },
+        ].forEach(({ modo, claveRes }) => {
+            const resuelto = !!lsLeer(claveRes(hoyISO));
+            // Carrusel del inicio.
+            const cardCarrusel = document.querySelector(`.modo-actual-card[data-modo="${modo}"]`);
+            if (cardCarrusel) aplicarEstadoDiarioATarjeta(cardCarrusel, modo, resuelto);
+            // Grilla de "Ver modos de juego".
+            const cardGrilla = document.querySelector(`.modo-card[data-modo="${modo}"]`);
+            if (cardGrilla) aplicarEstadoDiarioATarjeta(cardGrilla, modo, resuelto);
+        });
+    }
+    actualizarEstadoDiarioEnTarjetas();
+
     // Compara y guarda el récord personal de tiempo. Devuelve cómo salió.
     function evaluarRecord(claveRecord, segundos, hoyISO) {
         const r = lsLeer(claveRecord);
@@ -2131,13 +2213,22 @@ const listaPresidentes = [
         return `${h}:${m}:${s}`;
     }
     // Actualiza CUALQUIER elemento ".contador-reinicio-diario" presente en la
-    // página (los hay en index.html, junto al selector de modo, y en
-    // modos.html, dentro de las tarjetas de Sopa de letras y Crucigrama).
+    // página: los que viven dentro de la línea de estado (".modo-card-estado",
+    // tanto en el carrusel del inicio como en la grilla de "Ver modos de
+    // juego") llevan solo el tiempo, porque el prefijo ya lo pone esa línea
+    // ("No resuelta · próxima en …" / "Resuelta · próxima en …"); cualquier
+    // otro (formato viejo, si quedara alguno) sigue con el texto completo.
     function actualizarContadoresReinicioDiario() {
         const elementos = document.querySelectorAll(".contador-reinicio-diario");
         if (!elementos.length) return;
-        const texto = `Se reinicia en ${formatoCuentaRegresiva(msHastaMedianoche())}`;
-        elementos.forEach(el => { el.textContent = texto; });
+        const tiempo = formatoCuentaRegresiva(msHastaMedianoche());
+        elementos.forEach(el => {
+            el.textContent = el.closest(".modo-card-estado") ? tiempo : `Se reinicia en ${tiempo}`;
+        });
+        // Corre acá también (no solo al terminar una partida) para que, si
+        // el reloj cruza la medianoche con la página abierta, un modo
+        // resuelto vuelva a pendiente sin necesidad de recargar.
+        actualizarEstadoDiarioEnTarjetas();
     }
     if (document.querySelector(".contador-reinicio-diario")) {
         actualizarContadoresReinicioDiario();
@@ -2845,6 +2936,9 @@ const listaPresidentes = [
                 racha = sumarRacha(CRUCI_LS_STREAK, hoyISO);
                 record = evaluarRecord(CRUCI_LS_RECORD, segundos, hoyISO);
             }
+            // La tarjeta del carrusel del inicio pasa a "resuelto" ya mismo,
+            // sin esperar a volver al inicio ni recargar la página.
+            actualizarEstadoDiarioEnTarjetas();
         }
 
         cruciFinInfo = {
