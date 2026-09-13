@@ -2984,47 +2984,10 @@ const listaPresidentes = [
         setTimeout(() => cont.remove(), 4500);
     }
 
-    // --- Compartir resultado (crucigrama y sopa de letras comparten el
-    // mismo mecanismo de juego diario, así que también comparten esta lógica) ---
-    function textoCompartirDiario() {
-        const esSopa = modoActual === 'sopa';
-        const of = esSopa ? (sopaResultadoOficial || sopaFinInfo) : (cruciResultadoOficial || cruciFinInfo);
-        const nombreJuego = esSopa ? "Sopa de letras" : "Crucigrama";
-        const claveStreak = esSopa ? SOPA_LS_STREAK : CRUCI_LS_STREAK;
-        const totalDefault = esSopa ? sopaObjetivos.length : cruciEntradas.length;
-        const d = new Date();
-        const dd = String(d.getDate()).padStart(2, "0");
-        const mm = String(d.getMonth() + 1).padStart(2, "0");
-        const total = of.total || totalDefault;
-        const ok = of.aciertos != null ? of.aciertos : of.aciertosPartida;
-        const cuadros = "🟩".repeat(ok) + "⬛".repeat(Math.max(0, total - ok));
-        const linea = of.gano
-            ? `✅ ${formatoCronometro(of.segundos)}`
-            : `❌ ${ok}/${total}`;
-        const racha = rachaVigente(claveStreak, fechaHoyISO());
-        return `${nombreJuego} Presidentes Argentinos · ${dd}/${mm}\n${linea}${racha > 1 ? `  🔥 ${racha}` : ""}\n${cuadros}`;
-    }
-
-    async function compartirDiario() {
-        const texto = textoCompartirDiario();
-        const msg = document.getElementById("cruciFinCompartirMsg");
-        try {
-            if (navigator.share) { await navigator.share({ text: texto }); return; }
-        } catch (e) { return; /* el usuario canceló el diálogo del sistema */ }
-        try {
-            await navigator.clipboard.writeText(texto);
-            if (msg) { msg.textContent = "¡Copiado!"; setTimeout(() => { msg.textContent = ""; }, 2500); }
-        } catch (e) {
-            if (msg) msg.textContent = "No se pudo copiar";
-        }
-    }
-
     function poblarFinDiario(i) {
         const elTiempo = document.getElementById("cruciFinTiempo");
         const elRecord = document.getElementById("cruciFinRecord");
         const elRacha = document.getElementById("cruciFinRacha");
-        const elMsg = document.getElementById("cruciFinCompartirMsg");
-        if (elMsg) elMsg.textContent = "";
 
         if (i.primeraVez) {
             elTiempo.textContent = (i.gano ? "Lo completaste en " : "Te rendiste a los ")
@@ -3402,7 +3365,7 @@ function mostrarFinJuego(motivo) {
         porcentajeSpan.style.color = "#e74c3c"; // Rojo
     }
     
-    // Panel de fin de los modos "del día" (tiempo, récord, racha, compartir):
+    // Panel de fin de los modos "del día" (tiempo, récord, racha):
     // crucigrama y sopa de letras comparten el mismo panel y mecanismo.
     const finPanel = document.getElementById("cruciFinPanel");
     if (finPanel) {
@@ -3488,11 +3451,6 @@ function agregarEventListenersModalFinJuego() {
         botonCerrarModal.addEventListener("click", () => {
             cerrarFinJuego();
         });
-    }
-
-    const botonCompartir = document.getElementById("cruciFinCompartir");
-    if (botonCompartir) {
-        botonCompartir.addEventListener("click", compartirDiario);
     }
 }
 
