@@ -892,6 +892,21 @@ const listaPresidentes = [
         const contenidoDelJuego = generarTablaHTML(presidentesFiltrados);
         main.insertAdjacentHTML("beforeend", contenidoDelJuego);
 
+        // En mobile, el HUD flotante (reloj + input/rendirse) queda superpuesto
+        // sobre la parte de abajo de la tabla (ver ".hud-bottom-group"), pero
+        // sin ocupar espacio real en el layout — así que el scroll interno del
+        // tbody, por default, termina antes de que la última fila (Milei) se
+        // pueda ver completa: queda tapada detrás del HUD. Reservar de entrada
+        // este padding-bottom (la misma cantidad que ya usa
+        // scrollFilaAlCentro() para poder CENTRAR la última fila) hace que
+        // también alcance con margen de sobra para simplemente scrollear a mano
+        // hasta el final y verla entera, sin depender de que se dispare esa
+        // función.
+        if (window.matchMedia('(max-width: 768px)').matches) {
+            const tbodyEl = document.querySelector("tbody");
+            if (tbodyEl) tbodyEl.style.paddingBottom = `${tbodyEl.clientHeight / 2}px`;
+        }
+
         // El header compacto (hamburguesa + modo + tema en una sola franja)
         // es solo para mobile; en desktop el header queda como estaba.
         if (window.matchMedia('(max-width: 768px)').matches) {
