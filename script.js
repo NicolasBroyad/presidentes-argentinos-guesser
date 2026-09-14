@@ -225,16 +225,26 @@ document.addEventListener('DOMContentLoaded', () => {
     const CONFIG_JUEGO_DEFAULT = {
         tiempo: 10, // minutos (modo clásico)
         tiempoImagen: 2, // minutos (modo "Adivina la imagen")
-        eliminarDeFacto: false,
+        eliminarDeFacto: false, // solo modo clásico
         // El filtro de "gobiernos de menos de 1 año" tiene un default distinto
-        // por modo: en clásico se incluyen (como siempre), en "Adivina la
-        // imagen" se descartan por defecto (son más difíciles de reconocer
-        // por foto al haber gobernado tan poco tiempo).
+        // por modo: en clásico se incluyen (como siempre). En "Adivina la
+        // imagen" este checkbox ya no se usa fuera del modo "custom" del
+        // filtro (ver filtroImagenModo más abajo): el default ahí es la
+        // lista de exclusión fija, no este checkbox.
         eliminarMenosDeUnAnioClasico: false,
-        eliminarMenosDeUnAnioImagen: true,
+        eliminarMenosDeUnAnioImagen: false,
         eliminarMenosDeUnAnioSopa: true,
         tiempoSopa: 4, // minutos (modo "Sopa de letras")
-        cantidad: 10 // presidentes por partida (solo modo "Adivina la imagen")
+        cantidad: 10, // presidentes por partida (solo modo "Adivina la imagen")
+        // --- Filtro de "Adivina la imagen" (independiente del de clásico) ---
+        // "default": lista de exclusión fija (APELLIDOS_EXCLUSION_FIJA) —
+        // opción recomendada, la que viene activada de entrada.
+        // "todas": sin ningún filtro, entran todos los presidentes.
+        // "custom": se combinan eliminarDeFactoImagen / eliminarMenosDeUnAnioImagen
+        // / eliminarInterinosImagen, cada uno independiente y combinable.
+        filtroImagenModo: "default",
+        eliminarDeFactoImagen: false,
+        eliminarInterinosImagen: false
     };
     function cargarConfiguracionGuardada() {
         try {
@@ -336,10 +346,25 @@ document.addEventListener('DOMContentLoaded', () => {
     const valorCantidad = document.getElementById("valorCantidad");
     const contenedorTemporizador = document.querySelector(".configuracion-temporizador-container");
     const contenedorCantidad = document.querySelector(".configuracion-cantidad-container");
-    const contenedorFiltros = document.querySelector(".filtros-container");
+    const contenedorFiltrosClasico = document.getElementById("filtrosClasico");
+    const contenedorFiltrosImagen = document.getElementById("filtrosImagen");
     const botonGuardar = document.querySelector(".guardar");
     const botonCancelar = document.querySelector(".cancelar");
-    const checkboxes = document.querySelectorAll('.checkbox-input');
+    // Checkboxes del filtro de "Clásico" (el único que sigue funcionando
+    // como antes: dos checkboxes simples, sin exclusividad entre ellos).
+    const checkboxDeFactoClasico = document.getElementById("checkboxDeFactoClasico");
+    const checkboxCortosClasico = document.getElementById("checkboxCortosClasico");
+    // Filtro de "Adiviná la imagen": dos radios mutuamente excluyentes
+    // ("default"/"todas", más un tercer radio oculto "custom" que se activa
+    // solo, en código, cuando se toca cualquiera de los tres checkboxes
+    // combinables) — ver aplicarExclusividadFiltroImagen() más abajo.
+    const radioImgDefecto = document.getElementById("radioImgDefecto");
+    const radioImgTodas = document.getElementById("radioImgTodas");
+    const radioImgCustom = document.getElementById("radioImgCustom");
+    const checkboxImgDeFacto = document.getElementById("checkboxImgDeFacto");
+    const checkboxImgCortos = document.getElementById("checkboxImgCortos");
+    const checkboxImgInterinos = document.getElementById("checkboxImgInterinos");
+    const checkboxesImgCombinables = [checkboxImgDeFacto, checkboxImgCortos, checkboxImgInterinos].filter(Boolean);
 
     // Inicializar valores de los sliders inmediatamente
     if (valorRango && slider) {
@@ -445,6 +470,21 @@ const listaPresidentes = [
             .replace(/[\u0300-\u036f]/g, "")
             .toLowerCase()
             .trim();
+    }
+
+    // --- Lista de exclusi\u00f3n fija (mandatos muy breves y/o poco conocidos) ---
+    // Nunca aparecen en Sopa de letras ni Crucigrama (el desaf\u00edo del d\u00eda es
+    // fijo para todos, no hay forma de filtrarlos desde la configuraci\u00f3n).
+    // En "Adivin\u00e1 la imagen" es la lista que usa la opci\u00f3n "Por defecto
+    // (recomendado)" del filtro (ver presidentesUnicosFiltrados()). El modo
+    // Cl\u00e1sico no usa esta lista.
+    const APELLIDOS_EXCLUSION_FIJA = [
+        "Cama\u00f1o", "Puerta", "Rawson", "Rodr\u00edguez Sa\u00e1", "Lacoste", "L\u00f3pez",
+        "Lonardi", "Lastiri", "Viola", "Ram\u00edrez", "Levingston", "Castillo",
+        "Quintana", "Bignone", "Guido", "Lanusse", "de la Plaza", "Farrell"
+    ].map(normalizarTexto);
+    function estaEnListaExclusionFija(presidente) {
+        return APELLIDOS_EXCLUSION_FIJA.includes(normalizarTexto(presidente.apellido));
     }
 
     // Como normalizarTexto pero preservando la \u00d1 (que normalize("NFD") tambi\u00e9n
@@ -586,6 +626,7 @@ const listaPresidentes = [
                     segundoNombre: p.segundoNombre,
                     apellido: p.apellido,
                     deFacto: p.deFacto,
+                    interino: p.interino,
                     descripcion: p.descripcion,
                     imagenes: [p.imagen],
                     periodos: [p.periodo]
@@ -594,6 +635,9 @@ const listaPresidentes = [
                 const u = mapa.get(clave);
                 u.imagenes.push(p.imagen);
                 u.periodos.push(p.periodo);
+                // Si en CUALQUIERA de sus mandatos fue interino, cuenta como
+                // interino (no hay ningún caso real así hoy, pero por las dudas).
+                if (p.interino) u.interino = true;
             }
         });
         const lista = [...mapa.values()];
@@ -605,11 +649,19 @@ const listaPresidentes = [
     })();
 
     function presidentesUnicosFiltrados() {
-        return presidentesUnicos.filter(u => {
-            if (configuracionJuego.eliminarDeFacto && u.deFacto) return false;
-            if (configuracionJuego.eliminarMenosDeUnAnioImagen && !u.periodos.some(periodoDuroMasDeUnAnio)) return false;
-            return true;
-        });
+        if (configuracionJuego.filtroImagenModo === "todas") {
+            return presidentesUnicos.slice();
+        }
+        if (configuracionJuego.filtroImagenModo === "custom") {
+            return presidentesUnicos.filter(u => {
+                if (configuracionJuego.eliminarDeFactoImagen && u.deFacto) return false;
+                if (configuracionJuego.eliminarMenosDeUnAnioImagen && !u.periodos.some(periodoDuroMasDeUnAnio)) return false;
+                if (configuracionJuego.eliminarInterinosImagen && u.interino) return false;
+                return true;
+            });
+        }
+        // "default" (o cualquier valor viejo/desconocido persistido): lista fija.
+        return presidentesUnicos.filter(u => !estaEnListaExclusionFija(u));
     }
 
     // Texto de la pista: fecha(s) del/los mandato(s) del presidente actual.
@@ -1603,8 +1655,10 @@ const listaPresidentes = [
     // Presidentes elegibles: apellido de una sola palabra y de largo razonable
     // para que entre en la grilla y sea reconocible. Igual para todos (como el
     // crucigrama): NO se aplican los filtros de configuración, la del día es fija.
+    // Los de la lista de exclusión fija (APELLIDOS_EXCLUSION_FIJA) nunca entran.
     function presidentesSopaDisponibles(maxLargo) {
         return presidentesUnicos.filter(u => {
+            if (estaEnListaExclusionFija(u)) return false;
             if (u.apellido.trim().includes(" ")) return false; // apellidos compuestos afuera
             const palabra = palabraSopaDe(u);
             return palabra.length >= 4 && palabra.length <= maxLargo;
@@ -1798,6 +1852,9 @@ const listaPresidentes = [
         const progresoSopa = !sopaEsRejugada ? lsLeer(SOPA_LS_PROGRESO(hoyISO)) : null;
         if (progresoSopa && ((progresoSopa.encontrados || []).length > 0 || progresoSopa.segundos > 2)) {
             mostrarReanudarSopa(progresoSopa);
+        } else if (!sopaEsRejugada) {
+            // Primer intento del día: avisar antes de arrancar el cronómetro.
+            mostrarListo('sopa', () => iniciarCronometroSopa());
         } else {
             iniciarCronometroSopa();
         }
@@ -1973,6 +2030,51 @@ const listaPresidentes = [
                 if (e.target === dialog) dialog.close();
             });
         }
+    }
+
+    // Diálogo "¿Estás listo?" compartido por sopa y crucigrama: se muestra
+    // justo antes de arrancar el cronómetro en el PRIMER intento del día
+    // (no en reanudar ni en rejugada, ver los llamados en
+    // iniciarJuegoSopa()/iniciarJuegoCrucigrama()), con el tablero ya armado
+    // pero borroso detrás (clase ".juego-preparandose" en ".main", que
+    // excluye al header), para que quede claro que el tiempo de este
+    // intento es el que cuenta. A diferencia de todos los demás <dialog>
+    // del sitio, este NO se cierra al tocar afuera (ni tiene una acción de
+    // "cancelar": la única forma de arrancar es tocar "Empezar", y la única
+    // forma de salir sin arrancar es usar "volver"/el logo del header, que
+    // siguen clickeables). Por eso se abre con show(), no showModal(): así
+    // no hay backdrop nativo ni cierre por click-afuera/ESC de por medio.
+    function mostrarListo(modo, alEmpezar) {
+        const dialog = document.getElementById("listoDialog");
+        const boton = document.getElementById("listoDialogEmpezar");
+        if (!dialog || !boton) { alEmpezar(); return; }
+
+        const icono = document.getElementById("listoDialogIcono");
+        if (icono) icono.innerHTML = logoModo[modo] || "";
+
+        const badge = document.getElementById("listoDialogBadge");
+        if (badge) badge.textContent = MODOS[modo].badge;
+
+        const fecha = document.getElementById("listoDialogFecha");
+        if (fecha) fecha.textContent = fechaHoyLegible();
+
+        const texto = document.getElementById("listoDialogTexto");
+        if (texto) {
+            texto.textContent = modo === 'sopa'
+                ? "Tu resultado de la sopa de letras de hoy va a ser el tiempo que tardes en resolverla en este primer intento."
+                : "Tu resultado del crucigrama de hoy va a ser el tiempo que tardes en resolverlo en este primer intento.";
+        }
+
+        main.classList.add("juego-preparandose");
+
+        const onEmpezarClick = () => {
+            dialog.close();
+            main.classList.remove("juego-preparandose");
+            alEmpezar();
+        };
+        boton.addEventListener("click", onEmpezarClick, { once: true });
+
+        dialog.show();
     }
 
     // Restaura en silencio (sin sonido ni animación) las palabras que ya
@@ -2432,10 +2534,12 @@ const listaPresidentes = [
 
     // Apellidos aptos para el crucigrama: una sola palabra, sin tildes, 4–10
     // letras. NO se aplican los filtros de configuración (el del día es fijo).
+    // Los de la lista de exclusión fija (APELLIDOS_EXCLUSION_FIJA) nunca entran.
     function poolCrucigrama() {
         const vistas = new Set();
         const pool = [];
         presidentesUnicos.forEach(u => {
+            if (estaEnListaExclusionFija(u)) return;
             if (u.apellido.trim().includes(" ")) return;
             const palabra = letraGrillaDe(u.apellido);
             if (palabra.length < 4 || palabra.length > 10) return;
@@ -2900,6 +3004,9 @@ const listaPresidentes = [
         const progresoCruci = !cruciEsRejugada ? lsLeer(CRUCI_LS_PROGRESO(hoyISO)) : null;
         if (progresoCruci && (Object.keys(progresoCruci.letras || {}).length > 0 || progresoCruci.segundos > 2)) {
             mostrarReanudarCrucigrama(progresoCruci);
+        } else if (!cruciEsRejugada) {
+            // Primer intento del día: avisar antes de arrancar el cronómetro.
+            mostrarListo('crucigrama', () => iniciarCronometroCrucigrama());
         } else {
             iniciarCronometroCrucigrama();
         }
@@ -3413,19 +3520,39 @@ const listaPresidentes = [
     }
 
 
-    // Cuántos presidentes únicos quedan para el modo imagen según los filtros.
-    function contarDisponiblesImagen(sinDeFacto, sinCortos) {
+    // Cuántos presidentes únicos quedan para el modo imagen según el filtro
+    // elegido (mismo criterio que presidentesUnicosFiltrados()).
+    function contarDisponiblesImagen(filtroModo, sinDeFacto, sinCortos, sinInterinos) {
+        if (filtroModo === "todas") return presidentesUnicos.length;
+        if (filtroModo === "default") {
+            return presidentesUnicos.filter(u => !estaEnListaExclusionFija(u)).length;
+        }
         return presidentesUnicos.filter(u => {
             if (sinDeFacto && u.deFacto) return false;
             if (sinCortos && !u.periodos.some(periodoDuroMasDeUnAnio)) return false;
+            if (sinInterinos && u.interino) return false;
             return true;
         }).length;
     }
 
+    // Qué opción del filtro de imagen está tildada ahora mismo en el modal
+    // ("default" | "todas" | "custom"): mirar el radio marcado alcanza, ya
+    // que radioImgCustom se activa solo apenas se toca cualquiera de los 3
+    // checkboxes combinables (ver más abajo).
+    function filtroImagenModoActual() {
+        const radio = document.querySelector('input[name="filtroImagenModo"]:checked');
+        return radio ? radio.value : "default";
+    }
+
     function refrescarMaxCantidad() {
-        if (!sliderCantidad) return;
+        if (!sliderCantidad || modoSeleccionado !== 'imagen') return;
         const min = parseInt(sliderCantidad.min, 10);
-        const max = Math.max(min, contarDisponiblesImagen(checkboxes[0].checked, checkboxes[1].checked));
+        const max = Math.max(min, contarDisponiblesImagen(
+            filtroImagenModoActual(),
+            !!(checkboxImgDeFacto && checkboxImgDeFacto.checked),
+            !!(checkboxImgCortos && checkboxImgCortos.checked),
+            !!(checkboxImgInterinos && checkboxImgInterinos.checked)
+        ));
         sliderCantidad.max = max;
         if (parseInt(sliderCantidad.value, 10) > max) sliderCantidad.value = max;
         if (valorCantidad) valorCantidad.textContent = sliderCantidad.value + " presidentes";
@@ -3441,14 +3568,6 @@ const listaPresidentes = [
         return 'tiempo';
     }
 
-    // Ídem para "eliminar gobiernos de menos de 1 año": cada modo guarda su
-    // propia preferencia (en imagen arranca activado, en clásico no).
-    function claveEliminarCortosActual() {
-        if (modoSeleccionado === 'imagen') return 'eliminarMenosDeUnAnioImagen';
-        if (modoSeleccionado === 'sopa') return 'eliminarMenosDeUnAnioSopa';
-        return 'eliminarMenosDeUnAnioClasico';
-    }
-
     // --- Botón Configuración ---
     function abrirConfig() {
         configuracionTemporal = { ...configuracionJuego };
@@ -3457,8 +3576,19 @@ const listaPresidentes = [
         slider.value = minutos;
         valorRango.textContent = minutos + " minutos";
 
-        checkboxes[0].checked = configuracionJuego.eliminarDeFacto;
-        checkboxes[1].checked = configuracionJuego[claveEliminarCortosActual()];
+        // Filtro de "Clásico": sin cambios respecto a como funcionaba antes.
+        if (checkboxDeFactoClasico) checkboxDeFactoClasico.checked = configuracionJuego.eliminarDeFacto;
+        if (checkboxCortosClasico) checkboxCortosClasico.checked = configuracionJuego.eliminarMenosDeUnAnioClasico;
+
+        // Filtro de "Adiviná la imagen": radio (default/todas/custom) + los
+        // 3 checkboxes combinables (solo tienen sentido visual en "custom").
+        const filtroImg = configuracionJuego.filtroImagenModo;
+        if (radioImgDefecto) radioImgDefecto.checked = filtroImg === "default";
+        if (radioImgTodas) radioImgTodas.checked = filtroImg === "todas";
+        if (radioImgCustom) radioImgCustom.checked = filtroImg === "custom";
+        if (checkboxImgDeFacto) checkboxImgDeFacto.checked = filtroImg === "custom" && configuracionJuego.eliminarDeFactoImagen;
+        if (checkboxImgCortos) checkboxImgCortos.checked = filtroImg === "custom" && configuracionJuego.eliminarMenosDeUnAnioImagen;
+        if (checkboxImgInterinos) checkboxImgInterinos.checked = filtroImg === "custom" && configuracionJuego.eliminarInterinosImagen;
 
         // El slider de cantidad (modo imagen) no puede pedir más presidentes
         // de los que quedan disponibles con los filtros elegidos.
@@ -3473,15 +3603,15 @@ const listaPresidentes = [
         // efecto en sopa/crucigrama (el desafío del día es fijo para todos).
         // Todos esos controles se ocultan en los modos donde no aplican.
         const esModoDiario = modoSeleccionado === 'sopa' || modoSeleccionado === 'crucigrama';
+        const esImagen = modoSeleccionado === 'imagen';
         if (contenedorTemporizador) {
             contenedorTemporizador.style.display = esModoDiario ? 'none' : '';
         }
         if (contenedorCantidad) {
-            contenedorCantidad.style.display = modoSeleccionado === 'imagen' ? '' : 'none';
+            contenedorCantidad.style.display = esImagen ? '' : 'none';
         }
-        if (contenedorFiltros) {
-            contenedorFiltros.style.display = esModoDiario ? 'none' : '';
-        }
+        if (contenedorFiltrosClasico) contenedorFiltrosClasico.hidden = esModoDiario || esImagen;
+        if (contenedorFiltrosImagen) contenedorFiltrosImagen.hidden = esModoDiario || !esImagen;
 
         document.getElementById("configDialog").showModal(); // Cambio aquí
     }
@@ -3498,8 +3628,15 @@ const listaPresidentes = [
 
     function guardarConfig() {
         configuracionJuego[claveTiempoActual()] = parseInt(slider.value);
-        configuracionJuego.eliminarDeFacto = checkboxes[0].checked;
-        configuracionJuego[claveEliminarCortosActual()] = checkboxes[1].checked;
+
+        if (checkboxDeFactoClasico) configuracionJuego.eliminarDeFacto = checkboxDeFactoClasico.checked;
+        if (checkboxCortosClasico) configuracionJuego.eliminarMenosDeUnAnioClasico = checkboxCortosClasico.checked;
+
+        configuracionJuego.filtroImagenModo = filtroImagenModoActual();
+        configuracionJuego.eliminarDeFactoImagen = !!(checkboxImgDeFacto && checkboxImgDeFacto.checked);
+        configuracionJuego.eliminarMenosDeUnAnioImagen = !!(checkboxImgCortos && checkboxImgCortos.checked);
+        configuracionJuego.eliminarInterinosImagen = !!(checkboxImgInterinos && checkboxImgInterinos.checked);
+
         if (sliderCantidad) {
             configuracionJuego.cantidad = parseInt(sliderCantidad.value);
         }
@@ -3515,8 +3652,18 @@ const listaPresidentes = [
         const minutos = configuracionTemporal[claveTiempoActual()];
         slider.value = minutos;
         valorRango.textContent = minutos + " minutos";
-        checkboxes[0].checked = configuracionTemporal.eliminarDeFacto;
-        checkboxes[1].checked = configuracionTemporal[claveEliminarCortosActual()];
+
+        if (checkboxDeFactoClasico) checkboxDeFactoClasico.checked = configuracionTemporal.eliminarDeFacto;
+        if (checkboxCortosClasico) checkboxCortosClasico.checked = configuracionTemporal.eliminarMenosDeUnAnioClasico;
+
+        const filtroImg = configuracionTemporal.filtroImagenModo;
+        if (radioImgDefecto) radioImgDefecto.checked = filtroImg === "default";
+        if (radioImgTodas) radioImgTodas.checked = filtroImg === "todas";
+        if (radioImgCustom) radioImgCustom.checked = filtroImg === "custom";
+        if (checkboxImgDeFacto) checkboxImgDeFacto.checked = filtroImg === "custom" && configuracionTemporal.eliminarDeFactoImagen;
+        if (checkboxImgCortos) checkboxImgCortos.checked = filtroImg === "custom" && configuracionTemporal.eliminarMenosDeUnAnioImagen;
+        if (checkboxImgInterinos) checkboxImgInterinos.checked = filtroImg === "custom" && configuracionTemporal.eliminarInterinosImagen;
+
         if (sliderCantidad) {
             sliderCantidad.value = configuracionTemporal.cantidad;
             if (valorCantidad) valorCantidad.textContent = configuracionTemporal.cantidad + " presidentes";
@@ -3545,7 +3692,29 @@ const listaPresidentes = [
     }
 
     // Si cambian los filtros, se recalcula el máximo del slider de cantidad.
-    checkboxes.forEach(cb => cb.addEventListener("change", refrescarMaxCantidad));
+    if (checkboxDeFactoClasico) checkboxDeFactoClasico.addEventListener("change", refrescarMaxCantidad);
+    if (checkboxCortosClasico) checkboxCortosClasico.addEventListener("change", refrescarMaxCantidad);
+
+    // --- Exclusividad del filtro de "Adiviná la imagen" ---
+    // "Por defecto" e "Incluir todas" son radios del mismo grupo, así que ya
+    // son excluyentes entre sí de forma nativa. Elegir cualquiera de los 2
+    // limpia los 3 checkboxes combinables (no tiene sentido combinarlos con
+    // un modo "único"). Tocar cualquiera de los 3 combinables pasa el grupo
+    // a "custom" (radioImgCustom, un radio oculto que nunca se ve ni se
+    // toca a mano) y a partir de ahí se pueden combinar libremente entre sí.
+    [radioImgDefecto, radioImgTodas].forEach(radio => {
+        if (!radio) return;
+        radio.addEventListener("change", () => {
+            if (radio.checked) checkboxesImgCombinables.forEach(cb => { cb.checked = false; });
+            refrescarMaxCantidad();
+        });
+    });
+    checkboxesImgCombinables.forEach(cb => {
+        cb.addEventListener("change", () => {
+            if (radioImgCustom) radioImgCustom.checked = true;
+            refrescarMaxCantidad();
+        });
+    });
 
     // Agregar este event listener DENTRO del DOMContentLoaded
     const configDialog = document.getElementById("configDialog");
@@ -3699,9 +3868,13 @@ function actualizarResumenPartida() {
         const puntoColor = (modoActual === 'sopa' && u.colorSopa)
             ? `<span class="resumen-partida-color" style="background:${u.colorSopa}" aria-hidden="true"></span>`
             : '';
+        // "Adivina la imagen" usa la foto original (sin recortar) en todos
+        // lados, incluida esta lista; sopa/crucigrama siguen con la versión
+        // centrada (son círculos chicos, la original se ve mal recortada).
+        const foto = modoActual === 'imagen' ? u.imagen : imagenCentradaDe(u.imagen);
         return `
             <li class="resumen-partida-item ${acierto ? 'acierto' : 'error'}">
-                <img class="resumen-partida-foto" src="${imagenCentradaDe(u.imagen)}" alt="" loading="lazy">
+                <img class="resumen-partida-foto" src="${foto}" alt="" loading="lazy">
                 ${puntoColor}
                 <span class="resumen-partida-nombre">${nombre}</span>
                 <span class="resumen-partida-icono" aria-hidden="true">${icono}</span>

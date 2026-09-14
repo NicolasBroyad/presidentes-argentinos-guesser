@@ -4285,6 +4285,59 @@ footer {
     backdrop-filter: blur(2px);
 }
 
+/* Mismo truco de centrado manual que el resto de los <dialog> del sitio.
+   z-index por encima del header (z-index:100) por si en pantallas muy
+   bajas llegan a superponerse verticalmente. Se abre con show() (no
+   showModal()), así que no hay top layer real acá: el z-index sí importa. */
+#listoDialog {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    margin: 0;
+    z-index: 200;
+    max-width: min(380px, calc(100vw - 2rem));
+    width: 100%;
+    box-sizing: border-box;
+}
+
+#listoDialog:not([open]) {
+    display: none;
+}
+
+/* Sin ::backdrop a propósito: al abrirse con show() (no showModal()) el
+   navegador no genera ::backdrop de todos modos, y tampoco lo queremos acá
+   — ver el comentario en index.html sobre por qué este modal no usa
+   showModal(). */
+
+#listoDialog .listo-dialog-fecha {
+    margin: 0;
+    font-size: 0.85rem;
+    color: rgb(var(--ink) / 0.7);
+}
+
+#listoDialog .buttons {
+    justify-content: center;
+    width: 100%;
+    margin-top: 0.6rem;
+}
+
+/* Tablero de sopa/crucigrama ya armado detrás de #listoDialog: se ve pero
+   borroso, para que quede claro que el juego está listo sin llegar a
+   distinguirse letras ni pistas antes de arrancar el cronómetro. Se excluye
+   ".header" a propósito: así "volver" y el logo (ir al inicio) se pueden
+   seguir tocando para salir sin arrancar el juego. */
+.main.juego-preparandose > *:not(.header) {
+    filter: blur(10px);
+    pointer-events: none;
+    user-select: none;
+    transition: filter 0.25s ease;
+}
+
 #tituloFinJuego {
     font-size: 1.8rem;
     margin-bottom: 1.5rem;

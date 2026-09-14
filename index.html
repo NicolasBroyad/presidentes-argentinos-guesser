@@ -33,12 +33,12 @@
     <meta name="twitter:title" content="Presidentes Argentinos Guesser - Juego de Historia Argentina">
     <meta name="twitter:description" content="Juego online para adivinar los presidentes argentinos por período. Compite contra el reloj y poné a prueba tu conocimiento de historia argentina.">
     <meta name="twitter:image" content="https://presidentes-argentinos-guesser.vercel.app/images/logo.png?v=20260907a">
-    <link rel="stylesheet" href="styles.css?v=20260913j">
+    <link rel="stylesheet" href="styles.css?v=20260913l">
     <link rel="icon" type="image/png" sizes="32x32" href="images/icon-32.png?v=20260907b">
     <link rel="icon" type="image/png" sizes="16x16" href="images/icon-16.png?v=20260907b">
     <script src="Periodo.js?v=20260821g" defer></script>
     <script src="Presidente.js?v=20260913a" defer></script>
-    <script src="script.js?v=20260913v" defer></script>
+    <script src="script.js?v=20260913z" defer></script>
     <meta name="google-site-verification" content="fMgml6oX73QYLoVnA3bRJ7J2GKl5UpMl0TMGMZHBIq4" /> <!-- Google Search Console -->
     <link rel="manifest" href="manifest.json?v=20260907a">
     <meta name="theme-color" content="#0a1626">
@@ -143,10 +143,26 @@
             <p>Seleccionado: <span id="valorCantidad"></span></p>
         </div>
 
-        <div class="filtros-container">
+        <div class="filtros-container" id="filtrosClasico">
             <h4 class="filtrar-gobiernos-heading">FILTRAR GOBIERNOS</h4>
-            <label class="checkbox-label"><input class="checkbox-input" type="checkbox"> Eliminar regímenes de facto</label>
-            <label class="checkbox-label"><input class="checkbox-input" type="checkbox" checked> Eliminar gobiernos de menos de 1 año</label>
+            <label class="checkbox-label"><input class="checkbox-input" type="checkbox" id="checkboxDeFactoClasico"> Eliminar regímenes de facto</label>
+            <label class="checkbox-label"><input class="checkbox-input" type="checkbox" id="checkboxCortosClasico" checked> Eliminar gobiernos de menos de 1 año</label>
+        </div>
+
+        <!-- Filtro específico de "Adiviná la imagen": "Por defecto" e "Incluir
+             todas las presidencias" son mutuamente excluyentes entre sí (son
+             radios del mismo grupo); los otros tres checkboxes se pueden
+             combinar libremente, y al tocar cualquiera de ellos el grupo de
+             radios pasa a "custom" (el radio oculto radioImgCustom, ver
+             script.js). -->
+        <div class="filtros-container" id="filtrosImagen" hidden>
+            <h4 class="filtrar-gobiernos-heading">FILTRAR GOBIERNOS</h4>
+            <label class="checkbox-label"><input class="checkbox-input" type="radio" name="filtroImagenModo" id="radioImgDefecto" value="default" checked> Por defecto (recomendado)</label>
+            <label class="checkbox-label"><input class="checkbox-input" type="radio" name="filtroImagenModo" id="radioImgTodas" value="todas"> Incluir todas las presidencias</label>
+            <label class="checkbox-label"><input class="checkbox-input" type="checkbox" id="checkboxImgDeFacto"> Eliminar regímenes de facto</label>
+            <label class="checkbox-label"><input class="checkbox-input" type="checkbox" id="checkboxImgCortos"> Eliminar gobiernos de menos de 1 año</label>
+            <label class="checkbox-label"><input class="checkbox-input" type="checkbox" id="checkboxImgInterinos"> Eliminar presidentes interinos</label>
+            <input type="radio" name="filtroImagenModo" id="radioImgCustom" value="custom" hidden>
         </div>
         
         <div class="buttons">
@@ -189,6 +205,26 @@
         <div class="buttons">
             <button id="reanudarEmpezarDeCero" class="cancelar" type="button">Empezar de nuevo</button>
             <button id="reanudarContinuar" class="guardar" type="button">Reanudar</button>
+        </div>
+    </dialog>
+
+    <!-- Modal "¿Estás listo?": aparece SOLO en el primer intento del día de
+         sopa/crucigrama (no al reanudar ni al rejugar), con el tablero ya
+         armado pero borroso detrás, antes de arrancar el cronómetro — deja
+         en claro que el tiempo de ESTE intento es el que queda como
+         resultado oficial del día (ver mostrarListo() en script.js).
+         A propósito NO es un <dialog> "modal" (showModal()): se abre con
+         show(), así el header sigue clickeable (volver/inicio) por si no
+         se quiere arrancar; el resto de la pantalla se ve borroso e
+         inerte vía CSS (".juego-preparandose"), no por el modal nativo. -->
+    <dialog id="listoDialog" class="modal">
+        <span class="modo-modal-icono" id="listoDialogIcono"></span>
+        <span class="modo-de-juego-seleccionado" id="listoDialogBadge"></span>
+        <p class="listo-dialog-fecha" id="listoDialogFecha"></p>
+        <h2>¿Estás listo?</h2>
+        <p id="listoDialogTexto"></p>
+        <div class="buttons">
+            <button id="listoDialogEmpezar" class="guardar" type="button">Empezar</button>
         </div>
     </dialog>
 
