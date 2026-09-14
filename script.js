@@ -2010,7 +2010,22 @@ const listaPresidentes = [
     // muestra (distintas según el modo/la partida guardada), evitando que
     // un cierre por fuera del modal (backdrop o ESC) deje el juego sin
     // arrancar el cronómetro: en ese caso, por default, "empieza de cero".
+    // Igual que #listoDialog, se abre con show() (no showModal()) para que
+    // el header ("volver"/inicio) siga clickeable mientras está abierto —
+    // el resto del tablero se ve borroso e inerte vía CSS
+    // (".juego-preparandose" en ".main", que a propósito excluye al
+    // header). Como no hay showModal() no hay ::backdrop nativo, así que el
+    // "click afuera cierra" se reimplementa a mano con un listener en
+    // document que ignora los clics dentro del diálogo O dentro del header.
     let reanudarDialogWireado = false;
+    // Sin showModal() no hay top layer: el diálogo se abre en el mismo click
+    // que lo dispara (p. ej. "Iniciar Juego"), y ESE click sigue burbujeando
+    // hasta document DESPUÉS de que dialog.open ya es true — sin este guard,
+    // el listener de "click afuera" de abajo lo interpretaría como un click
+    // afuera y cerraría el diálogo al toque, saltándose la elección. Se
+    // "arma" recién en el siguiente tick (setTimeout 0), después de que ese
+    // click original termine de burbujear.
+    let reanudarClickAfueraArmado = false;
     function wireReanudarBotones(dialog, { reanudar, empezarDeCero }) {
         const btnReanudar = document.getElementById("reanudarContinuar");
         const btnEmpezar = document.getElementById("reanudarEmpezarDeCero");
@@ -2026,13 +2041,21 @@ const listaPresidentes = [
         dialog.addEventListener("close", () => {
             btnReanudar.removeEventListener("click", onReanudarClick);
             btnEmpezar.removeEventListener("click", onEmpezarClick);
+            main.classList.remove("juego-preparandose");
             elegir(empezarDeCero);
         }, { once: true });
 
+        reanudarClickAfueraArmado = false;
+        setTimeout(() => { reanudarClickAfueraArmado = true; }, 0);
+
         if (!reanudarDialogWireado) {
             reanudarDialogWireado = true;
-            dialog.addEventListener("click", (e) => {
-                if (e.target === dialog) dialog.close();
+            document.addEventListener("click", (e) => {
+                if (!dialog.open || !reanudarClickAfueraArmado) return;
+                if (dialog.contains(e.target)) return;
+                const headerEl = document.querySelector(".header");
+                if (headerEl && headerEl.contains(e.target)) return;
+                dialog.close();
             });
         }
     }
@@ -2140,7 +2163,8 @@ const listaPresidentes = [
                 iniciarCronometroSopa();
             }
         });
-        dialog.showModal();
+        main.classList.add("juego-preparandose");
+        dialog.show();
     }
 
     // Cronómetro sin límite (como el crucigrama): cuenta hacia arriba desde
@@ -2891,7 +2915,8 @@ const listaPresidentes = [
                 iniciarCronometroCrucigrama();
             }
         });
-        dialog.showModal();
+        main.classList.add("juego-preparandose");
+        dialog.show();
     }
 
     function iniciarCronometroCrucigrama(segundosIniciales = 0) {

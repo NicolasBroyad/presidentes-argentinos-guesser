@@ -4287,13 +4287,18 @@ footer {
 /* Mismo truco de centrado manual que el resto de los <dialog> del sitio
    (#configDialog, #modoModal, #finJuegoDialog): la clase ".modal" les pone
    display:flex, que rompe el centrado automático del navegador y sin esto
-   el modal cae pegado a la esquina superior izquierda. */
+   el modal cae pegado a la esquina superior izquierda.
+   z-index por encima del header (z-index:100): se abre con show(), no
+   showModal() (ver wireReanudarBotones() en script.js — así el header
+   sigue clickeable mientras está abierto), así que no hay top layer real
+   acá y el z-index sí importa. */
 #reanudarDialog {
     position: fixed;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
     margin: 0;
+    z-index: 200;
     max-width: min(400px, calc(100vw - 2rem));
     width: 100%;
     box-sizing: border-box;
@@ -4303,10 +4308,9 @@ footer {
     display: none;
 }
 
-#reanudarDialog::backdrop {
-    background: rgba(0,0,0,0.5);
-    backdrop-filter: blur(2px);
-}
+/* Sin ::backdrop a propósito: al abrirse con show() (no showModal()) el
+   navegador no genera ::backdrop de todos modos. El tablero de fondo se ve
+   borroso vía ".juego-preparandose" en ".main" (que excluye al header). */
 
 /* Mismo truco de centrado manual que el resto de los <dialog> del sitio.
    z-index por encima del header (z-index:100) por si en pantallas muy

@@ -7,7 +7,16 @@ Server dev: `preview_start({name:"static-site"})` (usa `.claude/launch.json`, pu
 
 Todo el trabajo descripto más abajo (secciones 1-10b) YA FUE COMMITEADO en commits previos (ver `git log`: confetis, fix crucigrama, responsive 16:10, modal "estás listo", etiquetas interino, etc.). El resto de este archivo es el detalle histórico de esos commits, dejado como referencia.
 
-### 11. Filtro "Eliminar presidentes interinos" en modo Clásico — COMPLETO Y VERIFICADO (sin commitear todavía)
+### 12. Header clickeable en el modal de "reanudar partida" — COMPLETO Y VERIFICADO (sin commitear)
+Pedido: igual que se hizo con `#listoDialog` (feature 8b), que `#reanudarDialog` (el modal de "¿Retomamos donde la dejaste?" de sopa/crucigrama) tampoco bloquee el header — que "volver"/inicio sigan clickeables mientras está abierto.
+- `script.js`, `wireReanudarBotones()` (~línea 2007): cambiado de `dialog.showModal()` a `dialog.show()` en ambos call-sites (`mostrarReanudarSopa` y `mostrarReanudarCrucigrama`), agregando `main.classList.add("juego-preparandose")` antes de abrir y `main.classList.remove(...)` en el listener de `close` (mismo patrón que `#listoDialog`, reutilizando la clase CSS existente `.main.juego-preparandose > *:not(.header)`).
+- El "click afuera cierra" (que antes venía gratis con el `::backdrop` nativo de `showModal()`) se reimplementó a mano con un listener en `document`, ignorando clicks dentro del diálogo O dentro de `.header`.
+- **Bug encontrado y corregido durante la verificación**: el mismo click que dispara la apertura del diálogo (p. ej. tocar "Iniciar Juego") sigue burbujeando hasta `document` DESPUÉS de que `dialog.open` ya es `true`, así que sin cuidado extra el listener de "click afuera" se disparaba inmediatamente y cerraba el diálogo solo, registrando una rendición fantasma antes de que el usuario pudiera elegir. Fix: variable `reanudarClickAfueraArmado`, en `false` al abrir y puesta en `true` recién en el siguiente tick (`setTimeout(...,0)`) — el listener ignora clicks mientras no está armado.
+- `styles.css`: `#reanudarDialog` ahora tiene `z-index:200` (por encima del header) y se quitó la regla `#reanudarDialog::backdrop` (ya no aplica sin `showModal()`), con comentario explicando por qué.
+- Cache-busting: `script.js?v=20260914f`, `styles.css?v=20260913o`.
+- Verificado en browser (sopa y crucigrama): el modal abre correctamente (no se auto-cierra pese al bug encontrado y arreglado); el header queda nítido sin blur y el botón "volver" navega al inicio sin registrar ninguna rendición (el progreso guardado sigue intacto); clickear en el tablero borroso de fondo SÍ cierra el modal y lo trata como "empezar de nuevo" (igual que el comportamiento original); el botón "Reanudar" restaura el progreso y sigue el cronómetro correctamente. Sin errores nuevos en consola.
+
+### 11. Filtro "Eliminar presidentes interinos" en modo Clásico — COMPLETO Y VERIFICADO (sin commitear)
 Pedido: agregar a la configuración de Clásico un tercer checkbox "Eliminar presidentes interinos" (usa el flag `interino` agregado en la sesión anterior a los 6 presidentes correspondientes), igual que ya existía "Eliminar regímenes de facto" y "Eliminar gobiernos de menos de 1 año".
 - `script.js`: nuevo default `eliminarInterinosClasico: false` en `CONFIG_JUEGO_DEFAULT` (~línea 225-229); nueva constante `checkboxInterinosClasico` (~línea 357); `filtrarPresidentes()` (~línea 720) ahora también filtra `p.esInterino()`; `abrirConfig()`/`guardarConfig()`/`cancelarConfig()` y el listener de `refrescarMaxCantidad` actualizados para leer/escribir/observar este checkbox igual que los otros dos de clásico.
 - HTML: nuevo `<input id="checkboxInterinosClasico">` agregado dentro de `#filtrosClasico` en `index.html` Y en `modos.html` (cada uno tiene su propia copia del `#configDialog`).
@@ -146,7 +155,7 @@ Verificado con sopa: screenshot confirma modal limpio, sin insignia, sin errores
 
 ## Cache-busting
 
-Versión actual: `script.js?v=20260914b`, `styles.css?v=20260913n`, `Presidente.js?v=20260913a` en los 6 HTML (`index.html`, `modos.html`, `presidencias.html`, `privacidad.html`, `contacto.html`, `acerca.html`). Si se edita `script.js`/`styles.css` de nuevo, bumpear el sufijo con `sed` en los 6 archivos — el server local sirve versiones cacheadas si no se bumpea.
+Versión actual: `script.js?v=20260914f`, `styles.css?v=20260913o`, `Presidente.js?v=20260913a` en los 6 HTML (`index.html`, `modos.html`, `presidencias.html`, `privacidad.html`, `contacto.html`, `acerca.html`). Si se edita `script.js`/`styles.css` de nuevo, bumpear el sufijo con `sed` en los 6 archivos — el server local sirve versiones cacheadas si no se bumpea.
 
 ## Checklist de testeo pendiente (feature #3, rendirse/completado)
 
