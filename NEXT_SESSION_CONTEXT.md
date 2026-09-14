@@ -3,7 +3,21 @@
 Repo: `/home/nicobroyad/repos/presidentes-argentinos-guesser`, branch `develop`.
 Server dev: `preview_start({name:"static-site"})` (usa `.claude/launch.json`, puerto autoPort si 9231 está ocupado).
 
-## Estado: trabajo terminado pero NO commiteado
+## Estado actual (actualizado)
+
+Todo el trabajo descripto más abajo (secciones 1-10b) YA FUE COMMITEADO en commits previos (ver `git log`: confetis, fix crucigrama, responsive 16:10, modal "estás listo", etiquetas interino, etc.). El resto de este archivo es el detalle histórico de esos commits, dejado como referencia.
+
+### 11. Filtro "Eliminar presidentes interinos" en modo Clásico — COMPLETO Y VERIFICADO (sin commitear todavía)
+Pedido: agregar a la configuración de Clásico un tercer checkbox "Eliminar presidentes interinos" (usa el flag `interino` agregado en la sesión anterior a los 6 presidentes correspondientes), igual que ya existía "Eliminar regímenes de facto" y "Eliminar gobiernos de menos de 1 año".
+- `script.js`: nuevo default `eliminarInterinosClasico: false` en `CONFIG_JUEGO_DEFAULT` (~línea 225-229); nueva constante `checkboxInterinosClasico` (~línea 357); `filtrarPresidentes()` (~línea 720) ahora también filtra `p.esInterino()`; `abrirConfig()`/`guardarConfig()`/`cancelarConfig()` y el listener de `refrescarMaxCantidad` actualizados para leer/escribir/observar este checkbox igual que los otros dos de clásico.
+- HTML: nuevo `<input id="checkboxInterinosClasico">` agregado dentro de `#filtrosClasico` en `index.html` Y en `modos.html` (cada uno tiene su propia copia del `#configDialog`).
+- Cache-busting: `script.js?v=20260914d` (styles.css y Presidente.js sin cambios esta vez).
+- Verificado en browser: tildar el checkbox y guardar persiste `eliminarInterinosClasico:true` en `localStorage['pag-configuracion-juego']`; al iniciar una partida de clásico con el filtro activo, `window.listaFiltrada.length` pasa de 58 a 52 (exactamente los 6 interinos descontados) y `algunInterino` da `false`; la copia del diálogo en `modos.html` también lee y refleja el estado guardado correctamente. Sin errores nuevos en consola (solo los 404 preexistentes de `_vercel/*`). Se restauró el checkbox a `false` en el localStorage de prueba al terminar.
+- **NO commiteado todavía** — a diferencia de todo lo anterior en este archivo, este cambio quedó pendiente de commit cuando se interrumpió la sesión.
+
+---
+
+## Estado: trabajo terminado pero NO commiteado (histórico, ver arriba — ya está commiteado salvo la sección 11)
 
 Archivos modificados (ver `git status`): `acerca.html contacto.html index.html modos.html presidencias.html privacidad.html script.js styles.css`.
 

@@ -226,6 +226,7 @@ document.addEventListener('DOMContentLoaded', () => {
         tiempo: 10, // minutos (modo clásico)
         tiempoImagen: 2, // minutos (modo "Adivina la imagen")
         eliminarDeFacto: false, // solo modo clásico
+        eliminarInterinosClasico: false, // solo modo clásico
         // El filtro de "gobiernos de menos de 1 año" tiene un default distinto
         // por modo: en clásico se incluyen (como siempre). En "Adivina la
         // imagen" este checkbox ya no se usa fuera del modo "custom" del
@@ -351,9 +352,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const botonGuardar = document.querySelector(".guardar");
     const botonCancelar = document.querySelector(".cancelar");
     // Checkboxes del filtro de "Clásico" (el único que sigue funcionando
-    // como antes: dos checkboxes simples, sin exclusividad entre ellos).
+    // como antes: checkboxes simples, sin exclusividad entre ellos).
     const checkboxDeFactoClasico = document.getElementById("checkboxDeFactoClasico");
     const checkboxCortosClasico = document.getElementById("checkboxCortosClasico");
+    const checkboxInterinosClasico = document.getElementById("checkboxInterinosClasico");
     // Filtro de "Adiviná la imagen": dos radios mutuamente excluyentes
     // ("default"/"todas", más un tercer radio oculto "custom" que se activa
     // solo, en código, cuando se toca cualquiera de los tres checkboxes
@@ -720,6 +722,7 @@ const listaPresidentes = [
         return listaPresidentes.filter(p => {
             if(configuracionJuego.eliminarDeFacto && p.esDeFacto()) return false;
             if(configuracionJuego.eliminarMenosDeUnAnioClasico && !p.estuvoMasDeUnAnio()) return false;
+            if(configuracionJuego.eliminarInterinosClasico && p.esInterino()) return false;
             return true;
         });
     }
@@ -3577,6 +3580,7 @@ const listaPresidentes = [
         // Filtro de "Clásico": sin cambios respecto a como funcionaba antes.
         if (checkboxDeFactoClasico) checkboxDeFactoClasico.checked = configuracionJuego.eliminarDeFacto;
         if (checkboxCortosClasico) checkboxCortosClasico.checked = configuracionJuego.eliminarMenosDeUnAnioClasico;
+        if (checkboxInterinosClasico) checkboxInterinosClasico.checked = configuracionJuego.eliminarInterinosClasico;
 
         // Filtro de "Adiviná la imagen": radio (default/todas/custom) + los
         // 3 checkboxes combinables (solo tienen sentido visual en "custom").
@@ -3629,6 +3633,7 @@ const listaPresidentes = [
 
         if (checkboxDeFactoClasico) configuracionJuego.eliminarDeFacto = checkboxDeFactoClasico.checked;
         if (checkboxCortosClasico) configuracionJuego.eliminarMenosDeUnAnioClasico = checkboxCortosClasico.checked;
+        if (checkboxInterinosClasico) configuracionJuego.eliminarInterinosClasico = checkboxInterinosClasico.checked;
 
         configuracionJuego.filtroImagenModo = filtroImagenModoActual();
         configuracionJuego.eliminarDeFactoImagen = !!(checkboxImgDeFacto && checkboxImgDeFacto.checked);
@@ -3653,6 +3658,7 @@ const listaPresidentes = [
 
         if (checkboxDeFactoClasico) checkboxDeFactoClasico.checked = configuracionTemporal.eliminarDeFacto;
         if (checkboxCortosClasico) checkboxCortosClasico.checked = configuracionTemporal.eliminarMenosDeUnAnioClasico;
+        if (checkboxInterinosClasico) checkboxInterinosClasico.checked = configuracionTemporal.eliminarInterinosClasico;
 
         const filtroImg = configuracionTemporal.filtroImagenModo;
         if (radioImgDefecto) radioImgDefecto.checked = filtroImg === "default";
@@ -3692,6 +3698,7 @@ const listaPresidentes = [
     // Si cambian los filtros, se recalcula el máximo del slider de cantidad.
     if (checkboxDeFactoClasico) checkboxDeFactoClasico.addEventListener("change", refrescarMaxCantidad);
     if (checkboxCortosClasico) checkboxCortosClasico.addEventListener("change", refrescarMaxCantidad);
+    if (checkboxInterinosClasico) checkboxInterinosClasico.addEventListener("change", refrescarMaxCantidad);
 
     // --- Exclusividad del filtro de "Adiviná la imagen" ---
     // "Por defecto" e "Incluir todas" son radios del mismo grupo, así que ya
