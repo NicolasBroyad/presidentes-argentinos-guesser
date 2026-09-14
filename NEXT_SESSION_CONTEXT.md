@@ -36,6 +36,9 @@ Pedido: chequear que si empezás sopa/crucigrama, lo dejás sin terminar y sin r
 - (b): verificado con una simulación en Node de la lógica pura de `rachaVigente`/`sumarRacha` (`script.js` ~línea 2267-2281): si el último día registrado en la racha es hace 2+ días (por haber abandonado el día intermedio sin ganar ni rendirse — ese día nunca llama a `finalizarSopa`/`finalizarCrucigrama`, así que nunca escribe en `SOPA_LS_STREAK`), la racha se resetea a 1 al completar de nuevo, en vez de continuar la racha anterior. Ya funcionaba correctamente sin cambios, es consecuencia directa de que un día abandonado nunca persiste ninguna entrada de racha.
 - Nota menor (no es un bug, no se tocó): las keys `sopa-progreso-<fecha>`/`cruci-progreso-<fecha>` de días abandonados quedan húerfanas en localStorage para siempre (nunca se leen de nuevo, pero tampoco se limpian). No afecta funcionalidad, solo ocupa un poco de espacio.
 
+### 4b. Sonido de acierto cambiado a `correct.mp3` — COMPLETO Y VERIFICADO
+El usuario agregó `correct.mp3` al repo (raíz del proyecto) y pidió usarlo como sonido de acierto en cualquier modo. `reproducirSonidoAcierto()` (`script.js`, ~línea 12-24) dejó de sintetizar el sonido con Web Audio API (oscillators "thump"+tono) y ahora reproduce el archivo con `new Audio("correct.mp3")`, mismo patrón que `reproducirSonidoBoton()` (que usa `sonido-boton.wav`). Respeta el mismo toggle de mute (`SONIDO_ACIERTO_KEY`/`sonidoAciertoActivado`). Se eliminó la variable `audioCtxAcierto` (ya no se usa en ningún lado, confirmado con grep). Verificado en browser: al acertar en modo clásico, `read_network_requests` confirma `GET correct.mp3 → 200 OK`, sin errores nuevos en consola (los 404 de `_vercel/speed-insights`/`_vercel/insights` son preexistentes, de analytics de Vercel no disponible en local). Cache-busting `script.js?v=20260913u`. No hace falta testear sopa/crucigrama por separado: todos los modos llaman a la misma función `reproducirSonidoAcierto()`.
+
 ### 3. Rendirse vs completado (5 partes) — IMPLEMENTADO, testeo E2E INCOMPLETO
 Pedido del usuario: si te rendís la primera vez que jugás sopa/crucigrama en el día, el resultado oficial dice "te rendiste", la card NO muestra el tick verde, pero si lo volvés a jugar y lo completás después, SÍ aparece el tick (sin pisar el resultado oficial/tiempo). "Empezar de nuevo" en el modal de reanudar cuenta como rendirse.
 
@@ -57,7 +60,7 @@ Verificado con sopa: screenshot confirma modal limpio, sin insignia, sin errores
 
 ## Cache-busting
 
-Versión actual: `script.js?v=20260913t`, `styles.css?v=20260913j` en los 6 HTML (`index.html`, `modos.html`, `presidencias.html`, `privacidad.html`, `contacto.html`, `acerca.html`). Si se edita `script.js`/`styles.css` de nuevo, bumpear el sufijo con `sed` en los 6 archivos — el server local sirve versiones cacheadas si no se bumpea.
+Versión actual: `script.js?v=20260913u`, `styles.css?v=20260913j` en los 6 HTML (`index.html`, `modos.html`, `presidencias.html`, `privacidad.html`, `contacto.html`, `acerca.html`). Si se edita `script.js`/`styles.css` de nuevo, bumpear el sufijo con `sed` en los 6 archivos — el server local sirve versiones cacheadas si no se bumpea.
 
 ## Checklist de testeo pendiente (feature #3, rendirse/completado)
 
