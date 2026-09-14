@@ -3079,11 +3079,15 @@ const listaPresidentes = [
         cruciActiva = ent;
         const enLaEntrada = cruciCeldaActiva && ent.celdas.some(c => c.r === cruciCeldaActiva.r && c.c === cruciCeldaActiva.c);
         if (irAlInicio || !enLaEntrada) {
-            const objetivo = ent.celdas.find(c => {
-                const i = inputCruci(c.r, c.c);
-                return i && !i.value;
-            }) || ent.celdas[0];
-            cruciCeldaActiva = { r: objetivo.r, c: objetivo.c };
+            // Siempre la primera celda de la palabra, aunque ya tenga letra
+            // (por cruzarse con una palabra perpendicular ya completada): se
+            // tipea igual encima, en vez de saltar directo a la primera
+            // celda vacía. Es la misma lógica de moverEnEntrada() al tipear
+            // — acá aplica al elegir/activar la palabra (clic en la pista,
+            // en el número, o al saltar sola a la próxima pista pendiente).
+            // Si después el usuario se mueve a mano (flechas, clic en otra
+            // celda), esto no vuelve a pisarlo: solo corre al ACTIVAR.
+            cruciCeldaActiva = { r: ent.celdas[0].r, c: ent.celdas[0].c };
         }
         pintarCrucigrama();
         enfocarCeldaCruci(cruciCeldaActiva.r, cruciCeldaActiva.c);
@@ -3121,25 +3125,11 @@ const listaPresidentes = [
         }
     }
 
-    function moverEnEntrada(delta, saltarLlenas) {
+    function moverEnEntrada(delta) {
         if (!cruciActiva || !cruciCeldaActiva) return;
         const celdas = cruciActiva.celdas;
         const idx = celdas.findIndex(c => c.r === cruciCeldaActiva.r && c.c === cruciCeldaActiva.c);
-        let next = idx + delta;
-        // Al avanzar tipeando, saltear los casilleros que ya tienen letra
-        // (p. ej. de una palabra cruzada ya adivinada) hasta el próximo vacío.
-        if (saltarLlenas) {
-            let t = idx + delta;
-            while (t >= 0 && t < celdas.length && inputCruci(celdas[t].r, celdas[t].c).value) t += delta;
-            if (t >= 0 && t < celdas.length) {
-                next = t;
-            } else {
-                // No hay vacío hacia adelante: buscar el primer vacío de toda la
-                // palabra; si tampoco hay, quedarse en el borde (sin trabarse).
-                const v = celdas.findIndex(({ r, c }) => !inputCruci(r, c).value);
-                next = v >= 0 ? v : Math.min(celdas.length - 1, Math.max(0, idx + delta));
-            }
-        }
+        const next = idx + delta;
         if (next < 0 || next >= celdas.length) return;
         cruciCeldaActiva = { ...celdas[next] };
         pintarCrucigrama();
@@ -3183,7 +3173,7 @@ const listaPresidentes = [
                 // intuitivo poder escribir el apellido entero de corrido,
                 // reescribiendo esa letra al pasar, que tener que estar
                 // atento a no tipearla para no romper el salto automático.
-                moverEnEntrada(1, false);
+                moverEnEntrada(1);
             }
         }
         comprobarVictoriaCrucigrama();
