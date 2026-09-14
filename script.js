@@ -146,9 +146,16 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!card) return;
             modoElegidoEnModal = modo;
             const icono = card.querySelector(".modo-card-icono");
+            // Solo la imagen/svg del ícono, no ".modo-card-icono" entero: ese
+            // contenedor puede traer también la insignia de "nueva"/tick de
+            // los modos diarios (ver actualizarEstadoDiarioEnTarjetas), que
+            // en la card tiene su propio posicionamiento relativo al ícono
+            // pero acá adentro del modal queda mal ubicada — y total ya se ve
+            // en la card de atrás, no hace falta repetirla en el modal.
+            const iconoImagen = icono ? icono.querySelector("img, svg") : null;
             const titulo = card.querySelector(".modo-de-juego-seleccionado");
             const descripcion = card.querySelector(".modo-card-texto p");
-            if (modoModalIcono && icono) modoModalIcono.innerHTML = icono.innerHTML;
+            if (modoModalIcono && iconoImagen) modoModalIcono.innerHTML = iconoImagen.outerHTML;
             if (modoModalTitulo && titulo) modoModalTitulo.innerHTML = titulo.outerHTML;
             if (modoModalDescripcion && descripcion) modoModalDescripcion.textContent = descripcion.textContent;
             if (modoModalConfigurar) {
@@ -1504,9 +1511,13 @@ const listaPresidentes = [
     const SOPA_LETRAS_RELLENO = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
     // Un color por presidente hallado, para distinguir las palabras en la grilla.
-    // El rojo queda reservado para las que NO se encontraron al terminar.
+    // El rojo queda reservado para las que NO se encontraron al terminar. Ninguno
+    // de estos puede coincidir con el celeste de ".sopa-celda.marcando"
+    // (rgb(var(--blue-strong)) = #1bbef1): si a una palabra le toca ese mismo
+    // color, mientras la estás seleccionando y ya resuelta se ven casi iguales
+    // y no se distingue que se completó.
     const SOPA_COLORES = [
-        "#3fb56b", "#e6b043", "#1bbef1", "#e67e22",
+        "#3fb56b", "#e6b043", "#5c6bc0", "#e67e22",
         "#a980d8", "#15a89a", "#d98cb3", "#7fae3a"
     ];
 
@@ -1794,7 +1805,7 @@ const listaPresidentes = [
                             ${racha > 0 ? `<span class="cruci-racha" title="Racha de días consecutivos">🔥 ${racha}</span>` : ""}
                         </span>
                     </div>
-                    ${sopaEsRejugada ? `<p class="cruci-rejugada-banner">Ya jugaste la de hoy${sopaResultadoOficial.gano ? ` en ${formatoCronometro(sopaResultadoOficial.segundos)}` : " (no la resolviste)"}. La estás rejugando — no cambia tu resultado.</p>` : ""}
+                    ${sopaEsRejugada ? `<p class="cruci-rejugada-banner">${textoBannerRejugadaSopa()}</p>` : ""}
                     <div class="sopa-hud">
                         <span class="sopa-timer" id="sopa-timer">00:00</span>
                         <span class="sopa-contador"><span id="sopa-aciertos">0</span> / <span id="sopa-total">${sopaObjetivos.length}</span></span>
@@ -1817,7 +1828,16 @@ const listaPresidentes = [
         }
 
         wireSopaEventos();
-        iniciarCronometroSopa();
+
+        // Si es la primera vez del día y quedó una partida sin terminar
+        // (se abandonó sin ganar ni rendirse), ofrecer retomarla en vez de
+        // arrancar directo el cronómetro de cero.
+        const progresoSopa = !sopaEsRejugada ? lsLeer(SOPA_LS_PROGRESO(hoyISO)) : null;
+        if (progresoSopa && ((progresoSopa.encontrados || []).length > 0 || progresoSopa.segundos > 2)) {
+            mostrarReanudarSopa(progresoSopa);
+        } else {
+            iniciarCronometroSopa();
+        }
     }
 
     function wireSopaEventos() {
@@ -1906,6 +1926,22 @@ const listaPresidentes = [
         const obj = sopaObjetivos.find(o => !o.encontrada && (o.palabra === texto || o.palabra === invertido));
         if (!obj) return;
 
+        marcarPalabraEncontradaSopa(obj, sopaObjetivos.indexOf(obj));
+
+        aciertos++;
+        reproducirSonidoAcierto();
+        const cont = document.getElementById("sopa-aciertos");
+        if (cont) cont.textContent = aciertos;
+        guardarProgresoSopa();
+
+        if (sopaObjetivos.every(o => o.encontrada)) finalizarSopa(true);
+    }
+
+    // Marca UNA palabra como encontrada en la grilla + la pista: lo usa tanto
+    // una jugada en vivo (evaluarSeleccionSopa) como la restauración silenciosa
+    // de una partida retomada (aplicarProgresoSopa), que no debe repetir
+    // sonido/contador acá (eso lo maneja cada llamador por separado).
+    function marcarPalabraEncontradaSopa(obj, indice) {
         obj.encontrada = true;
         obj.u.resultadoPartida = 'acierto';
         obj.celdas.forEach(({ r, c }) => {
@@ -1916,14 +1952,7 @@ const listaPresidentes = [
                 btn.style.color = "#0a2235";
             }
         });
-        marcarPistaSopa(sopaObjetivos.indexOf(obj), 'resuelta', obj.u, obj.color);
-
-        aciertos++;
-        reproducirSonidoAcierto();
-        const cont = document.getElementById("sopa-aciertos");
-        if (cont) cont.textContent = aciertos;
-
-        if (sopaObjetivos.every(o => o.encontrada)) finalizarSopa(true);
+        marcarPistaSopa(indice, 'resuelta', obj.u, obj.color);
     }
 
     function marcarPistaSopa(indice, clase, u, color) {
@@ -1938,16 +1967,125 @@ const listaPresidentes = [
         if (nombre) nombre.textContent = nombreCompletoPresidente(u);
     }
 
+    // Guarda el progreso de la partida en curso (solo tiene sentido para la
+    // PRIMERA vez del día: si ya es una rejugada o la partida ya terminó no
+    // hay nada que retomar). Se llama en cada tick del cronómetro y también
+    // apenas se encuentra una palabra, para perder como mucho ~1s de progreso
+    // si se cierra la pestaña de golpe.
+    function guardarProgresoSopa() {
+        if (sopaEsRejugada || sopaTerminado) return;
+        const encontrados = [];
+        sopaObjetivos.forEach((o, i) => { if (o.encontrada) encontrados.push(i); });
+        lsGuardar(SOPA_LS_PROGRESO(fechaHoyISO()), { segundos: sopaSegundos, encontrados });
+    }
+
+    // Diálogo compartido por sopa y crucigrama para ofrecer retomar una
+    // partida sin terminar (ver "#reanudarDialog" en index.html). Conecta
+    // los dos botones a las acciones que corresponda cada vez que se
+    // muestra (distintas según el modo/la partida guardada), evitando que
+    // un cierre por fuera del modal (backdrop o ESC) deje el juego sin
+    // arrancar el cronómetro: en ese caso, por default, "empieza de cero".
+    let reanudarDialogWireado = false;
+    function wireReanudarBotones(dialog, { reanudar, empezarDeCero }) {
+        const btnReanudar = document.getElementById("reanudarContinuar");
+        const btnEmpezar = document.getElementById("reanudarEmpezarDeCero");
+        if (!btnReanudar || !btnEmpezar) { empezarDeCero(); return; }
+
+        let resuelto = false;
+        const elegir = (cb) => { if (resuelto) return; resuelto = true; cb(); };
+        const onReanudarClick = () => { dialog.close(); elegir(reanudar); };
+        const onEmpezarClick = () => { dialog.close(); elegir(empezarDeCero); };
+
+        btnReanudar.addEventListener("click", onReanudarClick, { once: true });
+        btnEmpezar.addEventListener("click", onEmpezarClick, { once: true });
+        dialog.addEventListener("close", () => {
+            btnReanudar.removeEventListener("click", onReanudarClick);
+            btnEmpezar.removeEventListener("click", onEmpezarClick);
+            elegir(empezarDeCero);
+        }, { once: true });
+
+        if (!reanudarDialogWireado) {
+            reanudarDialogWireado = true;
+            dialog.addEventListener("click", (e) => {
+                if (e.target === dialog) dialog.close();
+            });
+        }
+    }
+
+    // Restaura en silencio (sin sonido ni animación) las palabras que ya
+    // estaban encontradas en una partida abandonada y retomada.
+    function aplicarProgresoSopa(progreso) {
+        (progreso.encontrados || []).forEach(i => {
+            const obj = sopaObjetivos[i];
+            if (!obj || obj.encontrada) return;
+            marcarPalabraEncontradaSopa(obj, i);
+            aciertos++;
+        });
+        const cont = document.getElementById("sopa-aciertos");
+        if (cont) cont.textContent = aciertos;
+        // Defensivo: si por algún motivo el progreso guardado tenía todas las
+        // palabras encontradas (no debería pasar: se borra al terminar).
+        if (sopaObjetivos.every(o => o.encontrada)) finalizarSopa(true);
+    }
+
+    // Ofrece retomar la sopa de letras donde se abandonó (solo tiene sentido
+    // en la PRIMERA vez del día: ver el filtro en iniciarJuegoSopa). Si el
+    // usuario elige "Reanudar", restaura lo encontrado y arranca el
+    // cronómetro desde el tiempo guardado; si elige "Empezar de nuevo" (o
+    // cierra el modal sin elegir), descarta el progreso y arranca de cero.
+    function mostrarReanudarSopa(progreso) {
+        const dialog = document.getElementById("reanudarDialog");
+        if (!dialog) { iniciarCronometroSopa(); return; }
+        const texto = document.getElementById("reanudarTexto");
+        if (texto) {
+            const encontrados = (progreso.encontrados || []).length;
+            texto.textContent = `Habías encontrado ${encontrados} de ${sopaObjetivos.length} presidentes, con ${formatoCronometro(progreso.segundos)} de tiempo.`;
+        }
+        wireReanudarBotones(dialog, {
+            reanudar: () => {
+                aplicarProgresoSopa(progreso);
+                iniciarCronometroSopa(progreso.segundos);
+            },
+            // "Empezar de nuevo" abandona la partida sin terminar de la
+            // primera vez del día: eso ES rendirse, así que el progreso
+            // que traías (lo que habías encontrado + el tiempo) queda
+            // registrado como tu resultado oficial de hoy, igual que si
+            // hubieras tocado "Rendirse" ahí mismo. Después arranca una
+            // partida nueva de cero (ahora sí, una rejugada).
+            empezarDeCero: () => {
+                const hoyISO = fechaHoyISO();
+                sopaResultadoOficial = {
+                    segundos: progreso.segundos,
+                    aciertos: (progreso.encontrados || []).length,
+                    total: sopaObjetivos.length,
+                    gano: false,
+                    fecha: hoyISO
+                };
+                lsGuardar(SOPA_LS_RES(hoyISO), sopaResultadoOficial);
+                sopaEsRejugada = true;
+                lsBorrar(SOPA_LS_PROGRESO(hoyISO));
+                // El banner de rejugada no se llegó a renderizar al armar la
+                // pantalla (en ese momento todavía no era una rejugada).
+                mostrarBannerRejugada(".sopa-panel", textoBannerRejugadaSopa());
+                iniciarCronometroSopa();
+            }
+        });
+        dialog.showModal();
+    }
+
     // Cronómetro sin límite (como el crucigrama): cuenta hacia arriba desde
-    // cero; el tiempo que tardaste se guarda al resolverlo la primera vez del día.
-    function iniciarCronometroSopa() {
+    // "segundosIniciales" (0 salvo que se esté retomando una partida sin
+    // terminar); el tiempo que tardaste se guarda al resolverlo la primera
+    // vez del día.
+    function iniciarCronometroSopa(segundosIniciales = 0) {
         detenerTemporizadorSopa();
-        sopaSegundos = 0;
+        sopaSegundos = segundosIniciales;
         const div = document.getElementById("sopa-timer");
-        if (div) div.textContent = "00:00";
+        if (div) div.textContent = formatoCronometro(sopaSegundos);
         sopaTimer = setInterval(() => {
             sopaSegundos++;
             if (div) div.textContent = formatoCronometro(sopaSegundos);
+            guardarProgresoSopa();
         }, 1000);
     }
 
@@ -1981,6 +2119,8 @@ const listaPresidentes = [
         const total = sopaObjetivos.length;
         const aciertosPartida = aciertos;
         const hoyISO = fechaHoyISO();
+        // Terminada (gane o se rinda), ya no hay nada que retomar.
+        lsBorrar(SOPA_LS_PROGRESO(hoyISO));
 
         // El resultado del día es el de la PRIMERA vez que se completó.
         const primeraVez = !sopaResultadoOficial;
@@ -1990,12 +2130,20 @@ const listaPresidentes = [
         if (primeraVez) {
             sopaResultadoOficial = { segundos, aciertos: aciertosPartida, total, gano, fecha: hoyISO };
             lsGuardar(SOPA_LS_RES(hoyISO), sopaResultadoOficial);
-            if (gano) {
-                racha = sumarRacha(SOPA_LS_STREAK, hoyISO);
-                record = evaluarRecord(SOPA_LS_RECORD, segundos, hoyISO);
-            }
-            // La tarjeta del carrusel del inicio pasa a "resuelto" ya mismo,
-            // sin esperar a volver al inicio ni recargar la página.
+            if (gano) record = evaluarRecord(SOPA_LS_RECORD, segundos, hoyISO);
+        }
+        // La racha suma el día apenas lo COMPLETÁS, aunque te hayas rendido
+        // en el primer intento: sumarRacha es idempotente si ya se sumó hoy,
+        // así que no hay riesgo de sumarlo dos veces.
+        if (gano) racha = sumarRacha(SOPA_LS_STREAK, hoyISO);
+        // El tick de "completado" es aparte del resultado oficial: se marca
+        // apenas la resolvés, sea en la primera vez o en una rejugada
+        // después de haberte rendido (ver actualizarEstadoDiarioEnTarjetas).
+        // Una vez en true queda así todo el día, no se puede "desmarcar".
+        if (gano) lsGuardar(SOPA_LS_COMPLETADO(hoyISO), true);
+        if (primeraVez || gano) {
+            // La tarjeta del carrusel del inicio pasa a su estado nuevo ya
+            // mismo, sin esperar a volver al inicio ni recargar la página.
             actualizarEstadoDiarioEnTarjetas();
         }
 
@@ -2045,6 +2193,23 @@ const listaPresidentes = [
     const SOPA_LS_RES = f => `sopa-res-${f}`;
     const SOPA_LS_STREAK = "sopa-streak";
     const SOPA_LS_RECORD = "sopa-record";
+    // Partida sin terminar de la PRIMERA vez del día (la única que cuenta):
+    // si se abandona sin ganar ni rendirse y se vuelve a entrar el mismo día,
+    // se puede retomar donde quedó en vez de arrancar de cero. Se borra al
+    // terminar la partida (gane o se rinda) — ver finalizarSopa/finalizarCrucigrama.
+    const SOPA_LS_PROGRESO = f => `sopa-progreso-${f}`;
+    const CRUCI_LS_PROGRESO = f => `cruci-progreso-${f}`;
+    // "Completado" es DISTINTO de "oficial" (SOPA_LS_RES/CRUCI_LS_RES): el
+    // oficial se fija para siempre en la PRIMERA vez (gane o se rinda, ver
+    // finalizarSopa/finalizarCrucigrama) y es lo que cuenta para el
+    // historial/racha/récord. "Completado" en cambio marca si en algún
+    // momento del día —esa primera vez o cualquier rejugada después de
+    // rendirte— llegaste a resolverla entera; el tick verde de la tarjeta
+    // del modo (actualizarEstadoDiarioEnTarjetas) se basa en ESTO, no en si
+    // ya existe un resultado oficial, para no marcarla como "hecha" con un
+    // simple "me rendí".
+    const SOPA_LS_COMPLETADO = f => `sopa-completado-${f}`;
+    const CRUCI_LS_COMPLETADO = f => `cruci-completado-${f}`;
 
     function lsLeer(clave) {
         try { return JSON.parse(localStorage.getItem(clave)); } catch (e) { return null; }
@@ -2052,6 +2217,47 @@ const listaPresidentes = [
     function lsGuardar(clave, valor) {
         try { localStorage.setItem(clave, JSON.stringify(valor)); } catch (e) { /* modo privado, etc. */ }
     }
+    function lsBorrar(clave) {
+        try { localStorage.removeItem(clave); } catch (e) { /* modo privado, etc. */ }
+    }
+
+    // Texto del aviso que se ve al reingresar el mismo día a un modo diario
+    // ya jugado. Tres casos: ganaste (nada más que decir), te rendiste pero
+    // todavía no la completaste (podés seguir intentando, para el tick —
+    // pero el tiempo no cuenta), o te rendiste y ya la completaste después
+    // en una rejugada (el tick ya está, solo aclara que el oficial sigue
+    // siendo "te rendiste").
+    function textoBannerRejugadaSopa() {
+        const resultado = sopaResultadoOficial.gano
+            ? formatoCronometro(sopaResultadoOficial.segundos)
+            : "Te rendiste";
+        return `Tu resultado de hoy en tu primer intento: ${resultado}`;
+    }
+    function textoBannerRejugadaCrucigrama() {
+        const resultado = cruciResultadoOficial.gano
+            ? formatoCronometro(cruciResultadoOficial.segundos)
+            : "Te rendiste";
+        return `Tu resultado de hoy en tu primer intento: ${resultado}`;
+    }
+
+    // Inserta (o actualiza, si ya existe) el aviso de rejugada dentro del
+    // panel del juego. Hace falta como función aparte porque cuando "Empezar
+    // de nuevo" convierte la partida en una rejugada sobre la marcha, la
+    // pantalla ya se armó SIN ese aviso (en ese momento todavía no lo era).
+    function mostrarBannerRejugada(panelSelector, texto) {
+        const panel = document.querySelector(panelSelector);
+        if (!panel) return;
+        let banner = panel.querySelector(".cruci-rejugada-banner");
+        if (!banner) {
+            banner = document.createElement("p");
+            banner.className = "cruci-rejugada-banner";
+            const hud = panel.querySelector(".cruci-hud");
+            if (hud) hud.insertAdjacentElement("afterend", banner);
+            else panel.prepend(banner);
+        }
+        banner.textContent = texto;
+    }
+
     function fechaISOMenosDias(iso, n) {
         const [y, m, d] = iso.split("-").map(Number);
         const dt = new Date(y, m - 1, d - n);
@@ -2162,10 +2368,13 @@ const listaPresidentes = [
     function actualizarEstadoDiarioEnTarjetas() {
         const hoyISO = fechaHoyISO();
         [
-            { modo: "sopa", claveRes: SOPA_LS_RES },
-            { modo: "crucigrama", claveRes: CRUCI_LS_RES },
-        ].forEach(({ modo, claveRes }) => {
-            const resuelto = !!lsLeer(claveRes(hoyISO));
+            { modo: "sopa", claveCompletado: SOPA_LS_COMPLETADO },
+            { modo: "crucigrama", claveCompletado: CRUCI_LS_COMPLETADO },
+        ].forEach(({ modo, claveCompletado }) => {
+            // El tick verde es "la resolviste alguna vez hoy" (completado),
+            // NO "ya tenés un resultado oficial" — rendirte deja un
+            // resultado oficial pero no debe pintar el tick.
+            const resuelto = !!lsLeer(claveCompletado(hoyISO));
             // Carrusel del inicio.
             const cardCarrusel = document.querySelector(`.modo-actual-card[data-modo="${modo}"]`);
             if (cardCarrusel) aplicarEstadoDiarioATarjeta(cardCarrusel, modo, resuelto);
@@ -2527,15 +2736,101 @@ const listaPresidentes = [
         if (m >= 60) return `${Math.floor(m / 60)}:${String(m % 60).padStart(2, "0")}:${ss}`;
         return `${String(m).padStart(2, "0")}:${ss}`;
     }
-    function iniciarCronometroCrucigrama() {
+    // Mismo esquema que guardarProgresoSopa(): solo tiene sentido mientras la
+    // partida en curso sea la PRIMERA del día y no haya terminado todavía.
+    // Guarda directamente lo que hay tipeado en cada celda (no "qué palabras
+    // están resueltas": eso se recalcula solo al restaurar, comparando cada
+    // letra contra la grilla con letraCoincide()).
+    function guardarProgresoCrucigrama() {
+        if (cruciEsRejugada || cruciTerminado) return;
+        const letras = {};
+        document.querySelectorAll(".cruci-input").forEach(inp => {
+            if (inp.value) letras[`${inp.dataset.r},${inp.dataset.c}`] = inp.value;
+        });
+        lsGuardar(CRUCI_LS_PROGRESO(fechaHoyISO()), { segundos: cruciSegundos, letras });
+    }
+
+    // Restaura en silencio lo que estaba tipeado en cada celda. Antes de
+    // recalcular qué palabras quedan resueltas, se precarga
+    // "cruciResueltasPrev" con las que YA están completas: así
+    // refrescarEstadoCrucigrama() las pinta bien pero no las trata como
+    // "recién completadas" (no dispara sonido ni animación por algo que el
+    // usuario ya había resuelto antes de abandonar la partida).
+    function aplicarProgresoCrucigrama(progreso) {
+        Object.entries(progreso.letras || {}).forEach(([clave, letra]) => {
+            const [r, c] = clave.split(",").map(Number);
+            const inp = inputCruci(r, c);
+            if (inp) inp.value = letra;
+        });
+        cruciResueltasPrev = new Set(
+            cruciEntradas
+                .filter(e => e.celdas.every(({ r, c }) => {
+                    const inp = inputCruci(r, c);
+                    return inp && letraCoincide(inp.value.toUpperCase(), cruciData.grilla[r][c].letra);
+                }))
+                .map(e => `${e.numero}-${e.dir}`)
+        );
+        refrescarEstadoCrucigrama();
+    }
+
+    // Cuántas entradas quedan resueltas con lo que había tipeado en una
+    // partida abandonada (progreso.letras), sin depender del DOM — para
+    // poder registrar ese número como aciertos al rendirse por abandono
+    // (ver "empezarDeCero" en mostrarReanudarCrucigrama).
+    function contarAciertosDesdeLetras(letras) {
+        return cruciEntradas.reduce((total, e) => {
+            const ok = e.celdas.every(({ r, c }) => {
+                const val = (letras || {})[`${r},${c}`];
+                return val && letraCoincide(val.toUpperCase(), cruciData.grilla[r][c].letra);
+            });
+            return ok ? total + 1 : total;
+        }, 0);
+    }
+
+    // Mismo esquema que mostrarReanudarSopa(), para el crucigrama.
+    function mostrarReanudarCrucigrama(progreso) {
+        const dialog = document.getElementById("reanudarDialog");
+        if (!dialog) { iniciarCronometroCrucigrama(); return; }
+        const texto = document.getElementById("reanudarTexto");
+        if (texto) {
+            texto.textContent = `Tenías ${formatoCronometro(progreso.segundos)} de tiempo en la partida de hoy.`;
+        }
+        wireReanudarBotones(dialog, {
+            reanudar: () => {
+                aplicarProgresoCrucigrama(progreso);
+                iniciarCronometroCrucigrama(progreso.segundos);
+            },
+            // Ver el comentario análogo en mostrarReanudarSopa(): "Empezar
+            // de nuevo" acá equivale a rendirse con lo que tenías tipeado.
+            empezarDeCero: () => {
+                const hoyISO = fechaHoyISO();
+                cruciResultadoOficial = {
+                    segundos: progreso.segundos,
+                    aciertos: contarAciertosDesdeLetras(progreso.letras),
+                    total: cruciEntradas.length,
+                    gano: false,
+                    fecha: hoyISO
+                };
+                lsGuardar(CRUCI_LS_RES(hoyISO), cruciResultadoOficial);
+                cruciEsRejugada = true;
+                lsBorrar(CRUCI_LS_PROGRESO(hoyISO));
+                mostrarBannerRejugada(".cruci-panel", textoBannerRejugadaCrucigrama());
+                iniciarCronometroCrucigrama();
+            }
+        });
+        dialog.showModal();
+    }
+
+    function iniciarCronometroCrucigrama(segundosIniciales = 0) {
         detenerCronometroCrucigrama();
-        cruciSegundos = 0;
+        cruciSegundos = segundosIniciales;
         const el = document.getElementById("cruci-timer");
-        if (el) el.textContent = "00:00";
+        if (el) el.textContent = formatoCronometro(cruciSegundos);
         cruciCronometro = setInterval(() => {
             cruciSegundos++;
             const t = document.getElementById("cruci-timer");
             if (t) t.textContent = formatoCronometro(cruciSegundos);
+            guardarProgresoCrucigrama();
         }, 1000);
     }
     function detenerCronometroCrucigrama() {
@@ -2611,7 +2906,7 @@ const listaPresidentes = [
                             <span class="cruci-timer" id="cruci-timer">00:00</span>
                         </span>
                     </div>
-                    ${cruciEsRejugada ? `<p class="cruci-rejugada-banner">Ya completaste el de hoy${cruciResultadoOficial.gano ? ` en ${formatoCronometro(cruciResultadoOficial.segundos)}` : " (te rendiste)"}. Lo estás rejugando — no cambia tu resultado.</p>` : ""}
+                    ${cruciEsRejugada ? `<p class="cruci-rejugada-banner">${textoBannerRejugadaCrucigrama()}</p>` : ""}
                     <div class="cruci-pistas-scroll">
                         <h5 class="cruci-pistas-titulo">Horizontales</h5>
                         <ul class="cruci-pistas">${listaPistas(pistasH)}</ul>
@@ -2636,7 +2931,15 @@ const listaPresidentes = [
         }
 
         wireCrucigrama();
-        iniciarCronometroCrucigrama();
+
+        // Mismo esquema que en la sopa de letras: solo se ofrece retomar en
+        // la primera vez del día, si quedó una partida sin terminar.
+        const progresoCruci = !cruciEsRejugada ? lsLeer(CRUCI_LS_PROGRESO(hoyISO)) : null;
+        if (progresoCruci && (Object.keys(progresoCruci.letras || {}).length > 0 || progresoCruci.segundos > 2)) {
+            mostrarReanudarCrucigrama(progresoCruci);
+        } else {
+            iniciarCronometroCrucigrama();
+        }
     }
 
     function wireCrucigrama() {
@@ -2809,6 +3112,7 @@ const listaPresidentes = [
             }
         }
         comprobarVictoriaCrucigrama();
+        guardarProgresoCrucigrama();
     }
 
     // Verificación en vivo: cada palabra completa y correcta se pinta de verde
@@ -2938,6 +3242,8 @@ const listaPresidentes = [
         const total = cruciEntradas.length;
         const aciertosPartida = aciertos;
         const hoyISO = fechaHoyISO();
+        // Terminado (gane o se rinda), ya no hay nada que retomar.
+        lsBorrar(CRUCI_LS_PROGRESO(hoyISO));
 
         // El resultado del día es el de la PRIMERA vez que se completó.
         const primeraVez = !cruciResultadoOficial;
@@ -2947,12 +3253,20 @@ const listaPresidentes = [
         if (primeraVez) {
             cruciResultadoOficial = { segundos, aciertos: aciertosPartida, total, gano, fecha: hoyISO };
             lsGuardar(CRUCI_LS_RES(hoyISO), cruciResultadoOficial);
-            if (gano) {
-                racha = sumarRacha(CRUCI_LS_STREAK, hoyISO);
-                record = evaluarRecord(CRUCI_LS_RECORD, segundos, hoyISO);
-            }
-            // La tarjeta del carrusel del inicio pasa a "resuelto" ya mismo,
-            // sin esperar a volver al inicio ni recargar la página.
+            if (gano) record = evaluarRecord(CRUCI_LS_RECORD, segundos, hoyISO);
+        }
+        // La racha suma el día apenas lo COMPLETÁS, aunque te hayas rendido
+        // en el primer intento: sumarRacha es idempotente si ya se sumó hoy,
+        // así que no hay riesgo de sumarlo dos veces.
+        if (gano) racha = sumarRacha(CRUCI_LS_STREAK, hoyISO);
+        // El tick de "completado" es aparte del resultado oficial: se marca
+        // apenas lo resolvés, sea en la primera vez o en una rejugada
+        // después de haberte rendido (ver actualizarEstadoDiarioEnTarjetas).
+        // Una vez en true queda así todo el día, no se puede "desmarcar".
+        if (gano) lsGuardar(CRUCI_LS_COMPLETADO(hoyISO), true);
+        if (primeraVez || gano) {
+            // La tarjeta del carrusel del inicio pasa a su estado nuevo ya
+            // mismo, sin esperar a volver al inicio ni recargar la página.
             actualizarEstadoDiarioEnTarjetas();
         }
 
@@ -3009,16 +3323,15 @@ const listaPresidentes = [
                 + formatoCronometro(i.segundos);
         } else {
             const of = i.oficial;
-            const oficialTxt = of.gano ? `✅ ${formatoCronometro(of.segundos)}` : `❌ ${of.aciertos}/${of.total}`;
-            elTiempo.innerHTML = `Tu resultado de hoy: <strong>${oficialTxt}</strong>`
-                + `<br><span class="cruci-fin-rejugada">Esta rejugada: ${formatoCronometro(i.segundos)} (no cuenta)</span>`;
+            const oficialTxt = of.gano ? formatoCronometro(of.segundos) : "Te rendiste";
+            elTiempo.textContent = `Tu resultado de hoy en tu primer intento: ${oficialTxt}`;
         }
 
         if (i.primeraVez && i.gano && i.record) {
             if (i.record.nuevo) {
                 elRecord.textContent = i.record.anterior
-                    ? `🏆 ¡Nuevo récord! ${formatoCronometro(i.segundos)} (antes ${formatoCronometro(i.record.anterior)})`
-                    : `🏆 ¡Tu primer récord! ${formatoCronometro(i.segundos)}`;
+                    ? `¡Nuevo récord! ${formatoCronometro(i.segundos)} (antes ${formatoCronometro(i.record.anterior)})`
+                    : `¡Tu primer récord! ${formatoCronometro(i.segundos)}`;
             } else {
                 elRecord.textContent = `Tu tiempo: ${formatoCronometro(i.segundos)}`
                     + `  ·  Tu mejor tiempo: ${formatoCronometro(i.record.mejor)}`;
@@ -3350,7 +3663,7 @@ function mostrarFinJuego(motivo) {
     // Personalizar mensaje según el motivo
     switch(motivo) {
         case 'victoria':
-            titulo.textContent = "🎉 ¡FELICITACIONES! 🎉";
+            titulo.textContent = "¡FELICITACIONES!";
             titulo.style.color = "#2ecc71";
             break;
         case 'tiempo':
