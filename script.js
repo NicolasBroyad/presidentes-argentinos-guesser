@@ -895,6 +895,7 @@ const listaPresidentes = [
 
         if (aciertos === window.listaFiltrada.length) {
             clearInterval(window.temporizadorInterval);
+            lanzarConfetti();
             mostrarFinJuego('victoria');
         }
     }
@@ -1491,6 +1492,7 @@ const listaPresidentes = [
         detenerTemporizadorImagen();
         bloquearControlesImagen();
         const gano = aciertos === juegoImagenOrden.length && juegoImagenOrden.length > 0;
+        if (gano) lanzarConfetti();
         mostrarFinJuego(gano ? 'victoria' : 'fin');
     }
 
@@ -2217,6 +2219,7 @@ const listaPresidentes = [
             oficial: sopaResultadoOficial
         };
 
+        if (gano) lanzarConfetti();
         mostrarFinJuego(gano ? 'victoria' : 'rendicion');
     }
 
