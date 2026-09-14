@@ -87,6 +87,16 @@ Para lograr "no se cierra al tocar afuera" + "header sigue clickeable", la soluc
 - Cache-busting: `script.js?v=20260913z`, `styles.css?v=20260913l`.
 - Verificado en browser (sopa y crucigrama): placa dorada + fecha se ven correctamente; tocar en cualquier parte fuera del modal NO lo cierra; el botón "volver" del header sigue funcionando con el modal abierto y navega a la pantalla de inicio SIN haber arrancado el juego (la card queda "No resuelta"); tocando "Empezar" el cronómetro arranca normalmente y el blur desaparece. Sin errores nuevos en consola.
 
+### 9. Fix responsive: proporciones "muy grandes" en pantallas anchas pero bajas (16:10, ej. 1440x900) — COMPLETO Y VERIFICADO
+Reporte del usuario: en relación de aspecto 16:10 (probó específicamente esto), el inicio y el modo clásico se ven desproporcionados/"todo muy grande". Causa raíz: `.button-section` (el botón "Iniciar Juego" en el hero de `index.html`) usa `flex:1` dentro de `.main{min-height:100dvh}`, así que en viewports ALTOS (celulares en vertical, monitores 1920x1080+) eso da un centrado vertical lindo, pero en viewports ANCHOS-PERO-BAJOS (16:10 tipo 1440x900, 1280x800; también 16:9 bajos como 1366x768) el `flex:1` absorbe todo el alto sobrante y deja un hueco vacío enorme entre el título y el botón, y entre el botón y la tarjeta del modo — los elementos quedan "perdidos" en vez de agrupados. Ya existía una media query `@media (max-height: 820px) and (min-width: 769px)` (de una sesión anterior) que achicaba el padding de `.rules-section` y las cards del modo clásico para notebooks 1280x720/1366x768, pero el corte en 820px NO alcanzaba a cubrir 900px de alto (1440x900, uno de los 16:10 más comunes), y tampoco tocaba el hero (kicker/botón) en absoluto.
+
+Fix en `styles.css`:
+- Se subió el corte de esa media query de `max-height:820px` a `max-height:920px` (cubre 1440x900 sin afectar monitores de 1080px+ de alto).
+- Dentro de esa misma media query se agregó: `.kicker { padding-top: 1.2rem; }` y `.button-section { flex: 0 1 auto; padding: 1.4rem 0; gap: 0.6rem; }` — el botón deja de "estirarse" para ocupar todo el alto sobrante, así el título, el botón y la tarjeta del modo quedan agrupados arriba en vez de dispersos con huecos vacíos gigantes en el medio. NO se tocaron los `font-size` (ya se achican solos vía los `clamp(vw,vh)` existentes en cada elemento) — solo el ritmo vertical (paddings/gaps).
+- Cache-busting: `styles.css?v=20260913n`.
+- Verificado en browser: 1280x800 y 1440x900 (16:10) ahora agrupan todo el hero+card arriba, sin hueco enorme, tanto en el inicio como jugando clásico (7 filas de presidentes visibles cómodamente sin scroll extra). 1920x1080 (más alto, fuera del corte de 920px) sigue con el centrado original de siempre, sin cambios. Mobile (375x812, por debajo de `min-width:769px`) sin ningún cambio. Sin errores nuevos en consola.
+- **Alcance de esta verificación**: se probó `index.html` (inicio + modo clásico) en 1280x800, 1440x900, 1920x1080 y mobile. También se probaron explícitamente Sopa de letras, Crucigrama y "Adiviná la imagen" en 1280x800 y 1440x900 (16:10) — los tres ya se veían bien proporcionados de entrada (layout de escritorio con grid/imagen a la izquierda y panel de pistas/objetivos a la derecha, todo dentro del viewport sin huecos raros ni scroll innecesario) y NO necesitaron ningún cambio de CSS. `modos.html` y `presidencias.html` también se habían revisado visualmente en 1280x800 durante el diagnóstico inicial y lucían bien (grid 2x2 de modos, timeline), tampoco se tocaron.
+
 ### 3. Rendirse vs completado (5 partes) — IMPLEMENTADO, testeo E2E INCOMPLETO
 Pedido del usuario: si te rendís la primera vez que jugás sopa/crucigrama en el día, el resultado oficial dice "te rendiste", la card NO muestra el tick verde, pero si lo volvés a jugar y lo completás después, SÍ aparece el tick (sin pisar el resultado oficial/tiempo). "Empezar de nuevo" en el modal de reanudar cuenta como rendirse.
 
@@ -108,7 +118,7 @@ Verificado con sopa: screenshot confirma modal limpio, sin insignia, sin errores
 
 ## Cache-busting
 
-Versión actual: `script.js?v=20260913z`, `styles.css?v=20260913l`, `Presidente.js?v=20260913a` en los 6 HTML (`index.html`, `modos.html`, `presidencias.html`, `privacidad.html`, `contacto.html`, `acerca.html`). Si se edita `script.js`/`styles.css` de nuevo, bumpear el sufijo con `sed` en los 6 archivos — el server local sirve versiones cacheadas si no se bumpea.
+Versión actual: `script.js?v=20260913z`, `styles.css?v=20260913n`, `Presidente.js?v=20260913a` en los 6 HTML (`index.html`, `modos.html`, `presidencias.html`, `privacidad.html`, `contacto.html`, `acerca.html`). Si se edita `script.js`/`styles.css` de nuevo, bumpear el sufijo con `sed` en los 6 archivos — el server local sirve versiones cacheadas si no se bumpea.
 
 ## Checklist de testeo pendiente (feature #3, rendirse/completado)
 

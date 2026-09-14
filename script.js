@@ -3178,7 +3178,12 @@ const listaPresidentes = [
             if (cruciActiva && palabraLlenaYCorrecta(cruciActiva)) {
                 saltarSiguientePistaPendiente(); // palabra lista -> próxima pista
             } else {
-                moverEnEntrada(1, true);
+                // Avanza a la SIGUIENTE celda sin saltear las que ya tienen
+                // letra (de una palabra cruzada ya completada): es más
+                // intuitivo poder escribir el apellido entero de corrido,
+                // reescribiendo esa letra al pasar, que tener que estar
+                // atento a no tipearla para no romper el salto automático.
+                moverEnEntrada(1, false);
             }
         }
         comprobarVictoriaCrucigrama();

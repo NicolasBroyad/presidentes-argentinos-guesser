@@ -1718,12 +1718,35 @@ td {
     padding: 0.25em 0;
 }
 
-/* --- Notebooks anchas pero bajas (ej. 1280x720, 1366x768): varios
-   tamaños de texto/padding de las reglas y de las cards del juego solo
-   se achicaban con el ANCHO, no con el ALTO, así que en pantallas cortas
-   pero no angostas (no entran en el breakpoint mobile) todo se veía
-   desproporcionadamente grande respecto a un monitor 1920x1080. --- */
-@media (max-height: 820px) and (min-width: 769px) {
+/* --- Notebooks anchas pero bajas (ej. 1280x720, 1366x768, y relaciones de
+   aspecto como 16:10 -1280x800, 1440x900, 1680x1050- que tienen bastante
+   menos alto que un 1920x1080 típico): varios tamaños de texto/padding de
+   las reglas y de las cards del juego solo se achicaban con el ANCHO, no
+   con el ALTO, así que en pantallas cortas pero no angostas (no entran en
+   el breakpoint mobile) todo se veía desproporcionadamente grande. El corte
+   en 920px cubre 1440x900 (16:10) además de los notebooks 720/768 de antes,
+   sin afectar monitores altos típicos (1080px+ de alto). --- */
+@media (max-height: 920px) and (min-width: 769px) {
+    /* El hero (kicker + título + botón "Iniciar Juego") usaba
+       ".button-section{flex:1}" para centrarse en todo el alto sobrante de
+       ".main{min-height:100dvh}" — en una notebook ancha pero baja (16:10,
+       16:9 con poca altura) eso deja un hueco enorme y vacío arriba y abajo
+       del botón, con el título y la tarjeta del carrusel quedando como
+       "perdidos" lejos uno del otro. Acá se aprieta ese ritmo vertical:
+       el botón ya no fuerza a ocupar TODO el sobrante, así que el título,
+       el botón y la tarjeta del modo quedan agrupados en vez de dispersos.
+       Los tamaños de fuente no se tocan (ya se achican solos vía los
+       clamp(vw,vh) de cada uno).*/
+    .kicker {
+        padding-top: 1.2rem;
+    }
+
+    .button-section {
+        flex: 0 1 auto;
+        padding: 1.4rem 0;
+        gap: 0.6rem;
+    }
+
     .rules-section {
         gap: 0.6rem;
         padding: 0.8rem;
