@@ -211,7 +211,7 @@ document.addEventListener('DOMContentLoaded', () => {
             sonidoAciertoActivado = !sonidoAciertoActivado;
             localStorage.setItem(SONIDO_ACIERTO_KEY, sonidoAciertoActivado ? "on" : "off");
             actualizarBotonSonido();
-            if (sonidoAciertoActivado) reproducirSonidoAcierto();
+            if (sonidoAciertoActivado) reproducirSonidoBoton();
         });
     }
 
