@@ -4011,6 +4011,31 @@ function cargarLineaDeTiempo() {
     const timelineContainer = document.querySelector('.timeline-container');
     if (!timelineContainer) return; // Solo ejecutar si estamos en presidencias.html
 
+    // px de alto del tramo del eje por año de mandato, y piso para mandatos
+    // de pocos meses (si no, el tramo casi desaparece).
+    const ANIOS_A_PX = 16;
+    const ALTO_MIN = 34;
+
+    function claseTipo(presidente) {
+        if (presidente.esDeFacto()) return "es-de-facto";
+        if (presidente.esInterino()) return "es-interino";
+        return "";
+    }
+
+    function etiquetaTipo(presidente) {
+        if (presidente.esDeFacto()) return "De facto";
+        if (presidente.esInterino()) return "Interino";
+        return "Constitucional";
+    }
+
+    function altoTramo(presidente) {
+        const inicio = presidente.periodo.inicio;
+        if (!inicio) return ALTO_MIN;
+        const fin = presidente.periodo.fin || new Date(); // presidencia en curso: mide hasta hoy
+        const anios = Math.max(0, (fin - inicio) / (1000 * 60 * 60 * 24 * 365.25));
+        return Math.max(ALTO_MIN, Math.round(anios * ANIOS_A_PX));
+    }
+
     function intentarRenderizar() {
         // window.listaPresidentes se arma en otro bloque que puede tardar
         // un instante en ejecutarse; reintentamos hasta que esté disponible.
@@ -4019,42 +4044,48 @@ function cargarLineaDeTiempo() {
             return;
         }
 
-        const timelineHTML = window.listaPresidentes.map(presidente => {
+        const filasHTML = window.listaPresidentes.map((presidente, indice) => {
             const nombreCompleto = [presidente.nombre, presidente.segundoNombre, presidente.apellido]
                 .filter(Boolean).join(" ");
 
-            const claseTipo = presidente.esDeFacto() ? "de-facto" : "constitucional";
-            const tipoGobierno = presidente.esDeFacto() ? "De facto" : "Constitucional";
+            const tipo = claseTipo(presidente);
+            const lado = indice % 2 === 0 ? "es-izquierda" : "es-derecha";
             const anioInicio = presidente.periodo.inicio ? presidente.periodo.inicio.getFullYear() : "";
 
             return `
-                <div class="timeline-item ${claseTipo}">
-                    <div class="timeline-dot"></div>
-                    <div class="timeline-year">${anioInicio}</div>
-                    <div class="timeline-card" role="button" tabindex="0" aria-expanded="false">
-                        <div class="timeline-card-main">
-                            <div class="timeline-imagen">
-                                <img src="${imagenCentradaDe(presidente.imagen)}" alt="${nombreCompleto}" loading="lazy">
+                <div class="presidencia-fila ${lado}">
+                    <span class="presidencia-punto ${tipo}"></span>
+                    <span class="presidencia-anio">${anioInicio}</span>
+                    <span class="presidencia-tramo ${tipo}" style="height: ${altoTramo(presidente)}px"></span>
+                    <div class="presidencia-lado">
+                        <div class="presidencia-card ${tipo}" tabindex="0" role="button" aria-expanded="false">
+                            <div class="presidencia-cabecera">
+                                <span class="presidencia-retrato">
+                                    <img src="${imagenCentradaDe(presidente.imagen)}" alt="${nombreCompleto}" loading="lazy">
+                                </span>
+                                <div class="presidencia-datos">
+                                    <h3>${nombreCompleto}</h3>
+                                    <div class="presidencia-meta">
+                                        <span class="presidencia-periodo">${presidente.periodo.toString()}</span>
+                                        <span class="presidencia-tipo">${etiquetaTipo(presidente)}</span>
+                                    </div>
+                                </div>
+                                <span class="presidencia-chevron" aria-hidden="true">›</span>
                             </div>
-                            <div class="timeline-info">
-                                <h3 class="timeline-nombre">${nombreCompleto}</h3>
-                                <p class="timeline-periodo">${presidente.periodo.toString()}</p>
-                                <span class="timeline-tipo ${claseTipo}">${tipoGobierno}</span>
-                            </div>
+                            <p class="presidencia-descripcion">${presidente.descripcion}</p>
                         </div>
-                        <p class="timeline-descripcion">${presidente.descripcion}</p>
                     </div>
                 </div>
             `;
         }).join('');
 
-        timelineContainer.innerHTML = timelineHTML;
+        timelineContainer.innerHTML = `<div class="timeline-eje"></div>${filasHTML}`;
 
         // Al tocar/clickear una tarjeta, queda "fijada" expandida (útil en celular,
         // donde no existe hover). En desktop además se expande solo con el mouse encima.
-        timelineContainer.querySelectorAll('.timeline-card').forEach(card => {
+        timelineContainer.querySelectorAll('.presidencia-card').forEach(card => {
             const alternarExpandido = () => {
-                const expandido = card.classList.toggle('expandido');
+                const expandido = card.classList.toggle('esta-abierta');
                 card.setAttribute('aria-expanded', expandido ? 'true' : 'false');
             };
             card.addEventListener('click', alternarExpandido);
