@@ -1773,25 +1773,30 @@ td {
     padding: 0.25em 0;
 }
 
-/* --- Notebooks anchas pero bajas (ej. 1280x720, 1366x768, y relaciones de
-   aspecto como 16:10 -1280x800, 1440x900, 1680x1050- que tienen bastante
-   menos alto que un 1920x1080 típico): varios tamaños de texto/padding de
-   las reglas y de las cards del juego solo se achicaban con el ANCHO, no
-   con el ALTO, así que en pantallas cortas pero no angostas (no entran en
-   el breakpoint mobile) todo se veía desproporcionadamente grande. El corte
-   en 920px cubre 1440x900 (16:10) además de los notebooks 720/768 de antes,
-   sin afectar monitores altos típicos (1080px+ de alto). --- */
-@media (max-height: 920px) and (min-width: 769px) {
+/* --- Ventanas de escritorio (ancho >=769px): varios tamaños de texto/
+   padding de las reglas y de las cards del juego solo se achicaban con el
+   ANCHO, no con el ALTO, así que en pantallas anchas pero bajas (notebooks
+   16:10/16:9 como 1280x800, 1366x768, 1440x900) todo se veía
+   desproporcionadamente grande. Antes este bloque solo se aplicaba hasta
+   920px de alto, asumiendo que los monitores más altos no lo necesitaban,
+   pero ".button-section{flex:1}" (ver más abajo) sigue estirándose con
+   CUALQUIER alto sobrante de ".main{min-height:100dvh}": en una ventana
+   angosta en ancho relativo pero muy alta (ventana sin maximizar en un
+   monitor grande, o un monitor de escritorio alto) deja un hueco enorme
+   entre el botón y la tarjeta de modo, igual de "perdidos" que en las
+   notebooks bajas. Por eso ahora se aplica a cualquier alto en desktop: el
+   sobrante que quede se acumula como espacio vacío al final de la sección
+   (antes del footer) en vez de partir el hero en dos. --- */
+@media (min-width: 769px) {
     /* El hero (kicker + título + botón "Iniciar Juego") usaba
        ".button-section{flex:1}" para centrarse en todo el alto sobrante de
-       ".main{min-height:100dvh}" — en una notebook ancha pero baja (16:10,
-       16:9 con poca altura) eso deja un hueco enorme y vacío arriba y abajo
-       del botón, con el título y la tarjeta del carrusel quedando como
-       "perdidos" lejos uno del otro. Acá se aprieta ese ritmo vertical:
-       el botón ya no fuerza a ocupar TODO el sobrante, así que el título,
-       el botón y la tarjeta del modo quedan agrupados en vez de dispersos.
-       Los tamaños de fuente no se tocan (ya se achican solos vía los
-       clamp(vw,vh) de cada uno).*/
+       ".main{min-height:100dvh}" — eso deja un hueco enorme y vacío arriba y
+       abajo del botón, con el título y la tarjeta del carrusel quedando
+       como "perdidos" lejos uno del otro. Acá se aprieta ese ritmo
+       vertical: el botón ya no fuerza a ocupar TODO el sobrante, así que el
+       título, el botón y la tarjeta del modo quedan agrupados en vez de
+       dispersos. Los tamaños de fuente no se tocan (ya se achican solos vía
+       los clamp(vw,vh) de cada uno).*/
     .kicker {
         padding-top: 1.2rem;
     }
@@ -1913,8 +1918,8 @@ td {
     justify-content: center;
 }
 
-/* Mismo problema que el bloque "(max-height: 920px) and (min-width: 769px)"
-   de más arriba (ver su comentario), pero en celulares bajos (iPhone SE y
+/* Mismo problema que el bloque "(min-width: 769px)" de más arriba (ver su
+   comentario), pero en celulares bajos (iPhone SE y
    similares, ~667px de alto o menos): ".button-section{flex:1}" reparte
    TODO el alto sobrante de ".main{min-height:100dvh}" arriba/abajo del
    botón, pero un celular así de bajo casi no tiene sobrante que repartir
