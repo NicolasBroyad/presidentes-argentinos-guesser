@@ -1515,18 +1515,25 @@ const listaPresidentes = [
     // ==========================================================================
     //  A la izquierda una grilla de letras; a la derecha, una pista por
     //  presidente (foto + años de mandato). Hay que encontrar cada APELLIDO
-    //  arrastrando sobre la grilla (horizontal, vertical o diagonal ↘). Al
-    //  encontrarlo se tacha la pista y se revela el nombre. Se gana al
-    //  encontrar todos los apellidos antes de que se acabe el tiempo.
+    //  arrastrando sobre la grilla, en cualquiera de las 8 direcciones
+    //  (horizontal/vertical/diagonal, de derecha a izquierda o de abajo hacia
+    //  arriba también). Al encontrarlo se tacha la pista y se revela el
+    //  nombre. Se gana al encontrar todos los apellidos antes de que se
+    //  acabe el tiempo.
     //  Reutiliza: presidentesUnicos, mezclarArray, normalizarTexto,
     //  nombreCompletoPresidente, mostrarFinJuego (vía window.listaFiltrada +
     //  la variable aciertos).
 
-    // Direcciones de colocación (v1 "fácil": sin palabras invertidas). [df, dc]
+    // Las 8 direcciones de colocación. [df, dc], cada uno en {-1, 0, 1}.
     const SOPA_DIRECCIONES = [
         [0, 1],   // horizontal  →
+        [0, -1],  // horizontal  ←
         [1, 0],   // vertical    ↓
-        [1, 1]    // diagonal    ↘
+        [-1, 0],  // vertical    ↑
+        [1, 1],   // diagonal    ↘
+        [-1, -1], // diagonal    ↖
+        [1, -1],  // diagonal    ↙
+        [-1, 1]   // diagonal    ↗
     ];
     const SOPA_LETRAS_RELLENO = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
@@ -1687,13 +1694,23 @@ const listaPresidentes = [
     }
 
     // Intenta ubicar una palabra en la grilla; devuelve las celdas o null.
+    // Rango válido de la celda inicial en un eje, según hacia dónde avanza la
+    // palabra en ese eje: si avanza (+1) tiene que arrancar antes para que
+    // entre; si retrocede (-1) tiene que arrancar después; si no se mueve en
+    // ese eje (0), puede arrancar en cualquier posición.
+    function rangoInicioSopa(direccion, tam, largo) {
+        if (direccion === 1) return [0, tam - largo];
+        if (direccion === -1) return [largo - 1, tam - 1];
+        return [0, tam - 1];
+    }
+
     function intentarColocarSopa(grilla, palabra, tam, rng, intentos = 150) {
         for (let t = 0; t < intentos; t++) {
             const [df, dc] = SOPA_DIRECCIONES[Math.floor(rng() * SOPA_DIRECCIONES.length)];
-            const maxR = df ? tam - palabra.length : tam - 1;
-            const maxC = dc ? tam - palabra.length : tam - 1;
-            const r0 = Math.floor(rng() * (maxR + 1));
-            const c0 = Math.floor(rng() * (maxC + 1));
+            const [rMin, rMax] = rangoInicioSopa(df, tam, palabra.length);
+            const [cMin, cMax] = rangoInicioSopa(dc, tam, palabra.length);
+            const r0 = rMin + Math.floor(rng() * (rMax - rMin + 1));
+            const c0 = cMin + Math.floor(rng() * (cMax - cMin + 1));
             const celdas = [];
             let ok = true;
             for (let i = 0; i < palabra.length; i++) {
