@@ -2562,19 +2562,35 @@ const listaPresidentes = [
         return copia;
     }
 
-    // Apellidos aptos para el crucigrama: una sola palabra, sin tildes, 4–10
-    // letras. NO se aplican los filtros de configuración (el del día es fijo).
+    // Apellidos compuestos que en el crucigrama se juegan distinto a como
+    // figuran en u.apellido (sin el "de" delante, en el caso de Alvear).
+    const CRUCI_PALABRA_ESPECIAL = {
+        [normalizarTexto("Marcelo Torcuato de Alvear")]: "Alvear"
+    };
+
+    // Apellidos aptos para el crucigrama: sin tildes, 4–15 letras (los
+    // compuestos se juegan como una sola palabra, sin el espacio).
+    // NO se aplican los filtros de configuración (el del día es fijo).
     // Los de la lista de exclusión fija (APELLIDOS_EXCLUSION_FIJA) nunca entran.
-    function poolCrucigrama() {
-        const vistas = new Set();
+    function poolCrucigrama(rng) {
+        const vistas = new Map(); // palabra -> índice en pool
         const pool = [];
         presidentesUnicos.forEach(u => {
             if (estaEnListaExclusionFija(u)) return;
-            if (u.apellido.trim().includes(" ")) return;
-            const palabra = letraGrillaDe(u.apellido);
-            if (palabra.length < 4 || palabra.length > 10) return;
-            if (vistas.has(palabra)) return;
-            vistas.add(palabra);
+            const especial = CRUCI_PALABRA_ESPECIAL[normalizarTexto(nombreCompletoPresidente(u))];
+            const palabra = letraGrillaDe(especial || u.apellido);
+            if (palabra.length < 4 || palabra.length > 15) return;
+            if (vistas.has(palabra)) {
+                // Dos presidentes distintos con la misma palabra de grilla
+                // (ambos Sáenz Peña, o Cristina/Alberto Fernández): en vez de
+                // que uno tape siempre al otro, se alterna al azar cuál entra
+                // hoy, con la misma semilla del día (mismo resultado todo el
+                // día, cambia de un día a otro).
+                if (rng() < 0.5) return;
+                pool[vistas.get(palabra)] = { u, palabra };
+                return;
+            }
+            vistas.set(palabra, pool.length);
             pool.push({ u, palabra });
         });
         return pool;
@@ -2731,99 +2747,298 @@ const listaPresidentes = [
     }
 
     // --- Pistas del crucigrama ---
-    // 6 tipos por presidente. La del día se elige con el PRNG sembrado por
-    // fecha: el mismo presidente en otra fecha trae otra pista (no memorizable).
-    function cruciIndicesEnLista(u) {
-        const clave = normalizarTexto(nombreCompletoPresidente(u));
-        const idxs = [];
-        listaPresidentes.forEach((p, i) => {
-            if (normalizarTexto(nombreCompletoPresidente(p)) === clave) idxs.push(i);
-        });
-        return idxs;
-    }
-    function cruciAnioAsuncion(u) {
-        const inicios = u.periodos.map(p => p.inicio && p.inicio.getFullYear()).filter(Boolean);
-        return inicios.length ? Math.min(...inicios) : null;
-    }
-
-    function cruciPistaMandatos(u) {
-        const tramos = u.periodos.map(p => {
-            const a = p.inicio ? p.inicio.getFullYear() : "?";
-            const b = p.fin ? p.fin.getFullYear() : "la actualidad";
-            return `${a}-${b}`;
-        });
-        if (tramos.length === 1) {
-            const p = u.periodos[0];
-            const a = p.inicio ? p.inicio.getFullYear() : "?";
-            const b = p.fin ? p.fin.getFullYear() : "la actualidad";
-            return `Presidente entre ${a} y ${b}`;
-        }
-        return `Gobernó en ${tramos.slice(0, -1).join(", ")} y ${tramos[tramos.length - 1]}`;
-    }
-    function cruciPistaNombrePila(u) {
-        const anio = cruciAnioAsuncion(u);
-        const nom = [u.nombre, u.segundoNombre].filter(Boolean).join(" ");
-        if (!anio || !nom) return null;
-        return `El presidente de nombre ${nom} que asumió en ${anio}`;
-    }
-    // Algunos apellidos los comparten dos presidentes distintos (p. ej.
-    // Cristina Fernández y Alberto Fernández): una pista que solo diga
-    // "Fernández" queda ambigua. Si el apellido se repite en alguien con
-    // otro nombre, la pista usa "nombre apellido" en vez de solo el apellido.
-    function apellidoEsAmbiguo(persona) {
-        const clavePersona = normalizarTexto(nombreCompletoPresidente(persona));
-        return listaPresidentes.some(p =>
-            p.apellido === persona.apellido &&
-            normalizarTexto(nombreCompletoPresidente(p)) !== clavePersona
-        );
-    }
-    function cruciNombreParaPista(persona) {
-        return apellidoEsAmbiguo(persona)
-            ? `${persona.nombre} ${persona.apellido}`
-            : persona.apellido;
-    }
-    function cruciPistaAntecesor(u) {
-        const idxs = cruciIndicesEnLista(u);
-        if (!idxs.length || idxs[0] === 0) return null;
-        const ant = listaPresidentes[idxs[0] - 1];
-        const anio = cruciAnioAsuncion(u);
-        return `Asumió después de ${cruciNombreParaPista(ant)}${anio ? ` en ${anio}` : ""}`;
-    }
-    function cruciPistaSucesor(u) {
-        const idxs = cruciIndicesEnLista(u);
-        const ultimo = idxs[idxs.length - 1];
-        if (ultimo === undefined || ultimo >= listaPresidentes.length - 1) return null;
-        return `Lo sucedió en el cargo ${cruciNombreParaPista(listaPresidentes[ultimo + 1])}`;
-    }
-    function cruciPistaTipoGobierno(u) {
-        const anio = cruciAnioAsuncion(u);
-        if (!anio) return null;
-        return u.deFacto
-            ? `Presidente de facto que asumió en ${anio}`
-            : `Presidente constitucional que asumió en ${anio}`;
-    }
-    function cruciPistaDescripcion(u) {
-        if (!u.descripcion) return null;
-        let frase = u.descripcion.split(/(?<=\.)\s+/)[0] || u.descripcion;
-        [u.apellido, u.nombre, u.segundoNombre].filter(Boolean).forEach(t => {
-            frase = frase.replace(new RegExp(t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi"), "___");
-        });
-        if (frase.length > 150) frase = frase.slice(0, 147).trim() + "…";
-        return frase;
-    }
-
-    const CRUCI_PISTAS = [
-        cruciPistaMandatos, cruciPistaNombrePila, cruciPistaAntecesor,
-        cruciPistaSucesor, cruciPistaTipoGobierno, cruciPistaDescripcion
-    ];
+    // Lista curada a mano (una entrada por presidente único, con varias
+    // pistas equivalentes cada una). La del día se elige con el PRNG
+    // sembrado por fecha: el mismo presidente en otra fecha trae otra pista
+    // (no memorizable). Incluye también a los presidentes de la lista de
+    // exclusión fija (ver APELLIDOS_EXCLUSION_FIJA): quedan cargados por si
+    // en el futuro se decide incluirlos, aunque hoy no se usan.
+    const CRUCI_PISTAS_CURADAS = {
+        [normalizarTexto("Bernardino Rivadavia")]: [
+            "El presidente de nombre Bernardino que asumió en 1826",
+            "Su apellido da origen al sillón que usan los presidentes de la nación",
+            "Primer presidente de las Provincias Unidas del Río de la Plata."
+        ],
+        [normalizarTexto("Vicente López")]: [
+            "Designado como presidente provisional tras la renuncia de Rivadavia",
+            "El presidente de nombre Vicente que sucedió a Rivadavia",
+            "Fue autor de la letra del Himno Nacional Argentino",
+            "Da nombre a un partido bonaerense limítrofe con la capital federal"
+        ],
+        [normalizarTexto("Bartolomé Mitre")]: [
+            "El presidente de nombre Bartolomé que asumió en 1862",
+            "Primer presidente de la Argentina unificada, fue sucedido por Sarmiento",
+            "Fundó el diario La Nación",
+            "Condujo la guerra de la Triple Alianza durante su gobierno"
+        ],
+        [normalizarTexto("Domingo Faustino Sarmiento")]: [
+            "El presidente de nombre Domingo Faustino que asumió en 1868",
+            "Educador y escritor, reconocido por su impulso a la educación pública y la modernización del país",
+            "El dia del maestro se celebra en honor a su fallecimiento",
+            `Escribió "Civilización y barbarie" antes de gobernar`
+        ],
+        [normalizarTexto("Nicolás Remigio Aurelio Avellaneda")]: [
+            "Presidente entre 1874 y 1880",
+            "El presidente de nombre Nicolás Remigio Aurelio que asumió en 1874",
+            "Asumió después de Sarmiento en 1874",
+            "Presidente cuyo apellido nombra hoy un partido de la zona sur del Gran Buenos Aires"
+        ],
+        [normalizarTexto("Julio Argentino Roca")]: [
+            "Gobernó en dos mandatos: 1880-1886 y 1898-1904",
+            "El presidente de nombre Julio Argentino que asumió en 1880",
+            "General al mando de la Conquista del Desierto",
+            "Fue la cara del billete de 100$ durante años",
+            "Presidente de la Generación del 80, máximo referente del Partido Autonomista Nacional"
+        ],
+        [normalizarTexto("Miguel Ángel Juárez Celman")]: [
+            "Presidente entre 1886 y 1890",
+            "El presidente de nombre Miguel Ángel que asumió en 1886",
+            "Asumió después de Roca en 1886",
+            "Lo sucedió en el cargo Pellegrini",
+            "Presidente derrocado por la Revolución del Parque en 1890",
+            "Cuñado y sucesor de Julio Argentino Roca"
+        ],
+        [normalizarTexto("Carlos Enrique José Pellegrini")]: [
+            "Presidente de nombre Carlos Enrique José entre 1890-1892",
+            "Asumió después de Juárez Celman en 1890 y lo sucedió Luis Sáenz Peña",
+            "Da nombre a uno de los colegios preuniversitarios más prestigiosos de la UBA"
+        ],
+        [normalizarTexto("Luis Sáenz Peña")]: [
+            "Presidente de nombre Luis entre 1892-1895",
+            "Asumió después de Pellegrini en 1892 y lo sucedió en el cargo José Uriburu",
+            "Padre de otro presidente de nombre Roque"
+        ],
+        [normalizarTexto("José Evaristo Uriburu")]: [
+            "Presidente de nombre José Evaristo entre 1895-1898",
+            "Asumió después de la renuncia de Luis Sáenz Peña en 1895 y completó su mandato",
+            "Tío de un futuro presidente de facto de mismo apellido en 1930"
+        ],
+        [normalizarTexto("Manuel Pedro Quintana")]: [
+            "Presidente de nombre Manuel Pedro entre 1904-1906",
+            "Asumió después de la segunda presidencia de Roca en 1904 y lo sucedió Figueroa Alcorta",
+            "Presidente porteño que murió en el cargo en 1906"
+        ],
+        [normalizarTexto("José Figueroa Alcorta")]: [
+            "Presidente de nombre José entre 1906-1910",
+            "Asumió tras el fallecimiento de Quintana en 1906 y lo sucedió Roque Sáenz Peña",
+            "Su apellido compuesto nombra una avenida porteña que pasa por Recoleta, Palermo y Belgrano"
+        ],
+        [normalizarTexto("Roque Sáenz Peña")]: [
+            "Presidente de nombre Roque entre 1910-1914",
+            "Durante su mandato se realizaron los primeros comicios con voto secreto gracias a una ley que promovió",
+            "Autor de la ley de sufragio universal, secreto y obligatorio que lleva su apellido",
+            "Presidente que asumió en 1910 y cuyo padre fue presidente entre 1892-1895",
+            "Su reforma electoral terminó con el fraude que sostenía al PAN en el poder y dio lugar a la primera victoria electoral del radicalismo con Yrigoyen"
+        ],
+        [normalizarTexto("Victorino de la Plaza")]: [
+            "Presidente de nombre Victorino entre 1914-1916",
+            "Asumió después de Roque Sáenz Peña en 1914 y lo sucedió Yrigoyen",
+            "Presidente que debió conducir el país durante el estallido de la Primera Guerra Mundial"
+        ],
+        [normalizarTexto("Hipólito Yrigoyen")]: [
+            "Gobernó en 1916-1922 y 1928-1930",
+            "El presidente de nombre Hipólito que goberno en dos mandatos",
+            "Primer presidente en ser derrocado por un golpe militar en 1930",
+            "Primer presidente radical de la historia argentina",
+            `Su apellido da origen a la expresión "el diario de ___"`,
+            "Primer presidente elegido con el voto secreto y obligatorio"
+        ],
+        [normalizarTexto("Marcelo Torcuato de Alvear")]: [
+            "Presidente de nombre Marcelo Torcuato entre 1922-1928",
+            "Gobernó entre los dos mandatos de Yrigoyen"
+        ],
+        [normalizarTexto("José Félix Uriburu")]: [
+            "Asumió en 1930 y su tio de mismo apellido había sido presidente entre 1895-1898",
+            "El presidente de facto de nombre José Félix que asumió en 1930",
+            "Lideró el primer golpe de Estado de la historia constitucional argentina en 1930, derrocando a Yrigoyen.",
+            `Militar que inauguró la "Década Infame" como el primer presidente de facto del país.`
+        ],
+        [normalizarTexto("Agustín Pedro Justo")]: [
+            `Presidente de nombre Agustín Pedro entre 1932 y 1938, durante la "Década Infame"`,
+            `Asumió después de José Uriburu en 1932 elegido en comicios mediante fraude electoral ("Fraude patriótico")`,
+            "General que gobernó entre 1932 y 1938; su vicepresidente firmó el polémico pacto comercial con Gran Bretaña (Roca-Runciman)."
+        ],
+        [normalizarTexto("Roberto Marcelino Ortiz")]: [
+            `Presidente de nombre Roberto Marcelino entre 1938 y 1942, durante la "Década Infame"`,
+            "Presidente en la segunda mitad de la Década Infame que quiso terminar con el fraude electoral"
+        ],
+        [normalizarTexto("Ramón Castillo")]: [
+            "Presidente de nombre Ramón que goberno entre 1942 y 1943",
+            `Último presidente de la "Década Infame", sucedió a Ortiz`,
+            "Su corto gobierno terminó con el golpe militar conocido como Revolución del 43, liderado por Rawson"
+        ],
+        [normalizarTexto("Arturo Franklin Rawson")]: [
+            `Su presidencia duró solo 3 días. Derrocó a Ramón Castillo, terminando con la "Década Infame"`,
+            "Su apellido nombra la capital de la provincia de Chubut en honor a su padre",
+            "Militar que lideró el golpe conocido como Revolución del 43"
+        ],
+        [normalizarTexto("Pedro Pablo Ramírez")]: [
+            "Asumió después de Rawson en 1943 y lo sucedió en el cargo Farrell en 1944",
+            "Bajo su gobierno, Perón fue designado al frente de la naciente Secretaría de Trabajo y Previsión"
+        ],
+        [normalizarTexto("Edelmiro Julián Farrell")]: [
+            "Convocó a las elecciones de 1946 en las que ganó Perón",
+            "El presidente de nombre Edelmiro Julián que gobernó entre 1944-1946",
+            "Asumió después de Ramírez en 1944 y lo sucedió en el cargo Perón en su primera presidencia"
+        ],
+        [normalizarTexto("Juan Domingo Perón")]: [
+            "Gobernó en tres mandatos: 1946-1952, 1952-1955 y 1973-1974",
+            "El presidente de nombre Juan Domingo que asumió en 1946 su primer mandato",
+            "Líder popular y fundador del movimiento político que lleva su apellido",
+            "Esposo de Eva Duarte, figura central de su primer gobierno"
+        ],
+        [normalizarTexto("Eduardo Ernesto Lonardi")]: [
+            "General que lideró el golpe militar que derrocó a Perón",
+            "Presidente de facto argentino durante 3 meses en 1955 (septiembre-noviembre)",
+            `Sucesor de Perón tras la "Revolución Libertadora", lo sucedió Aramburu`
+        ],
+        [normalizarTexto("Pedro Eugenio Aramburu")]: [
+            "Presidente de facto argentino entre 1955 y 1958",
+            `Sucesor de Lonardi tras un golpe interno dentro de la misma "Revolución Libertadora" que derrocó a Perón`,
+            "Lo sucedió en el cargo Frondizi",
+            "Presidente de facto que proscribió al peronismo"
+        ],
+        [normalizarTexto("Arturo Frondizi")]: [
+            "Ganó las elecciones de 1958 gracias a un pacto con Perón, que instruyó a sus seguidores a votarlo",
+            "El presidente de nombre Arturo que asumió en 1958",
+            "Presidente desarrollista que ganó las elecciones con el peronismo proscripto",
+            "Líder de la Unión Cívica Radical Intransigente, que sucedió a Aramburu en el cargo"
+        ],
+        [normalizarTexto("José María Guido")]: [
+            "Presidió el corto interregno entre las presidencias de Frondizi e Illia",
+            "Asumió como presidente provisional tras la crisis de 1962 y administró la transición hasta nuevas elecciones que ganaría Illia"
+        ],
+        [normalizarTexto("Arturo Umberto Illia")]: [
+            "Presidente entre 1963 y 1966",
+            "El presidente de nombre Arturo Umberto que asumió en 1963",
+            "Presidente radical que fue derrocado por un golpe militar en 1966, liderado por Onganía",
+            "Presidente de la UCR del Pueblo, que ganó las elecciones con el peronismo proscripto"
+        ],
+        [normalizarTexto("Juan Carlos Onganía")]: [
+            "Presidente de facto entre 1966 y 1970",
+            `General que lideró el golpe militar de junio de 1966 contra Illia en la autodenominada "Revolución Argentina"`,
+            `Su gobierno terminó en 1970 tras el estallido social conocido como el "Cordobazo", en 1969`
+        ],
+        [normalizarTexto("Roberto Marcelo Levingston")]: [
+            "Fue elegido por la Junta Militar como figura de transición, tras la caída de Onganía en 1970"
+        ],
+        [normalizarTexto("Alejandro Agustín Lanusse")]: [
+            "Convocó a las elecciones de 1973 para las que levantó la proscripción al peronismo, sin permitir al propio Perón como candidato",
+            `Último presidente de la "Revolución Argentina", que le entregó el poder a Cámpora en la vuelta del peronismo`
+        ],
+        [normalizarTexto("Héctor José Cámpora")]: [
+            `"_____ al gobierno, Perón al poder" fue su consigna de campaña`,
+            "En 1973, ganó las primeras elecciones con el peronismo habilitado desde 1955",
+            "Su presidencia permitió el retorno definitivo de Perón al país en 1973 luego de su exilio."
+        ],
+        [normalizarTexto("Raúl Alberto Lastiri")]: [
+            "Fue presidente interino entre los gobiernos de Cámpora y Perón en su tercer mandato"
+        ],
+        [normalizarTexto("María Estela Martínez")]: [
+            "El presidente de nombre María Estela que asumió en 1974",
+            "Primera mujer presidenta de la historia argentina (y de América)",
+            "Vicepresidenta que asumió tras la muerte de Juan Domingo Perón, su esposo",
+            "Derrocada por el golpe militar liderado por Videla en 1976"
+        ],
+        [normalizarTexto("Jorge Rafael Videla")]: [
+            "Líder del golpe militar de 1976 contra Isabel Perón",
+            "Bajo su gobierno se implementó el terrorismo de Estado, con miles de personas desaparecidas",
+            "Presidió Argentina durante todo el Mundial de Fútbol de 1978, organizado en el país",
+            "Murió en prisión en 2013, cumpliendo condena por crímenes de lesa humanidad"
+        ],
+        [normalizarTexto("Roberto Eduardo Viola")]: [
+            "Asumió después de Videla en 1981"
+        ],
+        [normalizarTexto("Carlos Alberto Lacoste")]: [
+            "Presidió un breve interinato de solo 11 días durante la última dictadura militar del país, entre Viola y Galtieri"
+        ],
+        [normalizarTexto("Leopoldo Fortunato Galtieri")]: [
+            `Pronunció la frase "Si quieren venir, que vengan, les presentaremos batalla" desde el balcón de la Casa Rosada en el marco de la incipiente Guerra de Malvinas`,
+            "General cuyo gobierno impulsó la guerra de Malvinas en 1982, conflicto que precipitó la crisis y debilitamiento del régimen militar."
+        ],
+        [normalizarTexto("Reynaldo Benito Bignone")]: [
+            "Asumió tras la renuncia de Galtieri, provocada por la derrota en Malvinas",
+            "Convocó a las elecciones de octubre de 1983 que ganó Alfonsín",
+            "Le entregó el poder a Alfonsín el 10 de diciembre de 1983, cerrando la última dictadura argentina"
+        ],
+        [normalizarTexto("Raúl Ricardo Alfonsín")]: [
+            "Presidente entre 1983 y 1989",
+            "El presidente de nombre Raúl Ricardo que asumió en 1983",
+            "Primer presidente electo tras el retorno a la democracia en 1983",
+            "Predecesor de Menem en la Casa Rosada",
+            `Pronunció la frase "con la democracia se come, se cura y se educa" el día de su asunción`
+        ],
+        [normalizarTexto("Carlos Saúl Menem")]: [
+            "Gobernó en 1989-1995 y 1995-1999",
+            "El presidente de nombre Carlos Saúl que asumió en 1989",
+            "Sucesor de Alfonsín en 1989",
+            "Estableció la convertibilidad (1 peso = 1 dólar) junto a su ministro Domingo Cavallo",
+            "Modificó la Constitución en 1994, lo que le permitió ser reelecto en 1995"
+        ],
+        [normalizarTexto("Fernando De La Rúa")]: [
+            "Presidente entre 1999 y 2001",
+            "El presidente de nombre Fernando que asumió en 1999",
+            "Asumió después de Menem en 1999",
+            "Renunció a su cargo tras protestas masivas, abandonando la Casa Rosada en helicóptero",
+            `El final de su gobierno quedó marcado por el "Corralito" que implementó por la crisis económica`
+        ],
+        [normalizarTexto("Federico Ramón Puerta")]: [
+            "Presidente interino argentino por apenas 2 días, en diciembre de 2001 tras la renuncia de De La Rua"
+        ],
+        [normalizarTexto("Adolfo Rodríguez Saá")]: [
+            "Presidente interino argentino por una semana, en diciembre de 2001",
+            "Anunció la cesación de pagos (default) de la deuda externa argentina ante la Asamblea Legislativa, en diciembre de 2001"
+        ],
+        [normalizarTexto("Eduardo Oscar Camaño")]: [
+            "Diputado que ejerció brevemente la presidencia interina en la sucesión de 2001",
+            "Convocó a la Asamblea Legislativa que eligió a Duhalde como presidente"
+        ],
+        [normalizarTexto("Eduardo Alberto Duhalde")]: [
+            "Presidente entre 2002 y 2003",
+            "Predecesor de Néstor Kirchner en la presidencia",
+            "Puso fin a la convertibilidad y aplicó la pesificación asimétrica, rompiendo la paridad peso-dólar",
+            `Su famosa frase de campaña fue "el que depositó dólares, recibirá dólares", en el marco de la crisis del 2001`
+        ],
+        [normalizarTexto("Néstor Carlos Kirchner")]: [
+            "Presidente entre 2003 y 2007",
+            "El presidente de nombre Néstor Carlos que asumió en 2003",
+            "Asumió después de Duhalde en 2003",
+            "Lo sucedió en el cargo Cristina Fernández"
+        ],
+        [normalizarTexto("Cristina Elisabet Fernández")]: [
+            "Gobernó en 2007-2011 y 2011-2015",
+            "El presidente de nombre Cristina Elisabet que asumió en 2007",
+            "Asumió en 2007, sucediendo en el cargo a su marido",
+            "La sucedió en el cargo Macri",
+            "Primera mujer reelecta en la presidencia de la historia argentina"
+        ],
+        [normalizarTexto("Mauricio Macri")]: [
+            "Presidente entre 2015 y 2019",
+            "El presidente de nombre Mauricio que asumió en 2015",
+            "Asumió después de Cristina Fernández en 2015",
+            "Fundador del PRO",
+            "Fue presidente de Boca Juniors antes de dedicarse a la política nacional",
+            "Su gobierno tomó un préstamo histórico del FMI en 2018, el más grande otorgado por el organismo hasta entonces",
+            "Perdió la reelección frente a Alberto Fernández en 2019"
+        ],
+        [normalizarTexto("Alberto Ángel Fernández")]: [
+            "Presidente entre 2019 y 2023",
+            "Asumió después de Macri en 2019",
+            "Predecesor de Milei en la presidencia",
+            "Presidió el país durante la pandemia del COVID-19"
+        ],
+        [normalizarTexto("Javier Gerardo Milei")]: [
+            "El presidente de nombre Javier Gerardo que asumió en 2023",
+            "Asumió después de Alberto Fernández en 2023",
+            "Ganó el ballotage de 2023 frente a Sergio Massa",
+            "Primer y único economista en llegar a la presidencia argentina"
+        ]
+    };
 
     function pistaCrucigramaDe(u, rng) {
-        const inicio = Math.floor(rng() * CRUCI_PISTAS.length);
-        for (let k = 0; k < CRUCI_PISTAS.length; k++) {
-            const texto = CRUCI_PISTAS[(inicio + k) % CRUCI_PISTAS.length](u);
-            if (texto) return texto;
-        }
-        return cruciPistaMandatos(u);
+        const pistas = CRUCI_PISTAS_CURADAS[normalizarTexto(nombreCompletoPresidente(u))];
+        if (!pistas || !pistas.length) return `Presidente ${nombreCompletoPresidente(u)}`;
+        return pistas[Math.floor(rng() * pistas.length)];
     }
 
     // --- Cronómetro del crucigrama (cuenta hacia arriba) ---
@@ -2956,7 +3171,7 @@ const listaPresidentes = [
         const racha = rachaVigente(CRUCI_LS_STREAK, hoyISO);
 
         const rng = mulberry32(hashCadena("cruci-" + hoyISO));
-        const pool = mezclarConRng(poolCrucigrama(), rng).slice(0, 11);
+        const pool = mezclarConRng(poolCrucigrama(rng), rng).slice(0, 11);
         cruciData = construirCrucigrama(pool, rng);
         cruciEntradas = cruciData.entradas;
 
