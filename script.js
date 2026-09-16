@@ -1652,19 +1652,20 @@ const listaPresidentes = [
         });
     }
 
-    // Apellido "sopeable": una sola palabra, sin tildes, en MAYÚSCULAS.
+    // Apellido "sopeable": una sola palabra, sin tildes, en MAYÚSCULAS (los
+    // compuestos se juegan sin el espacio; ver PALABRA_GRILLA_ESPECIAL).
     function palabraSopaDe(u) {
-        return letraGrillaDe(u.apellido);
+        const especial = PALABRA_GRILLA_ESPECIAL[normalizarTexto(nombreCompletoPresidente(u))];
+        return letraGrillaDe(especial || u.apellido);
     }
 
-    // Presidentes elegibles: apellido de una sola palabra y de largo razonable
-    // para que entre en la grilla y sea reconocible. Igual para todos (como el
-    // crucigrama): NO se aplican los filtros de configuración, la del día es fija.
+    // Presidentes elegibles: apellido de largo razonable para que entre en la
+    // grilla y sea reconocible. Igual para todos (como el crucigrama): NO se
+    // aplican los filtros de configuración, la del día es fija.
     // Los de la lista de exclusión fija (APELLIDOS_EXCLUSION_FIJA) nunca entran.
     function presidentesSopaDisponibles(maxLargo) {
         return presidentesUnicos.filter(u => {
             if (estaEnListaExclusionFija(u)) return false;
-            if (u.apellido.trim().includes(" ")) return false; // apellidos compuestos afuera
             const palabra = palabraSopaDe(u);
             return palabra.length >= 4 && palabra.length <= maxLargo;
         });
@@ -1768,7 +1769,7 @@ const listaPresidentes = [
         // fecha, nunca la configuración del usuario ni el tamaño de pantalla.
         const rng = mulberry32(hashCadena("sopa-" + hoyISO));
         const cantidad = 5;
-        const maxLargo = 12;
+        const maxLargo = 15;
         const baseTam = 12;
 
         const elegidas = elegirPalabrasSopa(cantidad, maxLargo, rng);
@@ -2562,9 +2563,9 @@ const listaPresidentes = [
         return copia;
     }
 
-    // Apellidos compuestos que en el crucigrama se juegan distinto a como
+    // Apellidos compuestos que en crucigrama/sopa se juegan distinto a como
     // figuran en u.apellido (sin el "de" delante, en el caso de Alvear).
-    const CRUCI_PALABRA_ESPECIAL = {
+    const PALABRA_GRILLA_ESPECIAL = {
         [normalizarTexto("Marcelo Torcuato de Alvear")]: "Alvear"
     };
 
@@ -2577,7 +2578,7 @@ const listaPresidentes = [
         const pool = [];
         presidentesUnicos.forEach(u => {
             if (estaEnListaExclusionFija(u)) return;
-            const especial = CRUCI_PALABRA_ESPECIAL[normalizarTexto(nombreCompletoPresidente(u))];
+            const especial = PALABRA_GRILLA_ESPECIAL[normalizarTexto(nombreCompletoPresidente(u))];
             const palabra = letraGrillaDe(especial || u.apellido);
             if (palabra.length < 4 || palabra.length > 15) return;
             if (vistas.has(palabra)) {
