@@ -177,23 +177,131 @@ document.addEventListener('DOMContentLoaded', () => {
     // MODO X" tiene que entrar completo (no se corta ni se oculta el
     // prefijo): si el texto no entra en el ancho disponible, se va achicando
     // la fuente de a poco hasta que entre, con un piso legible.
+    //
+    // "última" recuerda con qué ancho y texto se calculó la última vez: en
+    // mobile, scrollear hace que el navegador esconda/muestre la barra de
+    // direcciones, y eso dispara "resize" (cambia el alto, no el ancho) una
+    // y otra vez mientras se scrollea. Sin este chequeo, cada uno de esos
+    // resize de mentira volvía a sacar y poner la clase "--recortada" más
+    // abajo — y sacar/poner una clase con una animación CSS la reinicia
+    // desde 0%, así que el cartel nunca llegaba a moverse: quedaba
+    // eternamente reiniciado en el primer frame, viéndose quieto.
+    let ultimoAjusteBadgeModo = null; // { ancho, texto }
     function ajustarBadgeModoAlAncho() {
         const heading = document.querySelector(".jugando-modo-heading");
         if (!heading) return;
+        const textoModo = heading.querySelector(".modo-de-juego-seleccionado-texto");
+        const anchoActual = window.innerWidth;
+        const textoActual = textoModo ? textoModo.textContent : "";
+        if (
+            ultimoAjusteBadgeModo &&
+            ultimoAjusteBadgeModo.ancho === anchoActual &&
+            ultimoAjusteBadgeModo.texto === textoActual
+        ) {
+            return; // ni el ancho ni el modo cambiaron: no tocar nada (no reiniciar el cartel)
+        }
+        ultimoAjusteBadgeModo = { ancho: anchoActual, texto: textoActual };
+
+        // Se saca antes de medir: mientras esté presente, la placa del modo
+        // tiene min-width:0 + overflow propio (ver CSS) y su sola presencia
+        // hace que el flex-shrink absorba cualquier desborde en el layout
+        // SIN que heading.scrollWidth llegue a superar a heading.clientWidth
+        // — o sea, con la clase puesta el chequeo de abajo nunca detecta
+        // nada para achicar, aunque la placa haya quedado carcomida a un
+        // par de píxeles. Por eso el estado "recortada" se decide recién al
+        // final, una vez confirmado que ni el piso de fuente alcanza.
+        heading.classList.remove("jugando-modo-heading--recortada");
         heading.style.fontSize = ""; // vuelve al tamaño base definido en CSS
         if (!window.matchMedia("(max-width: 768px)").matches) return;
-        const nombreModo = heading.querySelector(".modo-de-juego-seleccionado");
-        const desborda = () =>
-            heading.scrollWidth > heading.clientWidth + 1 ||
-            (nombreModo && nombreModo.scrollWidth > nombreModo.clientWidth + 1);
         const pisoPx = 9;
         let tamanioPx = parseFloat(getComputedStyle(heading).fontSize);
-        while (desborda() && tamanioPx > pisoPx) {
+        while (heading.scrollWidth > heading.clientWidth + 1 && tamanioPx > pisoPx) {
             tamanioPx -= 1;
             heading.style.fontSize = tamanioPx + "px";
         }
+        // Último recurso: ni siquiera en el piso entra completo (nombre de
+        // modo largo, ej. "CRUCIGRAMA", en un celular angosto). En vez de
+        // dejar que el "overflow:hidden" del heading corte la placa del
+        // modo a la mitad y pegada al borde (sin su padding ni sus bordes
+        // redondeados), se le cede el desborde a la placa, que pasa a
+        // mostrar el nombre completo como un cartel: el texto se desliza
+        // de derecha a izquierda hasta mostrarlo entero y vuelve a arrancar,
+        // en vez de cortarlo con "…".
+        if (heading.scrollWidth > heading.clientWidth + 1) {
+            heading.classList.add("jugando-modo-heading--recortada");
+            const placa = heading.querySelector(".modo-de-juego-seleccionado");
+            const texto = placa ? placa.querySelector(".modo-de-juego-seleccionado-texto") : null;
+            if (placa && texto) {
+                // Cuánto le sobra el texto por afuera del borde derecho
+                // VISIBLE de la placa: medido en píxeles de pantalla (no con
+                // scrollWidth/clientWidth) porque esos dos no cuentan el
+                // padding izquierdo de la placa, donde arranca el texto —
+                // restando solo scrollWidth-clientWidth el cartel se quedaba
+                // corto exactamente por ese padding y nunca llegaba a
+                // mostrar la última letra.
+                //
+                // Se le resta el padding derecho de la placa: sin esto, el
+                // desplazamiento deja la última letra pegada justo al borde
+                // (0 de aire), mientras que el arranque del cartel sí tiene
+                // ese mismo padding a la derecha (es parte de la placa
+                // siempre). Restándolo, el final del recorrido deja el mismo
+                // margen que tenía al principio, en vez de "pasarse de largo".
+                const paddingDerechoPlaca = parseFloat(getComputedStyle(placa).paddingRight) || 0;
+                const desborde = Math.max(
+                    0,
+                    texto.getBoundingClientRect().right - placa.getBoundingClientRect().right + paddingDerechoPlaca
+                );
+                texto.style.setProperty("--desplazamiento-texto", desborde + "px");
+                fijarTiemposCartelModo(texto, desborde);
+            }
+        }
     }
     window.addEventListener("resize", ajustarBadgeModoAlAncho);
+    // La tipografía (Cinzel, vía @import de Google Fonts) carga en forma
+    // asíncrona: si el modo arranca antes de que esté lista, esta función
+    // mide con la fuente de reemplazo (más angosta) y el desplazamiento del
+    // cartel queda corto para el ancho real de Cinzel — se ve el texto
+    // "recortado" quedándose corto de nuevo, ahora por muy poco, al llegar
+    // al final. "ultimoAjusteBadgeModo = null" fuerza el recálculo aunque
+    // el ancho y el texto sean los mismos que la vez anterior (si no, el
+    // chequeo para no reiniciar el cartel de la función de arriba
+    // bloquearía esta segunda pasada).
+    if (document.fonts && document.fonts.ready) {
+        document.fonts.ready.then(() => {
+            ultimoAjusteBadgeModo = null;
+            ajustarBadgeModoAlAncho();
+        });
+    }
+
+    // El cartel del nombre de modo recortado (ver ajustarBadgeModoAlAncho)
+    // necesita una pausa de verdad (en segundos) al principio y al final,
+    // no un simple porcentaje del ciclo — con un desborde chico, un 12%
+    // fijo de una duración corta daba una pausa casi nula. Para eso el
+    // @keyframes no puede ser estático en el CSS: se genera acá, con los
+    // puntos de pausa calculados a partir de la duración real del ciclo.
+    let hojaEstiloCartelModo = null;
+    function fijarTiemposCartelModo(texto, desborde) {
+        const VELOCIDAD_PX_POR_SEG = 16; // lento, para poder leer mientras se desliza
+        const PAUSA_INICIO_SEG = 1;
+        const PAUSA_FIN_SEG = 1.8;
+        const tiempoDeslizamiento = Math.max(0.8, desborde / VELOCIDAD_PX_POR_SEG);
+        const duracionTotal = PAUSA_INICIO_SEG + tiempoDeslizamiento + PAUSA_FIN_SEG;
+        texto.style.setProperty("--duracion-cartel", duracionTotal + "s");
+
+        const pctInicio = (PAUSA_INICIO_SEG / duracionTotal) * 100;
+        const pctFin = 100 - (PAUSA_FIN_SEG / duracionTotal) * 100;
+
+        if (!hojaEstiloCartelModo) {
+            hojaEstiloCartelModo = document.createElement("style");
+            document.head.appendChild(hojaEstiloCartelModo);
+        }
+        hojaEstiloCartelModo.textContent = `
+            @keyframes cartel-modo-recortado {
+                0%, ${pctInicio}% { transform: translateX(0); }
+                ${pctFin}%, 100% { transform: translateX(calc(-1 * var(--desplazamiento-texto, 0px))); }
+            }
+        `;
+    }
 
     const botonSonido = document.querySelector(".sonido-toggle");
     const iconoSonidoOn = `<svg class="sonido-toggle-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>Silenciar sonido</title><path d="M3,9V15H7L12,20V4L7,9H3Z" /><path d="M16,8.5C17,9.5 17,14.5 16,15.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" /><path d="M18.5,6C20.5,8.5 20.5,15.5 18.5,18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" /></svg>`;
@@ -762,7 +870,7 @@ const listaPresidentes = [
 
         if (esMobile) {
             return `
-                <h4 class="jugando-modo-heading"><span class="jugando-modo-prefijo">JUGANDO MODO</span> <span class="modo-de-juego-seleccionado">CLÁSICO</span></h4>
+                <h4 class="jugando-modo-heading"><span class="jugando-modo-prefijo">JUGANDO MODO</span> <span class="modo-de-juego-seleccionado"><span class="modo-de-juego-seleccionado-texto">CLÁSICO</span></span></h4>
                 <div class="tabla-container tabla-container-compacta">
                     <div class="tabla-wrapper" style="position:relative;">
                         ${tabla}
@@ -784,7 +892,7 @@ const listaPresidentes = [
         }
 
         return `
-            <h4 class="jugando-modo-heading"><span class="jugando-modo-prefijo">JUGANDO MODO</span> <span class="modo-de-juego-seleccionado">CLÁSICO</span></h4>
+            <h4 class="jugando-modo-heading"><span class="jugando-modo-prefijo">JUGANDO MODO</span> <span class="modo-de-juego-seleccionado"><span class="modo-de-juego-seleccionado-texto">CLÁSICO</span></span></h4>
             <div class="tabla-container">
                 <div class="tabla-wrapper" style="position:relative;">
                     ${tabla}
@@ -1075,6 +1183,48 @@ const listaPresidentes = [
         });
     }
 
+    // La placa del título de cada tarjeta ("CLÁSICO", "ADIVINA LA IMAGEN",
+    // etc.) tiene que entrar en una sola línea: si no, se ve una placa
+    // partida en dos renglones en vez de la pastilla redondeada de siempre.
+    // En mobile, la columna central del grid de ".modo-card-titulo-fila"
+    // puede terminar más angosta que el texto (ver CSS), así que acá se
+    // achica la fuente hasta que entre, con un piso legible — mismo patrón
+    // que ajustarBadgeModoAlAncho()/ajustarModoModalTitulo() para las otras
+    // placas doradas del sitio.
+    function ajustarBadgesCarrusel() {
+        document.querySelectorAll(".modo-card-titulo-fila").forEach(fila => {
+            const placa = fila.querySelector(".modo-de-juego-seleccionado");
+            if (!placa) return;
+            placa.style.fontSize = "";
+            // El h3 de la placa no tiene ancho propio (se agranda con su
+            // contenido), así que medirlo a él no detecta nada: hay que
+            // medir contra el ancho disponible de la FILA completa, restando
+            // la rosquita de configurar — mismo cálculo que
+            // ajustarModoModalTitulo() para la placa del modal de "Ver
+            // modos de juego".
+            const gear = fila.querySelector(".configuracion-link");
+            const anchoGear = gear ? gear.offsetWidth + 8 : 0;
+            // En mobile ".modo-card-titulo-fila" pasa a un grid de 3
+            // columnas simétricas (ver CSS) para centrar la placa de
+            // verdad, reservando el ancho de la rosquita a AMBOS lados. En
+            // desktop es un flex row simple: la rosquita solo resta una vez.
+            const esGrid = getComputedStyle(fila).display === "grid";
+            const disponible = esGrid ? fila.clientWidth - anchoGear * 2 : fila.clientWidth - anchoGear;
+            const pisoPx = 11;
+            let tamanioPx = parseFloat(getComputedStyle(placa).fontSize);
+            let intentos = 0;
+            // ".modo-de-juego-seleccionado" es un <span> "display: inline":
+            // su scrollWidth da 0 en los navegadores basados en Chromium (no
+            // arma caja propia), así que hay que medir con
+            // getBoundingClientRect() en su lugar.
+            while (placa.getBoundingClientRect().width > disponible && tamanioPx > pisoPx && intentos < 30) {
+                tamanioPx -= 1;
+                placa.style.fontSize = tamanioPx + "px";
+                intentos++;
+            }
+        });
+    }
+
     // Desliza el carrusel hasta el modo actualmente seleccionado, marca su
     // puntito y ajusta la altura del viewport a la de ESA tarjeta nada más
     // (no a la más alta de las 4), para no reservarle espacio de sobra a
@@ -1087,6 +1237,7 @@ const listaPresidentes = [
         const indice = ORDEN_MODOS.indexOf(modoSeleccionado);
         if (indice === -1) return;
 
+        ajustarBadgesCarrusel();
         track.style.transform = `translateX(-${indice * viewport.getBoundingClientRect().width}px)`;
 
         const tarjetaActual = track.children[indice];
@@ -1248,7 +1399,7 @@ const listaPresidentes = [
         aciertos = 0;
 
         const contenido = `
-            <h4 class="jugando-modo-heading"><span class="jugando-modo-prefijo">JUGANDO MODO</span> <span class="modo-de-juego-seleccionado">IMAGEN</span></h4>
+            <h4 class="jugando-modo-heading"><span class="jugando-modo-prefijo">JUGANDO MODO</span> <span class="modo-de-juego-seleccionado"><span class="modo-de-juego-seleccionado-texto">IMAGEN</span></span></h4>
             <div class="juego-imagen-container">
                 <div class="juego-imagen-foto-col">
                     <div class="juego-imagen-card">
@@ -1831,7 +1982,7 @@ const listaPresidentes = [
         `).join("");
 
         const contenido = `
-            <h4 class="jugando-modo-heading"><span class="jugando-modo-prefijo">JUGANDO MODO</span> <span class="modo-de-juego-seleccionado">SOPA</span></h4>
+            <h4 class="jugando-modo-heading"><span class="jugando-modo-prefijo">JUGANDO MODO</span> <span class="modo-de-juego-seleccionado"><span class="modo-de-juego-seleccionado-texto">SOPA</span></span></h4>
             <div class="sopa-container">
                 <div class="sopa-grid-col">
                     <div class="sopa-grid" style="grid-template-columns: repeat(${sopaTam}, 1fr);">
@@ -3222,7 +3373,7 @@ const listaPresidentes = [
         const pistasV = cruciEntradas.filter(e => e.dir === 'V');
 
         const contenido = `
-            <h4 class="jugando-modo-heading"><span class="jugando-modo-prefijo">JUGANDO MODO</span> <span class="modo-de-juego-seleccionado">CRUCIGRAMA</span></h4>
+            <h4 class="jugando-modo-heading"><span class="jugando-modo-prefijo">JUGANDO MODO</span> <span class="modo-de-juego-seleccionado"><span class="modo-de-juego-seleccionado-texto">CRUCIGRAMA</span></span></h4>
             <div class="cruci-container">
                 <div class="cruci-grid-col">
                     <div class="cruci-grid" style="--c:${cruciData.ancho}; --r:${cruciData.alto}; grid-template-columns: repeat(${cruciData.ancho}, 1fr);">
@@ -4480,6 +4631,30 @@ function cargarLineaDeTiempo() {
 }
 
 cargarLineaDeTiempo();
+
+// --- Título de página en presidencias.html / modos.html (".linea-tiempo-heading") ---
+// "Todas las Presidencias Argentinas" es largo: en celulares angostos podía
+// terminar partido en 2 o 3 líneas. Se achica la fuente hasta que entre en
+// una sola línea, con un piso legible — mismo patrón que
+// ajustarBadgeModoAlAncho()/ajustarModoModalTitulo() para las placas doradas.
+function ajustarTituloLineaDeTiempo() {
+    const titulo = document.querySelector(".linea-tiempo-heading");
+    if (!titulo) return;
+    titulo.style.fontSize = ""; // vuelve al tamaño base definido en CSS
+    const pisoPx = 13;
+    let tamanioPx = parseFloat(getComputedStyle(titulo).fontSize);
+    let intentos = 0;
+    while (titulo.scrollWidth > titulo.clientWidth + 1 && tamanioPx > pisoPx && intentos < 40) {
+        tamanioPx -= 1;
+        titulo.style.fontSize = tamanioPx + "px";
+        intentos++;
+    }
+}
+ajustarTituloLineaDeTiempo();
+window.addEventListener("resize", ajustarTituloLineaDeTiempo);
+if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(ajustarTituloLineaDeTiempo);
+}
 
 // Configurar event listeners del modal de fin de juego
 agregarEventListenersModalFinJuego();

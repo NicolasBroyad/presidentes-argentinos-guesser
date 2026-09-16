@@ -406,14 +406,66 @@ body.juego-activo .header-logo {
     }
 
     /* El texto completo ("JUGANDO MODO" + nombre del modo) se mantiene
-       siempre: si no entra, ajustarBadgeModoAlAncho() en script.js va
-       achicando la fuente (hasta un piso) hasta que quepa, en vez de cortar
-       u ocultar palabras. Importante: ni el prefijo ni el nombre del modo
-       llevan "min-width:0" acá, a propósito — así ninguno de los dos puede
-       encogerse por separado y ocultar su propio recorte con su propio
-       overflow. Si juntos no entran, el que desborda es el badge COMPLETO
-       (heading), que es justo lo que ajustarBadgeModoAlAncho() mide.
-    */
+       siempre que se pueda: si no entra, ajustarBadgeModoAlAncho() en
+       script.js va achicando la fuente (hasta un piso) hasta que quepa. En
+       el peor caso (celular angosto + nombre de modo largo, ej.
+       "CRUCIGRAMA") ni encogiendo la fuente hasta el piso entra completo:
+       ahí script.js agrega esta clase, y recién ahí la placa del modo cede
+       su propio espacio (el prefijo nunca se toca) y pasa a mostrar el
+       nombre completo como un cartel de letrero: el texto se desliza de
+       derecha a izquierda hasta mostrar el final y vuelve a arrancar, en
+       vez de quedar recortada de golpe por el "overflow:hidden" del
+       heading (pegada al borde, sin su propio padding ni borde redondeado,
+       cortada a la mitad de una letra).
+
+       Importante: esto NO puede ser el estado permanente de la placa (ni
+       siquiera solo en mobile) — si la placa tiene min-width:0 todo el
+       tiempo, el flex-shrink la achica en el layout para absorber CUALQUIER
+       desborde sin que el heading llegue a desbordar, así que
+       ajustarBadgeModoAlAncho() nunca detectaría nada para achicar y la
+       placa quedaría carcomida incluso con nombres cortos como "CLÁSICO".
+       Por eso esta clase la agrega el script recién DESPUÉS de confirmar
+       que ni el piso de fuente alcanza. */
+    body.juego-activo .header .jugando-modo-heading--recortada .jugando-modo-prefijo {
+        flex-shrink: 0;
+    }
+
+    body.juego-activo .header .jugando-modo-heading--recortada .modo-de-juego-seleccionado {
+        display: inline-block;
+        min-width: 0;
+        max-width: 100%;
+        overflow: hidden;
+        white-space: nowrap;
+        vertical-align: bottom;
+    }
+
+    /* El desplazamiento (--desplazamiento-texto), la duración
+       (--duracion-cartel) y el propio @keyframes "cartel-modo-recortado"
+       los arma script.js (ver fijarTiemposCartelModo) a partir de cuánto le
+       sobra al texto: así la pausa al principio y al final es una cantidad
+       fija de segundos (se lee cómodo) y el tramo de deslizamiento va
+       siempre a una velocidad pareja, sin importar cuántas letras de más
+       haya. "linear" mantiene esa velocidad constante durante el
+       deslizamiento, en vez de arrancar/frenar de a poco. */
+    body.juego-activo .header .jugando-modo-heading--recortada .modo-de-juego-seleccionado-texto {
+        display: inline-block;
+        animation-name: cartel-modo-recortado;
+        animation-duration: var(--duracion-cartel, 3s);
+        animation-timing-function: linear;
+        animation-iteration-count: infinite;
+    }
+}
+
+/* A quien prefiere menos movimiento en pantalla, mejor mostrarle el nombre
+   recortado con "…" fijo que un cartel deslizándose sin parar. */
+@media (max-width: 768px) and (prefers-reduced-motion: reduce) {
+    body.juego-activo .header .jugando-modo-heading--recortada .modo-de-juego-seleccionado {
+        text-overflow: ellipsis;
+    }
+
+    body.juego-activo .header .jugando-modo-heading--recortada .modo-de-juego-seleccionado-texto {
+        animation: none;
+    }
 }
 
 @media (max-width: 360px) {
@@ -758,6 +810,7 @@ body.juego-activo .header-logo {
     border-radius: 5px;
     color: white;
     font-weight: 800;
+    white-space: nowrap;
 }
 
 /* --- Carrusel de modos ("Ver modos de juego" en miniatura, navegable) ---
@@ -1858,6 +1911,35 @@ td {
     align-items: center;
     gap: 0.5rem;
     justify-content: center;
+}
+
+/* Mismo problema que el bloque "(max-height: 920px) and (min-width: 769px)"
+   de más arriba (ver su comentario), pero en celulares bajos (iPhone SE y
+   similares, ~667px de alto o menos): ".button-section{flex:1}" reparte
+   TODO el alto sobrante de ".main{min-height:100dvh}" arriba/abajo del
+   botón, pero un celular así de bajo casi no tiene sobrante que repartir
+   (el contenido ya ocupa casi toda la pantalla) — el resultado es lo
+   opuesto al de las notebooks bajas: en vez de un hueco enorme, el título,
+   el botón y la tarjeta de modos quedan pegoteados sin aire entre sí,
+   porque esa "distancia" dependía enteramente de un sobrante que acá no
+   existe. Se fuerza el mismo mínimo de aire fijo (padding) que ya usan las
+   notebooks bajas para este caso. */
+@media (max-height: 700px) and (max-width: 768px) {
+    .kicker {
+        padding-top: 1rem;
+    }
+
+    .button-section {
+        flex: 0 1 auto;
+        padding: 1.2rem 0;
+        gap: 0.6rem;
+    }
+
+    .rules-section {
+        gap: 0.8rem;
+        padding: 1rem;
+        padding-bottom: 1.5rem;
+    }
 }
 
 @media (max-width: 768px) {
@@ -3641,8 +3723,14 @@ td {
     justify-content: center;
     align-items: center;
     text-align: center;
-    padding: 0.5rem;
+    padding: 0.5rem 0.75rem;
     width: 100%;
+    box-sizing: border-box;
+    /* En una sola línea siempre: en mobile, script.js (ajustarTituloLineaDeTiempo)
+       achica la fuente hasta que entre; sin nowrap ese cálculo por
+       scrollWidth/clientWidth no detecta el desborde. */
+    white-space: nowrap;
+    overflow: hidden;
 }
 
 .linea-tiempo-subheading {
