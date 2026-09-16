@@ -10,6 +10,7 @@
     --gold: 232 200 116;
     --gold-soft: 243 223 160;
     --green: 88 214 141;
+    --terracota: 217 138 122;
     --glass: 0 0 0;
     --glass-soft: 53 53 53;
     --ink: 255 255 255;
@@ -40,6 +41,7 @@
     --gold: 196 149 40;
     --gold-soft: 150 108 20;
     --green: 30 132 73;
+    --terracota: 178 84 61;
     --glass: 255 255 255;
     --glass-soft: 214 231 247;
     --ink: 15 40 61;
@@ -3675,210 +3677,419 @@ td {
     padding: 2.5rem 1rem 4rem;
 }
 
-.timeline-container::before {
-    content: '';
+/* eje: línea tenue con tramos que miden la duración de cada mandato */
+.timeline-eje {
     position: absolute;
     left: 50%;
     top: 0;
     bottom: 0;
-    width: 3px;
-    background: linear-gradient(180deg, rgb(var(--gold) / 0.75), rgb(var(--blue) / 0.5));
-    transform: translateX(-50%);
+    width: 1px;
+    background-color: rgb(var(--gold) / 0.22);
 }
 
-.timeline-item {
+.presidencia-fila {
     position: relative;
-    width: 50%;
-    padding: 0 2.5rem 2.5rem;
-    box-sizing: border-box;
+    display: flex;
+    margin-bottom: 2.5rem;
 }
 
-.timeline-item:nth-child(odd) {
-    left: 0;
-    text-align: right;
-}
+.presidencia-fila:last-child { margin-bottom: 0; }
 
-.timeline-item:nth-child(even) {
-    left: 50%;
-    text-align: left;
-}
+.presidencia-fila.es-izquierda { justify-content: flex-start; }
+.presidencia-fila.es-derecha { justify-content: flex-end; }
 
-.timeline-dot {
+/* tramo del eje proporcional a la duración: el alto lo pone el JS */
+.presidencia-tramo {
     position: absolute;
-    top: 0.4rem;
-    width: 14px;
-    height: 14px;
+    left: 50%;
+    transform: translateX(-50%);
+    top: 8px;
+    width: 4px;
+    border-radius: 2px;
+    background-color: var(--tipo-color);
+}
+
+/* puntito en el momento exacto en que asume: coincide con el arranque
+   del tramo de color en el eje. */
+.presidencia-punto {
+    position: absolute;
+    left: 50%;
+    top: 8px;
+    transform: translate(-50%, -50%);
+    width: 11px;
+    height: 11px;
     border-radius: 50%;
-    background: rgb(var(--gold));
-    border: 3px solid rgb(var(--bg-mid));
-    box-shadow: 0 0 0 3px rgb(var(--gold) / 0.3);
+    background-color: var(--tipo-color);
+    border: 2px solid rgb(var(--navy));
     z-index: 2;
 }
 
-.timeline-item:nth-child(odd) .timeline-dot { right: -8.5px; }
-.timeline-item:nth-child(even) .timeline-dot { left: -8.5px; }
-
-.timeline-item.de-facto .timeline-dot {
-    background: rgb(218, 17, 17);
-    box-shadow: 0 0 0 3px rgba(218, 17, 17, 0.3);
-}
-
-.timeline-year {
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-    font-size: 0.75rem;
+/* año en que asume, pegado al puntito, del lado del eje que queda libre
+   (el opuesto a donde cae la tarjeta). */
+.presidencia-anio {
+    position: absolute;
+    top: 8px;
+    transform: translateY(-50%);
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    font-size: 0.68rem;
     font-weight: 800;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.03em;
     color: rgb(var(--gold-soft));
-    margin-bottom: 0.35rem;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
 }
 
-.timeline-card {
-    display: inline-flex;
+.presidencia-fila.es-izquierda .presidencia-anio { left: calc(50% + 11px); }
+.presidencia-fila.es-derecha .presidencia-anio { right: calc(50% + 11px); text-align: right; }
+
+.presidencia-lado {
+    width: 50%;
+    display: flex;
+    box-sizing: border-box;
+}
+
+.es-izquierda .presidencia-lado {
+    justify-content: flex-end;
+    padding-right: 26px;
+}
+
+.es-derecha .presidencia-lado {
+    justify-content: flex-start;
+    padding-left: 26px;
+}
+
+.presidencia-card {
+    display: flex;
     flex-direction: column;
-    background-color: rgb(var(--navy) / 0.85);
-    backdrop-filter: blur(10px);
-    border: 2px solid rgb(var(--blue));
-    border-radius: 14px;
-    padding: 0.6rem;
-    max-width: 340px;
-    text-align: left;
-    box-shadow: 0 10px 25px -12px rgba(0, 0, 0, 0.6);
+    width: 380px;
+    max-width: 100%;
+    box-sizing: border-box;
+    padding: 12px 15px;
+    border-radius: 12px;
+    background-color: rgb(var(--navy-light) / 0.92);
+    border: 1px solid var(--tipo-borde);
+    box-shadow: 0 12px 30px -18px rgb(0 0 0 / 0.8);
     cursor: pointer;
-    transition: border-color 0.25s ease, box-shadow 0.25s ease;
+    transition: border-color 0.18s ease, box-shadow 0.18s ease;
     font: inherit;
     color: inherit;
+    text-align: left;
 }
 
-.timeline-card:focus-visible,
-.timeline-card.expandido {
-    border-color: rgb(var(--gold));
-    box-shadow: 0 14px 32px -14px rgba(0, 0, 0, 0.7), 0 0 24px -8px rgb(var(--gold) / 0.35);
+.presidencia-card.esta-abierta,
+.presidencia-card:focus-visible {
+    border-color: rgb(var(--gold) / 0.5);
+    box-shadow: 0 16px 36px -16px rgb(0 0 0 / 0.85);
 }
 
-.timeline-card:focus-visible {
+.presidencia-card:focus-visible {
     outline: 2px solid rgb(var(--gold-soft));
     outline-offset: 2px;
 }
 
-/* El hover solo se activa con mouse real: en touch, ":hover" queda
-   "pegado" después de tocar y no dejaba volver a cerrar la tarjeta con
-   un segundo toque. En touch manda únicamente la clase "expandido". */
-@media (hover: hover) and (pointer: fine) {
-    .timeline-card:hover {
-        border-color: rgb(var(--gold));
-        box-shadow: 0 14px 32px -14px rgba(0, 0, 0, 0.7), 0 0 24px -8px rgb(var(--gold) / 0.35);
-    }
-}
-
-.timeline-card-main {
+.presidencia-cabecera {
     display: flex;
-    gap: 0.8rem;
     align-items: center;
+    gap: 13px;
 }
 
-.timeline-item:nth-child(odd) .timeline-card-main {
+/* el retrato siempre queda del lado de la tarjeta más cercano al eje */
+.presidencia-fila.es-izquierda .presidencia-cabecera {
     flex-direction: row-reverse;
-    text-align: right;
 }
 
-.timeline-descripcion {
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-    font-size: 0.8rem;
-    line-height: 1.5;
-    color: rgb(var(--ink) / 0.85);
-    max-height: 0;
-    opacity: 0;
-    overflow: hidden;
-    margin-top: 0;
-    transition: max-height 0.35s ease, opacity 0.25s ease, margin-top 0.35s ease;
-}
-
-.timeline-card:focus-visible .timeline-descripcion,
-.timeline-card.expandido .timeline-descripcion {
-    max-height: 400px;
-    opacity: 1;
-    margin-top: 0.6rem;
-}
-
-@media (hover: hover) and (pointer: fine) {
-    .timeline-card:hover .timeline-descripcion {
-        max-height: 400px;
-        opacity: 1;
-        margin-top: 0.6rem;
-    }
-}
-
-.timeline-imagen {
-    width: 56px;
-    height: 56px;
-    border-radius: 50%;
-    overflow: hidden;
+.presidencia-retrato {
+    width: 54px;
+    height: 54px;
     flex-shrink: 0;
-    border: 2px solid rgb(var(--gold) / 0.6);
+    border-radius: 10px;
+    overflow: hidden;
+    border: 2px solid rgb(var(--gold) / 0.75);
+    box-shadow: 0 0 0 1px rgb(var(--gold) / 0.2);
+    background-color: #241d15;
+    cursor: pointer;
+    transition: box-shadow 0.18s ease, border-color 0.18s ease;
 }
 
-.timeline-nombre {
-    font-size: 0.95rem;
-    margin-bottom: 0.15rem;
+.presidencia-retrato:hover,
+.presidencia-retrato:focus-visible {
+    border-color: rgb(var(--gold));
+    box-shadow: 0 0 0 3px rgb(var(--gold) / 0.3);
 }
 
-.timeline-periodo {
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-    font-size: 0.75rem;
-    color: rgb(var(--ink) / 0.7);
+.presidencia-retrato:focus-visible {
+    outline: 2px solid rgb(var(--gold-soft));
+    outline-offset: 2px;
 }
 
-.timeline-tipo {
-    display: inline-block;
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-    font-size: 0.65rem;
+.presidencia-retrato img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+    object-position: center 22%; /* los retratos históricos traen mucho aire arriba */
+}
+
+.presidencia-datos {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    min-width: 0;
+    flex: 1;
+}
+
+.presidencia-card h3 {
+    margin: 0;
+    font-family: 'Cinzel', serif;
     font-weight: 700;
-    padding: 0.15rem 0.45rem;
-    border-radius: 6px;
-    margin-top: 0.3rem;
+    font-size: 1rem;
+    line-height: 1.15;
+    color: rgb(var(--ink));
+    text-wrap: pretty;
+    text-align: left;
 }
 
-.timeline-tipo.constitucional {
-    background-color: rgb(var(--blue));
-    color: rgb(10, 34, 53);
+.presidencia-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
 }
 
-.timeline-tipo.de-facto {
-    background-color: rgba(218, 17, 17);
+.presidencia-periodo {
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: rgb(var(--gold-soft));
+    font-variant-numeric: tabular-nums;
+}
+
+.presidencia-tipo {
+    display: inline-block;
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    font-size: 0.6rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.18rem 0.5rem;
+    border-radius: 3px;
+    background-color: var(--tipo-color);
     color: rgb(var(--navy));
 }
 
+.presidencia-chevron {
+    flex-shrink: 0;
+    font-size: 1rem;
+    line-height: 1;
+    color: rgb(var(--ink) / 0.35);
+    transition: transform 0.18s ease, color 0.18s ease;
+}
+
+.presidencia-card.esta-abierta .presidencia-chevron {
+    color: rgb(var(--gold));
+    transform: rotate(90deg);
+}
+
+.presidencia-descripcion {
+    margin: 0;
+    margin-top: 0;
+    padding-top: 0;
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    border-top: 1px solid transparent;
+    font-family: 'Fredoka', system-ui, sans-serif;
+    font-size: 0.83rem;
+    line-height: 1.5;
+    color: rgb(var(--ink) / 0.78);
+    text-wrap: pretty;
+    text-align: left;
+    transition: max-height 0.4s ease, opacity 0.3s ease, margin-top 0.4s ease, padding-top 0.4s ease, border-color 0.4s ease;
+}
+
+.presidencia-card.esta-abierta .presidencia-descripcion,
+.presidencia-card:focus-visible .presidencia-descripcion {
+    max-height: 400px;
+    opacity: 1;
+    margin-top: 11px;
+    padding-top: 11px;
+    border-top-color: rgb(var(--ink) / 0.1);
+}
+
+/* El hover solo se activa con mouse real: en touch, ":hover" queda
+   "pegado" después de tocar y no dejaba volver a cerrar la tarjeta con
+   un segundo toque. En touch manda únicamente la clase "esta-abierta". */
+@media (hover: hover) and (pointer: fine) {
+    .presidencia-card:hover {
+        border-color: rgb(var(--gold) / 0.5);
+        box-shadow: 0 16px 36px -16px rgb(0 0 0 / 0.85);
+    }
+
+    .presidencia-card:hover .presidencia-chevron {
+        color: rgb(var(--gold));
+        transform: rotate(90deg);
+    }
+
+    .presidencia-card:hover .presidencia-descripcion {
+        max-height: 400px;
+        opacity: 1;
+        margin-top: 11px;
+        padding-top: 11px;
+        border-top-color: rgb(var(--ink) / 0.1);
+    }
+}
+
+/* colores por tipo de mandato */
+.presidencia-card,
+.presidencia-tramo,
+.presidencia-punto {
+    --tipo-color: rgb(var(--blue));
+    --tipo-borde: rgb(var(--blue) / 0.22);
+}
+
+.es-de-facto {
+    --tipo-color: rgb(var(--terracota));
+    --tipo-borde: rgb(var(--terracota) / 0.28);
+}
+
+.es-interino {
+    --tipo-color: rgb(var(--gold));
+    --tipo-borde: rgb(var(--gold) / 0.3);
+}
+
 @media (max-width: 768px) {
-    .timeline-container::before {
-        left: 20px;
-    }
-
-    .timeline-item,
-    .timeline-item:nth-child(odd),
-    .timeline-item:nth-child(even) {
+    /* una sola columna: el eje va al borde izquierdo.
+       ".timeline-eje" es hijo directo de ".timeline-container" (se posiciona
+       relativo a su padding-box), mientras que tramo/punto son hijos de
+       ".presidencia-fila" (sin padding propio, o sea relativos al content-box
+       del container, ya corrido por el "padding: 1rem" del container). Por
+       eso "left" tiene que valer distinto en cada uno para caer en el mismo
+       píxel real: sin este ajuste quedaban desfasados por ese padding. */
+    .timeline-eje { left: calc(1rem + 14px); }
+    .presidencia-tramo { left: 14px; }
+    .presidencia-punto { left: 14px; }
+    .presidencia-fila.es-izquierda,
+    .presidencia-fila.es-derecha { justify-content: flex-start; }
+    .presidencia-fila.es-izquierda .presidencia-lado,
+    .presidencia-fila.es-derecha .presidencia-lado {
         width: 100%;
-        left: 0;
-        padding-left: 3rem;
-        padding-right: 0.5rem;
-        text-align: left;
+        justify-content: flex-start;
+        padding-left: 46px;
+        padding-right: 0;
     }
+    .presidencia-card { width: 100%; }
 
-    .timeline-item:nth-child(even) .timeline-dot,
-    .timeline-item:nth-child(odd) .timeline-dot {
-        left: 12px;
-        right: auto;
-    }
-
-    .timeline-card {
-        text-align: left;
-        max-width: 100%;
-    }
-
-    .timeline-card-main,
-    .timeline-item:nth-child(odd) .timeline-card-main {
+    /* todas las tarjetas quedan del mismo lado del eje (a su derecha):
+       el retrato va siempre a la izquierda de la cabecera, pegado al eje. */
+    .presidencia-fila.es-izquierda .presidencia-cabecera {
         flex-direction: row;
-        text-align: left;
     }
+
+    .presidencia-fila.es-izquierda .presidencia-anio,
+    .presidencia-fila.es-derecha .presidencia-anio {
+        left: 26px;
+        right: auto;
+        text-align: left;
+        font-size: 0.6rem;
+    }
+}
+
+/* Modal con el retrato en grande, al tocar la foto en una tarjeta de
+   "Ver Presidencias". Mismo patrón de <dialog> nativo que #modoModal. */
+.retrato-modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    margin: 0;
+    padding: 1.5rem;
+    padding-top: 2.5rem;
+    border: 2px solid rgb(var(--blue) / 0.8);
+    border-radius: 16px;
+    background-color: rgb(var(--navy-light));
+    box-shadow: 0 20px 60px -15px rgba(0, 0, 0, 0.7), 0 0 0 1px rgb(var(--blue) / 0.2);
+    max-width: min(420px, calc(100vw - 2rem));
+    max-height: calc(100vh - 2rem);
+    box-sizing: border-box;
+}
+
+.retrato-modal:not([open]) {
+    display: none;
+}
+
+/* El "grow" del modal (de la miniatura al tamaño final) lo maneja JS con
+   estilos inline sobre "transform"/"opacity" (ver abrirRetratoModal /
+   cerrarRetratoModal en script.js); acá solo el fondo se anima con CSS,
+   sincronizado con esa animación vía la clase "retrato-modal-visible". */
+.retrato-modal::backdrop {
+    background: rgba(0, 0, 0, 0);
+    backdrop-filter: blur(0px);
+    transition: background 0.3s ease, backdrop-filter 0.3s ease;
+}
+
+.retrato-modal.retrato-modal-visible::backdrop {
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(3px);
+}
+
+.retrato-modal-img {
+    display: block;
+    width: 100%;
+    max-height: 65vh;
+    object-fit: contain;
+    border-radius: 10px;
+    border: 2px solid rgb(var(--gold) / 0.75);
+    box-shadow: 0 0 0 1px rgb(var(--gold) / 0.2);
+    background-color: #241d15;
+    box-sizing: border-box;
+}
+
+.retrato-modal-nombre {
+    margin: 0.9rem 0 0;
+    font-family: 'Cinzel', serif;
+    font-weight: 700;
+    font-size: 1.05rem;
+    text-align: center;
+    color: rgb(var(--ink));
+}
+
+.retrato-modal-periodo {
+    margin: 0.3rem 0 0;
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-align: center;
+    color: rgb(var(--gold-soft));
+    font-variant-numeric: tabular-nums;
+}
+
+.retrato-modal-cerrar {
+    position: absolute;
+    top: 0.6rem;
+    right: 0.6rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    padding: 0.4rem;
+    background: none;
+    border: none;
+    border-radius: 50%;
+    color: rgb(var(--ink) / 0.55);
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+.retrato-modal-cerrar svg {
+    width: 100%;
+    height: 100%;
+    fill: currentColor;
+}
+
+.retrato-modal-cerrar:hover {
+    color: rgb(var(--gold-soft));
+    background-color: rgb(var(--glass-soft) / 0.4);
 }
 
 /* MODOS DE JUEGO (página modos.html) */

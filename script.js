@@ -4244,6 +4244,159 @@ function cargarLineaDeTiempo() {
     const timelineContainer = document.querySelector('.timeline-container');
     if (!timelineContainer) return; // Solo ejecutar si estamos en presidencias.html
 
+    // px de alto del tramo del eje por año de mandato, y piso para mandatos
+    // de pocos meses (si no, el tramo casi desaparece).
+    const ANIOS_A_PX = 16;
+    const ALTO_MIN = 34;
+
+    function claseTipo(presidente) {
+        if (presidente.esDeFacto()) return "es-de-facto";
+        if (presidente.esInterino()) return "es-interino";
+        return "";
+    }
+
+    function etiquetaTipo(presidente) {
+        if (presidente.esDeFacto()) return "De facto";
+        if (presidente.esInterino()) return "Interino";
+        return "Constitucional";
+    }
+
+    function altoTramo(presidente) {
+        const inicio = presidente.periodo.inicio;
+        if (!inicio) return ALTO_MIN;
+        const fin = presidente.periodo.fin || new Date(); // presidencia en curso: mide hasta hoy
+        const anios = Math.max(0, (fin - inicio) / (1000 * 60 * 60 * 24 * 365.25));
+        return Math.max(ALTO_MIN, Math.round(anios * ANIOS_A_PX));
+    }
+
+    // --- Modal con el retrato en grande, al tocar la foto de una tarjeta ---
+    // Usa la foto original (sin el recorte centrado pensado para el círculo
+    // chico), igual que el modo "Adivina la imagen".
+    let retratoModal = null;
+    let retratoOrigenEl = null; // miniatura desde la que se abrió, para animar ida y vuelta
+
+    // Anima el modal entre la posición/tamaño de la miniatura tocada y su
+    // posición final centrada (la que ya define el CSS de ".retrato-modal").
+    // "haciaMiniatura=true" hace el recorrido inverso (usado al cerrar).
+    function animarRetratoModalDesdeOrigen(dialog, haciaMiniatura) {
+        if (!retratoOrigenEl) return false;
+
+        const origen = retratoOrigenEl.getBoundingClientRect();
+        const destino = dialog.getBoundingClientRect();
+        const escalaX = origen.width / destino.width;
+        const escalaY = origen.height / destino.height;
+        const dx = (origen.left + origen.width / 2) - (destino.left + destino.width / 2);
+        const dy = (origen.top + origen.height / 2) - (destino.top + destino.height / 2);
+        const transformEnMiniatura = `translate(-50%, -50%) translate(${dx}px, ${dy}px) scale(${escalaX}, ${escalaY})`;
+        const transformCentrado = 'translate(-50%, -50%)';
+
+        if (haciaMiniatura) {
+            dialog.style.transition = 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease';
+            dialog.style.opacity = '0';
+            dialog.style.transform = transformEnMiniatura;
+        } else {
+            dialog.style.transition = 'none';
+            dialog.style.opacity = '0';
+            dialog.style.transform = transformEnMiniatura;
+            dialog.offsetHeight; // forzar reflow: sin esto no hay estado "de partida" que animar
+            dialog.style.transition = 'transform 0.38s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.28s ease';
+            dialog.style.opacity = '1';
+            dialog.style.transform = transformCentrado;
+        }
+        return true;
+    }
+
+    function cerrarRetratoModal() {
+        if (!retratoModal || !retratoModal.open) return;
+
+        const animado = animarRetratoModalDesdeOrigen(retratoModal, true);
+        retratoModal.classList.remove('retrato-modal-visible');
+        if (!animado) {
+            retratoModal.close();
+            return;
+        }
+        const finalizarCierre = () => {
+            retratoModal.removeEventListener('transitionend', finalizarCierre);
+            retratoModal.close();
+        };
+        retratoModal.addEventListener('transitionend', finalizarCierre);
+    }
+
+    function asegurarRetratoModal() {
+        if (retratoModal) return retratoModal;
+
+        retratoModal = document.createElement('dialog');
+        retratoModal.id = 'retratoModal';
+        retratoModal.className = 'retrato-modal';
+        retratoModal.innerHTML = `
+            <button type="button" class="retrato-modal-cerrar" aria-label="Cerrar">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" /></svg>
+            </button>
+            <img class="retrato-modal-img" src="" alt="">
+            <p class="retrato-modal-nombre"></p>
+            <p class="retrato-modal-periodo"></p>
+        `;
+        document.body.appendChild(retratoModal);
+
+        retratoModal.querySelector('.retrato-modal-cerrar').addEventListener('click', () => cerrarRetratoModal());
+        // Click en el backdrop (target === el propio <dialog>) también cierra,
+        // mismo patrón que #modoModal y #finJuegoDialog.
+        retratoModal.addEventListener('click', (e) => {
+            if (e.target === retratoModal) cerrarRetratoModal();
+        });
+        // Esc dispara "cancel" y cerraría el <dialog> de golpe: lo frenamos
+        // para poder reproducir la animación de cierre también en ese caso.
+        retratoModal.addEventListener('cancel', (e) => {
+            e.preventDefault();
+            cerrarRetratoModal();
+        });
+        // Al terminar de cerrar (por cualquier vía) se limpian los estilos
+        // inline de la animación, así la próxima apertura arranca de cero.
+        retratoModal.addEventListener('close', () => {
+            retratoModal.style.transition = '';
+            retratoModal.style.transform = '';
+            retratoModal.style.opacity = '';
+            retratoModal.classList.remove('retrato-modal-visible');
+            retratoOrigenEl = null;
+        });
+
+        return retratoModal;
+    }
+
+    function abrirRetratoModal(src, nombre, periodo, origenEl) {
+        const dialog = asegurarRetratoModal();
+        const img = dialog.querySelector('.retrato-modal-img');
+        dialog.querySelector('.retrato-modal-nombre').textContent = nombre;
+        dialog.querySelector('.retrato-modal-periodo').textContent = periodo;
+        img.alt = nombre;
+        retratoOrigenEl = origenEl || null;
+
+        const mostrarConAnimacion = () => {
+            dialog.showModal();
+            dialog.classList.add('retrato-modal-visible');
+            animarRetratoModalDesdeOrigen(dialog, false);
+        };
+
+        // La foto es la original sin recortar (no la miniatura, que ya está
+        // cacheada): si se mide/anima antes de que termine de cargar, el
+        // modal todavía no tiene su alto real (la imagen ocupa 0px) y el
+        // punto de partida de la animación queda mal calculado. Al terminar
+        // de cargar, el layout se acomoda de golpe y se ve como un
+        // "teletransporte" al centro en vez de una animación continua. Por
+        // eso se espera a que la imagen esté lista antes de mostrar y animar
+        // el modal.
+        img.onload = null;
+        img.src = src;
+        if (img.complete && img.naturalWidth > 0) {
+            mostrarConAnimacion();
+        } else {
+            img.onload = () => {
+                img.onload = null;
+                mostrarConAnimacion();
+            };
+        }
+    }
+
     function intentarRenderizar() {
         // window.listaPresidentes se arma en otro bloque que puede tardar
         // un instante en ejecutarse; reintentamos hasta que esté disponible.
@@ -4252,42 +4405,48 @@ function cargarLineaDeTiempo() {
             return;
         }
 
-        const timelineHTML = window.listaPresidentes.map(presidente => {
+        const filasHTML = window.listaPresidentes.map((presidente, indice) => {
             const nombreCompleto = [presidente.nombre, presidente.segundoNombre, presidente.apellido]
                 .filter(Boolean).join(" ");
 
-            const claseTipo = presidente.esDeFacto() ? "de-facto" : "constitucional";
-            const tipoGobierno = presidente.esDeFacto() ? "De facto" : "Constitucional";
+            const tipo = claseTipo(presidente);
+            const lado = indice % 2 === 0 ? "es-izquierda" : "es-derecha";
             const anioInicio = presidente.periodo.inicio ? presidente.periodo.inicio.getFullYear() : "";
 
             return `
-                <div class="timeline-item ${claseTipo}">
-                    <div class="timeline-dot"></div>
-                    <div class="timeline-year">${anioInicio}</div>
-                    <div class="timeline-card" role="button" tabindex="0" aria-expanded="false">
-                        <div class="timeline-card-main">
-                            <div class="timeline-imagen">
-                                <img src="${imagenCentradaDe(presidente.imagen)}" alt="${nombreCompleto}" loading="lazy">
+                <div class="presidencia-fila ${lado}">
+                    <span class="presidencia-punto ${tipo}"></span>
+                    <span class="presidencia-anio">${anioInicio}</span>
+                    <span class="presidencia-tramo ${tipo}" style="height: ${altoTramo(presidente)}px"></span>
+                    <div class="presidencia-lado">
+                        <div class="presidencia-card ${tipo}" tabindex="0" role="button" aria-expanded="false">
+                            <div class="presidencia-cabecera">
+                                <span class="presidencia-retrato" role="button" tabindex="0" aria-label="Ver foto de ${nombreCompleto} en grande" data-imagen="${presidente.imagen}" data-nombre="${nombreCompleto}" data-periodo="${presidente.periodo.toString()}">
+                                    <img src="${imagenCentradaDe(presidente.imagen)}" alt="${nombreCompleto}" loading="lazy">
+                                </span>
+                                <div class="presidencia-datos">
+                                    <h3>${nombreCompleto}</h3>
+                                    <div class="presidencia-meta">
+                                        <span class="presidencia-periodo">${presidente.periodo.toString()}</span>
+                                        <span class="presidencia-tipo">${etiquetaTipo(presidente)}</span>
+                                    </div>
+                                </div>
+                                <span class="presidencia-chevron" aria-hidden="true">›</span>
                             </div>
-                            <div class="timeline-info">
-                                <h3 class="timeline-nombre">${nombreCompleto}</h3>
-                                <p class="timeline-periodo">${presidente.periodo.toString()}</p>
-                                <span class="timeline-tipo ${claseTipo}">${tipoGobierno}</span>
-                            </div>
+                            <p class="presidencia-descripcion">${presidente.descripcion}</p>
                         </div>
-                        <p class="timeline-descripcion">${presidente.descripcion}</p>
                     </div>
                 </div>
             `;
         }).join('');
 
-        timelineContainer.innerHTML = timelineHTML;
+        timelineContainer.innerHTML = `<div class="timeline-eje"></div>${filasHTML}`;
 
         // Al tocar/clickear una tarjeta, queda "fijada" expandida (útil en celular,
         // donde no existe hover). En desktop además se expande solo con el mouse encima.
-        timelineContainer.querySelectorAll('.timeline-card').forEach(card => {
+        timelineContainer.querySelectorAll('.presidencia-card').forEach(card => {
             const alternarExpandido = () => {
-                const expandido = card.classList.toggle('expandido');
+                const expandido = card.classList.toggle('esta-abierta');
                 card.setAttribute('aria-expanded', expandido ? 'true' : 'false');
             };
             card.addEventListener('click', alternarExpandido);
@@ -4295,6 +4454,23 @@ function cargarLineaDeTiempo() {
                 if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();
                     alternarExpandido();
+                }
+            });
+        });
+
+        // El retrato abre el modal con la foto en grande, sin que ese click
+        // también le llegue a la tarjeta (que si no, se abriría/cerraría a
+        // la vez).
+        timelineContainer.querySelectorAll('.presidencia-retrato').forEach(retrato => {
+            const abrir = (e) => {
+                e.stopPropagation();
+                abrirRetratoModal(retrato.dataset.imagen, retrato.dataset.nombre, retrato.dataset.periodo, retrato);
+            };
+            retrato.addEventListener('click', abrir);
+            retrato.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    abrir(e);
                 }
             });
         });
