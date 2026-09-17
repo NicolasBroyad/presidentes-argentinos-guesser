@@ -4305,7 +4305,12 @@ function agregarEventListenersModalFinJuego() {
 
     if (botonVolverInicio) {
         botonVolverInicio.addEventListener("click", () => {
-            location.reload(); // Recarga la página completa
+            // No usar location.reload(): si se llegó acá con
+            // "?modo=X&accion=jugar" (botón "Jugar" del modal de "Ver modos
+            // de juego"), reload() repite esa misma URL y el auto-arranque
+            // de iniciarModoSeleccionado() (más abajo en este archivo) vuelve
+            // a meter de una en la misma partida en vez de ir al inicio.
+            window.location.href = "index.html";
         });
     }
 
