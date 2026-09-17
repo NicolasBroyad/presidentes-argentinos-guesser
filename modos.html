@@ -2,22 +2,22 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <script src="theme-init.js?v=20260821g"></script>
+    <script src="js/theme-init.js?v=20260821g"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content, viewport-fit=cover">
     <title>Presidentes Argentinos Guesser - Modos de juego</title>
     <meta name="description" content="Todos los modos de juego de Presidentes Argentinos Guesser: el clásico contrarreloj, adiviná la imagen, y los modos diarios sopa de letras y crucigrama.">
     <meta name="keywords" content="Presidentes Argentinos, Modos de juego, Sopa de letras, Crucigrama, Adivina la imagen, Historia Argentina">
     <link rel="canonical" href="https://presidentes-argentinos-guesser.vercel.app/modos.html" />
-    <link rel="stylesheet" href="styles.css?v=20260916p">
-    <link rel="icon" type="image/png" sizes="32x32" href="images/icon-32.png?v=20260907b">
-    <link rel="icon" type="image/png" sizes="16x16" href="images/icon-16.png?v=20260907b">
-    <script src="Periodo.js?v=20260821g" defer></script>
-    <script src="Presidente.js?v=20260913a" defer></script>
-    <script src="script.js?v=20260916r" defer></script>
+    <link rel="stylesheet" href="css/styles.css?v=20260916q">
+    <link rel="icon" type="image/png" sizes="32x32" href="images/icons/icon-32.png?v=20260907b">
+    <link rel="icon" type="image/png" sizes="16x16" href="images/icons/icon-16.png?v=20260907b">
+    <script src="js/models/Periodo.js?v=20260821g" defer></script>
+    <script src="js/models/Presidente.js?v=20260913a" defer></script>
+    <script src="js/script.js?v=20260916v" defer></script>
     <meta name="google-site-verification" content="fMgml6oX73QYLoVnA3bRJ7J2GKl5UpMl0TMGMZHBIq4" /> <!-- Google Search Console -->
     <link rel="manifest" href="manifest.json?v=20260907a">
     <meta name="theme-color" content="#0a1626">
-    <link rel="apple-touch-icon" href="images/apple-touch-icon.png?v=20260907a">
+    <link rel="apple-touch-icon" href="images/icons/apple-touch-icon.png?v=20260907a">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Presidentes AR">
@@ -26,7 +26,7 @@
     <div class="modos-pantalla">
     <header class="header">
                 <a href="index.html" class="header-logo" aria-label="Presidentes Argentinos Guesser - Inicio">
-            <img src="images/logo-nav-64.png?v=20260907a" srcset="images/logo-nav-64.png?v=20260907a 64w, images/logo-nav-128.png?v=20260907a 128w, images/logo-nav-256.png?v=20260907a 256w" sizes="32px" width="32" height="32" alt="">
+            <img src="images/logo/logo-nav-64.png?v=20260907a" srcset="images/logo/logo-nav-64.png?v=20260907a 64w, images/logo/logo-nav-128.png?v=20260907a 128w, images/logo/logo-nav-256.png?v=20260907a 256w" sizes="32px" width="32" height="32" alt="">
         </a>
         <button class="nav-toggle" aria-label="Abrir menú">
         ☰
@@ -51,7 +51,7 @@
                 <div class="modos-grid">
                     <a class="modo-card" href="index.html?modo=clasico" data-modo="clasico">
                         <span class="modo-card-icono">
-                            <img src="images/modos%20logos/clasico.svg" alt="" width="38" height="38">
+                            <img src="images/modos/clasico.svg" alt="" width="38" height="38">
                         </span>
                         <span class="modo-card-texto">
                             <h3 class="modo-card-titulo"><span class="modo-de-juego-seleccionado">CLÁSICO</span></h3>
@@ -60,7 +60,7 @@
                     </a>
                     <a class="modo-card" href="index.html?modo=imagen" data-modo="imagen">
                         <span class="modo-card-icono">
-                            <img src="images/modos%20logos/adivina-imagen.svg" alt="" width="38" height="38">
+                            <img src="images/modos/adivina-imagen.svg" alt="" width="38" height="38">
                         </span>
                         <span class="modo-card-texto">
                             <h3 class="modo-card-titulo"><span class="modo-de-juego-seleccionado">ADIVINA LA IMAGEN</span></h3>
@@ -75,7 +75,7 @@
                 <div class="modos-grid">
                     <a class="modo-card" href="index.html?modo=sopa" data-modo="sopa">
                         <span class="modo-card-icono">
-                            <img src="images/modos%20logos/sopa-letras.svg" alt="" width="38" height="38">
+                            <img src="images/modos/sopa-letras.svg" alt="" width="38" height="38">
                             <span class="modo-card-badge-estado" hidden></span>
                         </span>
                         <span class="modo-card-texto">
@@ -89,7 +89,7 @@
                     </a>
                     <a class="modo-card" href="index.html?modo=crucigrama" data-modo="crucigrama">
                         <span class="modo-card-icono">
-                            <img src="images/modos%20logos/crucigrama.svg" alt="" width="38" height="38">
+                            <img src="images/modos/crucigrama.svg" alt="" width="38" height="38">
                             <span class="modo-card-badge-estado" hidden></span>
                         </span>
                         <span class="modo-card-texto">

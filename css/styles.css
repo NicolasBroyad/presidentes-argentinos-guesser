@@ -1,0 +1,4838 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400..900&family=Fredoka:wdth,wght@97.9,300..700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400..900&family=Fredoka:wdth,wght@97.9,300..700&display=swap');
+
+/* --- Tema oscuro (por defecto) --- */
+:root {
+    --navy: 10 34 53;
+    --navy-light: 22 55 81;
+    --blue: 127 190 241;
+    --blue-strong: 27 190 241;
+    --gold: 232 200 116;
+    --gold-soft: 243 223 160;
+    --green: 88 214 141;
+    --terracota: 217 138 122;
+    --glass: 0 0 0;
+    --glass-soft: 53 53 53;
+    --ink: 255 255 255;
+    --bg-top: 12 28 44;
+    --bg-mid: 10 34 53;
+    --bg-bottom: 6 13 21;
+
+    /* Paleta del botón "Iniciar Juego" líquido. En tema oscuro el celeste
+       contrasta de sobra contra el fondo navy, así que se queda como está. */
+    --iniciar-c1: #bdf3ff;
+    --iniciar-c2: #4fc3f7;
+    --iniciar-c3: #8fe9ff;
+    --iniciar-c4: #2fb2f0;
+    --iniciar-c5: #d8fbff;
+    --iniciar-glow: 79 195 247;
+    --iniciar-text: 4 48 73;
+    --iniciar-text-shadow: 255 255 255 / 0.5;
+    --iniciar-shine: 255 255 255;
+    --iniciar-shine-alpha: 0.75;
+}
+
+/* --- Tema claro: celeste y blanco de la bandera argentina --- */
+:root[data-theme="light"] {
+    --navy: 255 255 255;
+    --navy-light: 235 244 252;
+    --blue: 90 155 214;
+    --blue-strong: 74 144 217;
+    --gold: 196 149 40;
+    --gold-soft: 150 108 20;
+    --green: 30 132 73;
+    --terracota: 178 84 61;
+    --glass: 255 255 255;
+    --glass-soft: 214 231 247;
+    --ink: 15 40 61;
+    --bg-top: 173 214 245;
+    --bg-mid: 214 232 250;
+    --bg-bottom: 255 255 255;
+
+    /* En tema claro el fondo es celeste/blanco muy claro: el mismo líquido
+       celeste del botón se pierde contra él (sobre todo cuando pasa el
+       reflejo, que en blanco puro terminaba fundiéndose con la página). El
+       dorado quedaba raro por otro motivo: coincide justo con el sol dorado
+       del watermark de fondo, y el botón termina "compitiendo" con él en el
+       mismo lugar y color. Un zafiro bien saturado esquiva ambos problemas:
+       es lo bastante oscuro para no perderse contra el fondo pálido y no
+       comparte tono con el sol. */
+    --iniciar-c1: #8ecbff;
+    --iniciar-c2: #1f6fd6;
+    --iniciar-c3: #58a6f5;
+    --iniciar-c4: #0d3f91;
+    --iniciar-c5: #bfe0ff;
+    --iniciar-glow: 31 111 214;
+    --iniciar-text: 255 255 255;
+    --iniciar-text-shadow: 4 20 46 / 0.45;
+    --iniciar-shine: 219 237 255;
+    --iniciar-shine-alpha: 0.6;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    font-family: "Cinzel";
+    box-sizing: border-box;
+    color: rgb(var(--ink));
+}
+
+html, body {
+    background-color: rgb(var(--bg-mid));
+}
+
+/* Ver el script inline en el <head> de index.html: oculta la página entera
+   mientras se arma el juego al llegar con "?...&accion=jugar", para que no
+   se alcance a ver un flash de la pantalla de inicio antes de la partida. */
+html[data-cargando-juego] body {
+    visibility: hidden;
+}
+
+.index-body {
+    background-image:
+        url("../images/backgrounds/sol-watermark.svg"),
+        radial-gradient(ellipse 70% 45% at 50% 0%, rgb(var(--blue-strong) / 0.14), transparent 65%),
+        linear-gradient(165deg, rgb(var(--bg-top)) 0%, rgb(var(--bg-mid)) 45%, rgb(var(--bg-bottom)) 100%);
+    background-color: rgb(var(--bg-mid));
+    background-size: min(820px, 85vw) auto, cover, cover;
+    background-position: center 6%, center, center;
+    background-repeat: no-repeat, no-repeat, no-repeat;
+    background-attachment: fixed, fixed, fixed;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.main {
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+/* Envuelve kicker+título+botón+tarjeta de modo (todo el contenido del
+   inicio salvo el header) solo para que script.js pueda sacarlos del DOM
+   con un único ".remove()" al arrancar una partida, en vez de cuatro
+   ".remove()" sueltos. "display:contents" saca al wrapper del layout por
+   completo: sus hijos se comportan como si fueran hijos directos de
+   ".main" (mismo flex, mismo ancho, mismo todo) — a propósito, porque
+   dejarlo como flex item real (con su propio "flex:1"/centrado) rompía la
+   alineación del botón con el sol de fondo (ver comentario de
+   ".button-section" más abajo) y el ancho en mobile. */
+.hero-content {
+    display: contents;
+}
+
+.kicker {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    font-size: min(clamp(0.65rem, 1.8vw, 0.8rem), clamp(0.65rem, 1.8vh, 0.8rem));
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    text-align: center;
+    color: rgb(var(--gold-soft));
+    opacity: 0.85;
+    padding-top: 34px;
+}
+
+h1 {
+    display: flex;
+    justify-content: center;
+}
+
+h1 a {
+    width: fit-content;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 6px;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    line-height: 1.05;
+    justify-content: center;
+    text-decoration: none;
+    text-wrap: balance;
+}
+
+.titulo-linea1 {
+    font-size: min(clamp(1rem, 3.2vw, 1.7rem), clamp(1rem, 3.2vh, 1.7rem));
+    font-weight: 600;
+    color: rgb(var(--ink) / 0.7);
+    text-align: center;
+}
+
+.titulo-linea2 {
+    font-size: min(clamp(1.9rem, 6.4vw, 3.6rem), clamp(1.9rem, 6.4vh, 3.6rem));
+    font-weight: 800;
+    text-align: center;
+    background: linear-gradient(180deg, rgb(var(--ink)) 0%, rgb(var(--gold-soft)) 130%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.header {
+    position: sticky;
+    top: 0;
+    display: flex;
+    align-items: center;
+    background-color: rgb(var(--glass) / 0.75);
+    backdrop-filter: blur(50px); /* El efecto de vidrio borroso */
+    -webkit-backdrop-filter: blur(10px);
+    justify-content: center;
+    z-index: 100; /* para que quede arriba del contenido */
+    width: 100%;
+    /* Extiende el fondo del header por debajo del notch/isla dinámica al
+       instalar la página como app (sin esto, al scrollear se ve la página
+       "pasando" por arriba de la franja negra, en el área del notch). */
+    padding-top: env(safe-area-inset-top, 0px);
+}
+
+.header-nav ul {
+    list-style: none;
+    display: flex;
+    gap: min(clamp(0.8rem, 2vw, 2rem), clamp(0.8rem, 2vh, 2rem)); /* mínimo 0.8rem, máximo 2rem, se adapta con el ancho */
+    margin: 0;
+    padding: 1rem;
+    border-bottom: 1px solid rgb(var(--ink) / 0.4);
+}
+
+.header-nav a {
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 0.9rem;
+    padding: 0.5rem;
+    border-radius: 5px;
+}
+
+.header-nav a:hover {
+    color: rgb(var(--blue));
+    border: 1px solid rgb(var(--blue));
+    font-weight: 900;
+    background-color: rgb(var(--glass-soft) / 0.75);
+    transition: all 0.3s ease; /* Animación suave */
+    transform: scale(1.1);
+}
+
+.pagina-actual {
+    border: 1px solid rgb(var(--blue));
+    text-decoration: underline;
+    font-weight: 900;
+    background-color: rgb(var(--glass-soft) / 0.75);
+}
+
+/* Marca en el header, solo en desktop (en mobile ese lugar ya lo ocupa el
+   botón hamburguesa). Posicionada absoluta como .theme-toggle, en la
+   esquina opuesta, para no alterar el centrado del nav. */
+.header-logo {
+    position: absolute;
+    left: 1rem;
+    top: calc(50% + env(safe-area-inset-top, 0px) / 2);
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    z-index: 101;
+}
+
+.header-logo img {
+    display: block;
+    width: 32px;
+    height: 32px;
+}
+
+/* Botón "volver" durante una partida: mismo lugar que el logo (que se
+   oculta mientras se juega), en cualquier modo y en cualquier ancho de
+   pantalla. Lleva al inicio o a "Ver modos de juego" según desde dónde se
+   haya empezado a jugar (ver volverA en script.js). */
+.volver-atras-juego {
+    display: none;
+    position: absolute;
+    left: 1rem;
+    top: calc(50% + env(safe-area-inset-top, 0px) / 2);
+    transform: translateY(-50%);
+    z-index: 101;
+    align-items: center;
+    justify-content: center;
+    width: 2.1rem;
+    height: 2.1rem;
+    padding: 0;
+    border-radius: 50%;
+    background: none;
+    border: 1px solid rgb(var(--ink) / 0.2);
+    color: rgb(var(--ink) / 0.8);
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+.volver-atras-juego svg {
+    width: 1.2rem;
+    height: 1.2rem;
+    fill: currentColor;
+}
+
+.volver-atras-juego:hover {
+    color: rgb(var(--gold-soft));
+    border-color: rgb(var(--gold-soft) / 0.6);
+    background-color: rgb(var(--glass-soft) / 0.4);
+}
+
+body.juego-activo .volver-atras-juego {
+    display: flex;
+}
+
+body.juego-activo .header-logo {
+    display: none;
+}
+
+@media (max-width: 992px) {
+    .header-logo {
+        display: none;
+    }
+}
+
+/* Botón hamburguesa oculto en desktop */
+.nav-toggle {
+    display: none;
+    font-size: 2rem;
+    background: none;
+    border: none;
+    color: rgb(var(--ink));
+    cursor: pointer;
+}
+
+/* Agrupa el botón de sonido y el de tema en la esquina derecha del header,
+   uno al lado del otro, en vez de posicionar cada uno por separado. */
+.header-acciones {
+    position: absolute;
+    right: 1rem;
+    /* "top: 50%" de un elemento absoluto se calcula sobre TODO el alto del
+       header (incluye el padding-top del notch), mientras que el resto de
+       los íconos son elementos del flex normal y se centran solo dentro
+       del contenido (sin ese padding) — sumamos la mitad del inset para
+       que ambos queden a la misma altura en dispositivos con notch. */
+    top: calc(50% + env(safe-area-inset-top, 0px) / 2);
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    gap: 0.2rem;
+    z-index: 101;
+}
+
+.theme-toggle {
+    /* Posición standalone, para las páginas que no agrupan botones en
+       ".header-acciones" (todas menos index.html). */
+    position: absolute;
+    right: 1rem;
+    top: calc(50% + env(safe-area-inset-top, 0px) / 2);
+    transform: translateY(-50%);
+}
+
+.header-acciones .theme-toggle,
+.header-acciones .sonido-toggle {
+    position: static;
+    top: auto;
+    right: auto;
+    transform: none;
+}
+
+.theme-toggle,
+.sonido-toggle {
+    background: none;
+    border: none;
+    display: flex;
+    padding: 0.4rem;
+    cursor: pointer;
+    z-index: 101;
+}
+
+/* --- Durante una partida, SOLO EN MOBILE: se oculta el footer y el nav de
+   texto, y el header pasa a ser una sola franja angosta con hamburguesa,
+   el modo de juego (movido ahí desde el JS) y el selector de tema, todo a
+   la misma altura, sin la franja negra extra que había antes. En desktop
+   el header/footer quedan exactamente como siempre. --- */
+@media (max-width: 768px) {
+    body.juego-activo footer {
+        display: none;
+    }
+
+    body.juego-activo .header {
+        justify-content: flex-start;
+        padding: 0 1rem;
+        padding-top: env(safe-area-inset-top, 0px);
+    }
+
+    body.juego-activo .nav-toggle {
+        display: flex;
+        flex-shrink: 0;
+    }
+
+    /* En este header compacto ".nav-toggle" ya vive en el flujo normal,
+       pegado al borde izquierdo (mismo lugar donde ".volver-atras-juego"
+       se posiciona absoluto para desktop) — sacarlo de "absolute" acá y
+       ponerlo antes en el flujo evita que las dos cosas queden una encima
+       de la otra. */
+    body.juego-activo .volver-atras-juego {
+        position: static;
+        /* "transform" no es exclusivo de elementos posicionados: el
+           translateY(-50%) de la regla base (pensado para el centrado
+           vertical de la versión "position:absolute" de desktop) se sigue
+           aplicando acá aunque ya esté en flujo normal, y lo corre de
+           lugar hacia arriba (llegaba a cortarse con el borde de la
+           pantalla). Se anula para que "align-items:center" del header
+           sea lo único que lo centre. */
+        transform: none;
+        flex-shrink: 0;
+        margin-right: 0.5rem;
+    }
+
+    body.juego-activo .header-nav {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        background-color: rgb(var(--glass) / 0.9);
+        padding: 1rem 2rem;
+        border-radius: 0 0 10px 10px;
+    }
+
+    body.juego-activo .header-nav ul {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    body.juego-activo .header-nav.active {
+        display: block;
+    }
+
+    body.juego-activo .header .jugando-modo-heading {
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+        justify-content: flex-start;
+        /* Espacio reservado a la derecha para ".header-acciones" (sonido +
+           tema, dos botones ahora en vez de uno solo). */
+        margin: 0 5.6rem 0 0.5rem;
+        padding: 0.35rem 0.6rem;
+        font-size: 0.8rem;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    /* El texto completo ("JUGANDO MODO" + nombre del modo) se mantiene
+       siempre que se pueda: si no entra, ajustarBadgeModoAlAncho() en
+       script.js va achicando la fuente (hasta un piso) hasta que quepa. En
+       el peor caso (celular angosto + nombre de modo largo, ej.
+       "CRUCIGRAMA") ni encogiendo la fuente hasta el piso entra completo:
+       ahí script.js agrega esta clase, y recién ahí la placa del modo cede
+       su propio espacio (el prefijo nunca se toca) y pasa a mostrar el
+       nombre completo como un cartel de letrero: el texto se desliza de
+       derecha a izquierda hasta mostrar el final y vuelve a arrancar, en
+       vez de quedar recortada de golpe por el "overflow:hidden" del
+       heading (pegada al borde, sin su propio padding ni borde redondeado,
+       cortada a la mitad de una letra).
+
+       Importante: esto NO puede ser el estado permanente de la placa (ni
+       siquiera solo en mobile) — si la placa tiene min-width:0 todo el
+       tiempo, el flex-shrink la achica en el layout para absorber CUALQUIER
+       desborde sin que el heading llegue a desbordar, así que
+       ajustarBadgeModoAlAncho() nunca detectaría nada para achicar y la
+       placa quedaría carcomida incluso con nombres cortos como "CLÁSICO".
+       Por eso esta clase la agrega el script recién DESPUÉS de confirmar
+       que ni el piso de fuente alcanza. */
+    body.juego-activo .header .jugando-modo-heading--recortada .jugando-modo-prefijo {
+        flex-shrink: 0;
+    }
+
+    body.juego-activo .header .jugando-modo-heading--recortada .modo-de-juego-seleccionado {
+        display: inline-block;
+        min-width: 0;
+        max-width: 100%;
+        overflow: hidden;
+        white-space: nowrap;
+        vertical-align: bottom;
+    }
+
+    /* El desplazamiento (--desplazamiento-texto), la duración
+       (--duracion-cartel) y el propio @keyframes "cartel-modo-recortado"
+       los arma script.js (ver fijarTiemposCartelModo) a partir de cuánto le
+       sobra al texto: así la pausa al principio y al final es una cantidad
+       fija de segundos (se lee cómodo) y el tramo de deslizamiento va
+       siempre a una velocidad pareja, sin importar cuántas letras de más
+       haya. "linear" mantiene esa velocidad constante durante el
+       deslizamiento, en vez de arrancar/frenar de a poco. */
+    body.juego-activo .header .jugando-modo-heading--recortada .modo-de-juego-seleccionado-texto {
+        display: inline-block;
+        animation-name: cartel-modo-recortado;
+        animation-duration: var(--duracion-cartel, 3s);
+        animation-timing-function: linear;
+        animation-iteration-count: infinite;
+    }
+}
+
+/* A quien prefiere menos movimiento en pantalla, mejor mostrarle el nombre
+   recortado con "…" fijo que un cartel deslizándose sin parar. */
+@media (max-width: 768px) and (prefers-reduced-motion: reduce) {
+    body.juego-activo .header .jugando-modo-heading--recortada .modo-de-juego-seleccionado {
+        text-overflow: ellipsis;
+    }
+
+    body.juego-activo .header .jugando-modo-heading--recortada .modo-de-juego-seleccionado-texto {
+        animation: none;
+    }
+}
+
+@media (max-width: 360px) {
+    body.juego-activo .header .jugando-modo-heading {
+        margin-right: 5.1rem;
+        font-size: 0.7rem;
+        padding: 0.3rem 0.5rem;
+        gap: 0.3rem;
+    }
+}
+
+.theme-toggle-icon {
+    height: 22px;
+    width: 22px;
+    fill: rgb(var(--gold-soft));
+    transition: transform 0.3s ease, fill 0.3s ease;
+}
+
+.theme-toggle:hover .theme-toggle-icon {
+    fill: rgb(var(--blue));
+    transform: translateY(-2px) rotate(15deg);
+}
+
+.sonido-toggle-icon {
+    height: 22px;
+    width: 22px;
+    fill: rgb(var(--gold-soft));
+    color: rgb(var(--gold-soft)); /* los trazos del ícono usan stroke="currentColor" */
+    transition: transform 0.3s ease, fill 0.3s ease, color 0.3s ease;
+}
+
+.sonido-toggle:hover .sonido-toggle-icon {
+    fill: rgb(var(--blue));
+    color: rgb(var(--blue));
+    transform: scale(1.1);
+}
+
+/* --- Responsive --- */
+@media (max-width: 992px) {
+    .header {
+        justify-content: space-between;
+        padding: 0 1rem;
+        padding-top: env(safe-area-inset-top, 0px);
+    }
+
+    .nav-toggle {
+        display: block; /* mostramos el botón (display: block) */
+    }
+
+    /* Mismo ajuste que a 768px: ".nav-toggle" ya aparece desde 992px, así
+       que ".volver-atras-juego" (position:absolute;left:1rem por defecto,
+       pensado para desktop sin hamburguesa) tiene que sumarse al flujo acá
+       también — si no, entre 769px y 992px (p. ej. la mitad de una pantalla
+       ancha dividida en dos) quedan las dos cosas superpuestas en la misma
+       esquina. */
+    body.juego-activo .volver-atras-juego {
+        position: static;
+        transform: none;
+        flex-shrink: 0;
+        margin-right: 0.5rem;
+    }
+
+    /* Con ".volver-atras-juego" sumado al flujo, sólo queda ese botón y el
+       hamburguesa como hijos flex visibles de ".header" en este rango de
+       ancho (el badge "jugando modo X" recién se muda al header más abajo,
+       a 768px) — con "space-between" (la regla de arriba) esos dos únicos
+       ítems se van cada uno a un extremo, y el hamburguesa termina
+       superpuesto con ".header-acciones" (sonido/tema) del lado derecho.
+       Alineados a la izquierda quedan uno al lado del otro, lejos de eso. */
+    body.juego-activo .header {
+        justify-content: flex-start;
+    }
+
+    .header-nav {
+        display: none; /* ocultamos nav */
+        position: absolute;
+        top: 3rem;
+        left: 0;
+        background-color: rgb(var(--glass) / 0.9);
+        padding: 1rem 2rem;
+        border-radius: 0 0 10px 10px;
+
+
+    }
+
+    .header-nav ul {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .header-nav.active {
+        display: block; /* se muestra al presionar el botón */
+    }
+
+    .main {
+        align-items: center;
+    }
+}
+
+
+
+.button-section {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    flex: 1;
+}
+
+/* .modo-modal-jugar ("Jugar" en el modal de "Ver modos de juego") comparte
+   todo este estilo (líquido animado + reflejo + color), pero con clase
+   propia: script.js ubica el botón real de "Iniciar Juego" con
+   document.querySelector(".iniciar-juego-button"), y si el modal reutilizara
+   esa clase, en modos.html ese querySelector encontraría el botón del modal
+   en su lugar y le engancharía el arranque de partida (que ahí rompe: usa
+   elementos que solo existen en index.html). Solo el border-radius difiere
+   (ver más abajo), para acompañar los bordes del modal en vez de ser tan
+   redondo como en el inicio. */
+.iniciar-juego-button,
+.modo-modal-jugar {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    position: relative;
+    overflow: hidden;
+    border: none;
+    border-radius: 999px;
+    padding: min(clamp(0.9em, 2.4vw, 1.15em), clamp(0.9em, 2.4vh, 1.15em)) 2.8em;
+    cursor: pointer;
+    /* Gradiente "líquido" que se mueve solo; los colores salen de variables
+       por tema (--iniciar-*), definidas junto a la paleta de cada tema. */
+    background: linear-gradient(115deg, var(--iniciar-c1) 0%, var(--iniciar-c2) 22%, var(--iniciar-c3) 45%, var(--iniciar-c4) 68%, var(--iniciar-c5) 88%, var(--iniciar-c2) 100%);
+    background-size: 320% 320%;
+    animation: iniciar-juego-liquido 7s ease-in-out infinite;
+    box-shadow:
+        0 22px 50px -16px rgba(4, 20, 32, 0.65),
+        0 0 45px -6px rgb(var(--iniciar-glow) / 0.7),
+        inset 0 2px 4px rgb(255 255 255 / 0.65),
+        inset 0 -10px 16px rgb(9 60 88 / 0.28);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+/* Acompaña los bordes redondeados del modal (12px) en vez del pill 999px
+   del botón del inicio, y queda más chico (tamaño parecido al botón de
+   texto que tenía antes) ya que dentro de un modal chico el tamaño del
+   botón del inicio queda desproporcionado. */
+.modo-modal-jugar {
+    border-radius: 10px;
+    padding: 0.6rem 1.6rem;
+}
+
+@keyframes iniciar-juego-liquido {
+    0%   { background-position: 0% 50%; }
+    50%  { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* Brillo tipo vidrio que se desliza en diagonal por encima del líquido. */
+.iniciar-juego-button::after,
+.modo-modal-jugar::after {
+    content: "";
+    position: absolute;
+    top: -60%;
+    left: -30%;
+    width: 55%;
+    height: 220%;
+    background: linear-gradient(100deg, transparent, rgb(var(--iniciar-shine) / var(--iniciar-shine-alpha)) 45%, transparent 70%);
+    transform: rotate(12deg);
+    animation: iniciar-juego-brillo 3.6s ease-in-out infinite;
+    pointer-events: none;
+    z-index: 1;
+}
+
+@keyframes iniciar-juego-brillo {
+    0%   { left: -30%; }
+    55%  { left: 120%; }
+    100% { left: 120%; }
+}
+
+.iniciar-juego-texto,
+.modo-modal-jugar-texto {
+    position: relative;
+    z-index: 2;
+    display: inline-block;
+    font-size: min(clamp(1.05rem, 3.2vw, 1.35rem), clamp(1.05rem, 3.2vh, 1.35rem));
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: rgb(var(--iniciar-text));
+    text-shadow: 0 1px 2px rgb(var(--iniciar-text-shadow));
+}
+
+/* Más chico que el de "Iniciar Juego" del inicio (va después a propósito:
+   misma especificidad que la regla de arriba, así que el orden decide). */
+.modo-modal-jugar-texto {
+    font-size: 0.9rem;
+}
+
+.iniciar-juego-button:hover,
+.modo-modal-jugar:hover {
+    transform: translateY(-4px) scale(1.05);
+    animation-duration: 3s;
+    box-shadow:
+        0 26px 60px -14px rgba(4, 20, 32, 0.7),
+        0 0 60px -2px rgb(var(--iniciar-glow) / 0.9),
+        inset 0 2px 4px rgb(255 255 255 / 0.75),
+        inset 0 -10px 16px rgb(9 60 88 / 0.32);
+}
+
+.iniciar-juego-button:active,
+.modo-modal-jugar:active {
+    transform: translateY(-1px) scale(0.99);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .iniciar-juego-button,
+    .iniciar-juego-button::after,
+    .modo-modal-jugar,
+    .modo-modal-jugar::after {
+        animation: none;
+    }
+}
+
+/* .modo-modal-configurar-gear (rosquita del modal de "Ver modos de juego")
+   comparte este mismo estilo visual, pero con clase propia: script.js
+   ubica el botón de configuración del inicio con
+   document.querySelector(".configuracion-link"), y si el modal reutilizara
+   esa clase, en modos.html ese querySelector encontraría la rosquita del
+   modal en vez de (o además de) la real, enganchándole el mismo listener
+   dos veces. */
+.configuracion-link,
+.modo-modal-configurar-gear {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    color: rgb(var(--ink) / 0.55);
+    width: 2.1rem;
+    height: 2.1rem;
+    padding: 0.4rem;
+    border-radius: 50%;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: all 0.25s ease;
+}
+
+.configuracion-link .configuracion-icon,
+.modo-modal-configurar-gear .configuracion-icon {
+    height: 100%;
+    width: 100%;
+    opacity: 0.7;
+    transition: all 0.25s ease;
+}
+
+.configuracion-link:hover,
+.modo-modal-configurar-gear:hover {
+    color: rgb(var(--gold-soft));
+    background-color: rgb(var(--glass-soft) / 0.4);
+}
+
+.configuracion-link:hover .configuracion-icon,
+.modo-modal-configurar-gear:hover .configuracion-icon {
+    fill: rgb(var(--gold-soft));
+    opacity: 1;
+    transform: rotate(25deg);
+}
+
+
+.rules-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+    padding: 1.2rem;
+    padding-bottom: 2.5rem;
+    min-height: fit-content;
+    background-color: rgb(var(--glass) / 0.75);
+    backdrop-filter: blur(10px); /* El efecto de vidrio borroso */
+    justify-content: center;
+    align-items: center;
+    /* ".main" usa align-items:center (no stretch): sin ancho explícito acá
+       ".modo-carrusel" (que tiene su propio width:100%) queda atrapado en
+       un cálculo circular de fit-content y termina expandiendo esta
+       sección hasta su max-width (560px) aunque la pantalla sea angosta. */
+    width: 100%;
+    min-width: 0;
+}
+
+/* Ahora solo envuelve el texto "MODO DE JUEGO SELECCIONADO:", sin la placa
+   ni la rosquita (que se mudaron a la tarjeta del carrusel de abajo): por
+   eso hereda el ancho de su propio contenido, con poco padding, y no hay
+   ninguna relación de ancho forzada con ".modo-carrusel" (a propósito
+   queda más angosto que el carrusel en desktop). */
+.modo-de-juego-seleccionado-heading {
+    font-weight: 700;
+    font-size: 1.1rem;
+    display: flex;
+    padding: 0.35rem 0.7rem;
+    background-color: rgb(var(--glass-soft) / 0.75);
+    backdrop-filter: blur(10px); /* El efecto de vidrio borroso */
+    border-radius: 10px;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    max-width: 100%;
+}
+
+/* Cuenta regresiva hasta que se reinicien los modos "del día" (Sopa de
+   letras / Crucigrama). Se actualiza en vivo desde script.js. Solo existe
+   en el DOM dentro de la tarjeta de un modo "del día" (ver htmlReglas() en
+   script.js): los modos sin temporizador no la incluyen, así no reservan
+   ese espacio de más. */
+.contador-reinicio-diario {
+    display: block;
+    width: 100%;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: rgb(var(--gold-soft));
+    font-variant-numeric: tabular-nums;
+}
+
+.jugando-modo-heading{
+    display: flex;
+    align-self: center;
+    width: fit-content;
+    background-color: rgb(var(--glass) / 0.75);
+    backdrop-filter: blur(20px); /* El efecto de vidrio borroso */
+    -webkit-backdrop-filter: blur(20px);
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1.3rem;
+    margin: 1.5rem auto 0.5rem;
+    border-radius: 999px;
+    border: 1px solid rgb(var(--gold) / 0.35);
+    box-shadow: 0 15px 35px -15px rgba(0, 0, 0, 0.7);
+}
+
+.modo-de-juego-seleccionado {
+    padding: 0.2rem 0.4rem;
+    background-color: goldenrod;
+    border-radius: 5px;
+    color: white;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+/* --- Carrusel de modos ("Ver modos de juego" en miniatura, navegable) ---
+   Reemplaza al viejo selector desplegable: en vez de elegir el modo en un
+   menú y ver sus reglas aparte, se navega directamente entre las 4
+   tarjetas con flechas, swipe (mobile) o los puntitos de abajo. A
+   diferencia de ".modo-de-juego-seleccionado-heading" (arriba), este
+   contenedor NO comparte ancho con nada: tiene el suyo propio, más ancho
+   que el heading, con un techo razonable para no estirarse de más en
+   pantallas grandes. */
+.modo-carrusel {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    width: 100%;
+    max-width: 560px;
+    min-width: 0;
+}
+
+.modo-carrusel-viewport {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    border-radius: 10px;
+    transition: height 0.35s ease;
+}
+
+.modo-carrusel-track {
+    display: flex;
+    transition: transform 0.35s ease;
+}
+
+.modo-carrusel-flecha {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* Pisa el padding por defecto de "button" (8px 16px): con ese padding
+       intacto casi no queda lugar para el ícono adentro de un círculo de
+       2.2rem, y el SVG termina aplastado a un par de px de ancho. */
+    padding: 0;
+    width: 2.2rem;
+    height: 2.2rem;
+    border-radius: 50%;
+    background: none;
+    border: 1px solid rgb(var(--ink) / 0.2);
+    color: rgb(var(--ink) / 0.8);
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+.modo-carrusel-flecha svg {
+    /* Ancho/alto fijos: un % acá no se resuelve bien en un SVG dentro de un
+       botón flex (queda casi invisible, aplastado a un par de px). */
+    width: 1.2rem;
+    height: 1.2rem;
+    display: block;
+    fill: currentColor;
+}
+
+.modo-carrusel-flecha:hover {
+    color: rgb(var(--gold-soft));
+    border-color: rgb(var(--gold-soft) / 0.6);
+    background-color: rgb(var(--glass-soft) / 0.4);
+}
+
+.modo-carrusel-puntos {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.55rem;
+}
+
+.modo-carrusel-punto {
+    width: 8px;
+    height: 8px;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background-color: rgb(var(--ink) / 0.25);
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.modo-carrusel-punto:hover {
+    background-color: rgb(var(--ink) / 0.45);
+}
+
+.modo-carrusel-punto.activo {
+    background-color: rgb(var(--gold));
+    transform: scale(1.35);
+}
+
+.modo-actual-card {
+    display: flex;
+    align-items: center;
+    flex: 0 0 100%;
+    width: 100%;
+    box-sizing: border-box;
+    gap: min(clamp(1rem, 3vw, 1.6rem), clamp(1rem, 3vh, 1.6rem));
+    padding: 1.1rem 1.4rem;
+    /* Mismo border-radius que ".modo-de-juego-seleccionado-heading" (10px),
+       para que ambos contenedores luzcan como parte del mismo conjunto. */
+    border-radius: 10px;
+    background-color: rgb(var(--navy-light) / 0.55);
+    border: 1px solid rgb(var(--blue) / 0.28);
+}
+
+/* --- Estado del desafío diario (sopa / crucigrama) en la tarjeta del
+   carrusel del inicio. Lo pinta actualizarEstadoDiarioEnTarjetas() en
+   script.js; clásico y adiviná la imagen no llevan estas clases. --- */
+
+.modo-actual-card.is-resuelto {
+    /* El fondo celeste/navy queda igual que en cualquier otra tarjeta (el
+       de la regla base ".modo-actual-card"): lo único que cambia al estar
+       resuelto es el logo atenuado y el texto de estado en verde, no el
+       color de fondo de la card. */
+    border-color: rgb(var(--blue) / 0.18);
+}
+
+.modo-actual-card.is-resuelto .modo-card-logo {
+    opacity: 0.75;
+}
+
+.modo-card-logo {
+    flex-shrink: 0;
+    display: grid;
+    place-items: center;
+    box-sizing: border-box;
+    width: min(clamp(72px, 13vw, 96px), clamp(72px, 13vh, 96px));
+    height: min(clamp(72px, 13vw, 96px), clamp(72px, 13vh, 96px));
+    padding: 14px;
+    border-radius: 22px;
+    background-color: rgb(var(--navy-light));
+    border: 1px solid rgb(var(--blue) / 0.55);
+}
+
+/* El logo necesita ser el contenedor de referencia de la insignia
+   (NUEVA/NUEVO dorada, o el tilde verde de resuelto) que cuelga de su
+   esquina superior derecha. */
+.modo-card-logo-wrap {
+    position: relative;
+    flex-shrink: 0;
+    display: flex;
+}
+
+.modo-card-badge-estado {
+    position: absolute;
+    top: -9px;
+    right: -9px;
+}
+
+.modo-card-badge-nuevo {
+    display: inline-block;
+    padding: 5px 8px;
+    border-radius: 999px;
+    background-color: rgb(var(--gold));
+    color: rgb(var(--navy));
+    border: 2.5px solid rgb(var(--navy-light));
+    box-shadow: 0 0 0 5px rgb(var(--gold) / 0.18);
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    font-size: 0.62rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .modo-card-badge-nuevo {
+        animation: modo-card-badge-latido 2.4s ease-in-out infinite;
+    }
+}
+
+@keyframes modo-card-badge-latido {
+    0%, 100% { box-shadow: 0 0 0 5px rgb(var(--gold) / 0.18); }
+    50% { box-shadow: 0 0 0 9px rgb(var(--gold) / 0.06); }
+}
+
+.modo-card-badge-ok {
+    display: grid;
+    place-items: center;
+    width: 27px;
+    height: 27px;
+    border-radius: 50%;
+    background-color: rgb(var(--green));
+    border: 3px solid rgb(var(--navy-light));
+}
+
+/* Especificidad reforzada (dos clases) a propósito: en la grilla de "Ver
+   modos de juego" esta insignia queda anidada dentro de ".modo-card-icono",
+   que en mobile (media query más abajo) fija ".modo-card-icono svg" a
+   30x30px — con la misma especificidad que un simple ".modo-card-badge-ok
+   svg", esa regla de mobile terminaba ganando y el tick se salía del
+   círculo verde. */
+.modo-card-badge-estado.modo-card-badge-ok svg {
+    width: 15px;
+    height: 15px;
+    display: block;
+}
+
+/* Línea de estado ("No resuelta · próxima en HH:MM:SS" / "Resuelta ·
+   próxima en HH:MM:SS"), con el mismo contador de siempre adentro. */
+.modo-card-estado {
+    display: block;
+    margin-top: 0.4rem;
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    font-size: 0.8rem;
+    line-height: 1.3;
+    font-variant-numeric: tabular-nums;
+}
+
+/* El "*{color:rgb(var(--ink))}" global de arriba fija el color en CADA
+   elemento de forma directa (no por herencia), así que ".modo-card-estado-
+   texto" necesita su propio color explícito acá — igual que ya lo tiene
+   ".contador-reinicio-diario" — porque de otro modo esa regla universal le
+   gana a la herencia desde ".modo-card-estado" y el texto queda blanco. */
+.modo-card-estado.es-pendiente,
+.modo-card-estado.es-pendiente .modo-card-estado-texto {
+    font-weight: 800;
+    color: rgb(var(--gold-soft));
+}
+
+.modo-card-estado.es-resuelto,
+.modo-card-estado.es-resuelto .modo-card-estado-texto {
+    font-weight: 700;
+    color: rgb(var(--green) / 0.9);
+}
+
+/* ".contador-reinicio-diario" (compartida con la tarjeta de modos.html) trae
+   su propio display:block/width:100%/color fijo para ir en su propia línea
+   ahí — acá, adentro de la línea de estado, tiene que fluir en el mismo
+   renglón que "No resuelta · próxima en" y heredar el color de esa línea
+   (dorado si falta, verde si ya está resuelto), no quedar siempre dorado
+   en una línea aparte. */
+.modo-card-estado .contador-reinicio-diario {
+    display: inline;
+    width: auto;
+    font: inherit;
+    color: inherit;
+}
+
+/* La racha (🔥) va en el mismo renglón que el resto de la línea de estado,
+   a la derecha del contador — ".modo-card-racha" de por sí es block/margin-
+   top (para cuando va en su propia línea, como en la grilla de "Ver modos
+   de juego"), así que acá adentro se pisa por un inline con separación
+   horizontal en vez de vertical. Mantiene su propio color dorado fijo
+   (no cambia con el estado resuelto/pendiente): es un logro aparte, no el
+   estado del desafío de hoy. */
+.modo-card-estado .modo-card-racha {
+    display: inline;
+    margin-top: 0;
+    margin-left: 0.5rem;
+}
+
+.modo-card-logo svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+.modo-card-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    min-width: 0;
+}
+
+/* Fila con el título (la placa dorada ".modo-de-juego-seleccionado", mismo
+   formato que en las tarjetas de "Ver modos de juego") + la rosquita de
+   configurar, cuando el modo tiene algo configurable. */
+.modo-card-titulo-fila {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.6rem;
+}
+
+.modo-card-text h3 {
+    margin: 0;
+    line-height: 1.15;
+}
+
+.modo-card-text h3 .modo-de-juego-seleccionado {
+    font-size: min(clamp(1rem, 3vw, 1.15rem), clamp(1rem, 3vh, 1.15rem));
+}
+
+.modo-card-text p {
+    margin: 0;
+    font-weight: 600;
+    /* Sin esto hereda "Cinzel" (la fuente global de ".main"), que en
+       minúsculas se ve como versalitas -de ahí que el texto pareciera estar
+       todo en mayúscula-; la card de "Ver modos de juego" ya usa esta misma
+       tipografía normal para su descripción (ver ".modo-card-texto p"). */
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+.modos-scroll-container a {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 0;
+}
+
+.scroll-icon {
+    height: 64px;
+}
+
+svg {
+    fill: rgb(var(--ink));
+}
+
+h3 {
+    color: rgb(var(--ink));
+    font-weight: 750;
+    font-size: min(clamp(1rem, 3vw, 1.2rem), clamp(1rem, 3vh, 1.2rem));
+    margin-bottom: 0.5rem;
+}
+
+.rules-section p {
+    font-size: min(clamp(0.9rem, 2.5vw, 1rem), clamp(0.9rem, 2.5vh, 1rem));
+    color: rgb(var(--ink));
+    line-height: 1.4;
+}
+
+.modos-de-juego-link {
+    text-decoration: none;
+}
+
+.modos-de-juego-heading {
+    font-weight: 600;
+    font-size: 1.2rem;
+}
+
+.modos-de-juego-section {
+    display: flex;
+    min-height: fit-content;
+    background-color: rgb(var(--glass) / 0.75);
+    backdrop-filter: blur(10px); /* El efecto de vidrio borroso */
+    justify-content: center;
+    align-items: center;
+}
+.modos-de-juego-buttons-container {
+    display: flex;
+    flex-direction: row;
+    gap: 1.5rem;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap; /* permite que los botones se ajusten en varias filas si es necesario */
+    padding: min(clamp(1rem, 5vw, 5rem), clamp(1rem, 5vh, 5rem));
+    width: 75%;
+    border-top: 1px solid rgb(var(--ink) / 0.4);
+}
+
+.modo-de-juego-button {
+    font-size: 1.1rem;
+    border-radius: 10px;
+    background-color: gray;
+    color: rgb(5, 20, 35);
+    opacity: 0.55;
+    border: 2px solid transparent;
+    transition: all 0.3s ease; /* Animación suave */
+}
+
+/* El modo elegido en la pantalla de inicio queda resaltado; el resto en gris. */
+.modo-de-juego-button.seleccionado {
+    background-color: rgb(var(--blue));
+    opacity: 1;
+    border-color: rgb(var(--gold) / 0.7);
+    box-shadow: 0 0 14px rgb(var(--blue) / 0.6);
+}
+
+.modo-de-juego-button:not(:disabled):hover {
+    background-color: rgb(150, 210, 255);
+    cursor: pointer;
+    opacity: 1;
+    transform: translateY(-3px);
+}
+
+.modo-de-juego-button:disabled {
+    cursor: not-allowed;
+    opacity: 0.4;
+}
+
+@media (max-width: 768px) {
+
+    .modo-de-juego-seleccionado-heading {
+        font-size: 1rem;
+    }
+
+    .rules-section {
+        gap: 0.8rem;
+        padding: 1rem;
+    }
+
+    .modo-carrusel-flecha {
+        width: 1.9rem;
+        height: 1.9rem;
+    }
+
+    .modo-actual-card {
+        flex-direction: column;
+        text-align: center;
+        gap: 0.9rem;
+        padding: 1rem 1.1rem;
+    }
+
+    .modo-card-text {
+        width: 100%;
+    }
+
+    /* En columna, la fila con la placa + la rosquita: si se centrara toda
+       la fila como bloque (justify-content:center), la placa quedaría
+       corrida del centro real (el ancho de la rosquita la empuja de un
+       lado). Con grid de 3 columnas simétricas (1fr a cada lado) la placa
+       queda siempre centrada de verdad, y la rosquita se ubica aparte, al
+       lado, sin afectar ese centrado (mismo truco que ".modo-modal-fila-titulo"
+       en el modal de "Ver modos de juego"). */
+    .modo-card-titulo-fila {
+        display: grid;
+        /* Las dos columnas de los costados reservan el mismo mínimo
+           (el ancho de la rosquita) estén ocupadas o no: si una quedara en
+           "1fr" pelado (mínimo 0) y la otra con la rosquita adentro
+           (mínimo ~33px), dejan de ser simétricas apenas la placa no entra
+           en una sola línea y el achique de columnas se reparte distinto a
+           cada lado, corriendo la placa del centro real. */
+        grid-template-columns: minmax(2.1rem, 1fr) minmax(0, auto) minmax(2.1rem, 1fr);
+        justify-content: initial;
+        width: 100%;
+    }
+
+    .modo-card-titulo {
+        grid-column: 2;
+        justify-self: center;
+    }
+
+    .modo-card-titulo-fila .configuracion-link {
+        grid-column: 3;
+        justify-self: start;
+    }
+
+    .modos-de-juego-container {
+        flex-direction: column;
+    }
+}
+
+/* Reemplazar las reglas .overlay y .modal por estas: */
+#configDialog {
+    background-color: rgb(var(--navy) / 0.75);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 3px rgb(var(--blue)) solid;
+    border-radius: 12px;
+    padding: 20px 30px;
+    max-width: min(400px, calc(100vw - 2rem));
+    box-sizing: border-box;
+    color: rgb(var(--ink));
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    text-align: center;
+    
+    /* AGREGAR ESTAS LÍNEAS PARA CENTRARLO */
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    margin: 0; /* quitar margin automático del dialog */
+}
+
+#configDialog:not([open]) {
+    display: none;
+}
+
+#configDialog::backdrop {
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(2px);
+}
+
+/* Fondo oscuro semitransparente */
+.overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000; /* Asegura que quede arriba */
+}
+
+/* Ventana modal */
+.modal {
+    display: flex;
+    flex-direction: column;
+    background-color: rgb(var(--navy) / 0.75);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 3px rgb(var(--blue)) solid;
+    border-radius: 12px;
+    padding: 20px 30px;
+    max-width: 400px;
+    color: rgb(var(--ink));
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    text-align: center;
+}
+
+.configuracion-temporizador-container,
+.configuracion-cantidad-container {
+    border-bottom: 1px solid rgb(var(--ink) / 0.4);
+    padding: 2em 0;
+}
+
+.slider-container {
+  display: flex;
+  align-items: center;
+  gap: 10px; /* espacio entre el número y el slider */
+}
+
+.slider-container input[type="range"] {
+  flex: 1; /* hace que la barra ocupe todo el espacio */
+  height: fit-content;
+}
+
+.filtros-container {
+    padding: 2em 0;
+}
+
+.filtrar-gobiernos-heading {
+    display: flex;
+    font-size: 1.25rem;
+}
+
+.checkbox-input {
+    width: 20px;
+    accent-color: rgb(var(--blue)); /* el doradito que veníamos usando */
+}
+
+.checkbox-label {
+    display: flex;
+    gap: 1em;
+    width: fit-content;
+    align-items: center;
+}
+
+/* Botones */
+.buttons {
+  margin-top: 20px;
+  display: flex;
+  justify-content: space-between;
+}
+
+button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.guardar {
+  background: #2ecc71;
+  color: #fff;
+}
+
+.cancelar {
+  background: #e74c3c;
+  color: #fff;
+}
+
+.tabla-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    align-self: stretch;
+    justify-content: center;
+    gap: 1rem;
+    margin: 0 2rem;
+    flex: 1;
+}
+
+@media (max-width: 768px) {
+    .tabla-container {
+        gap: 1rem;
+        margin: 0 0.5rem;
+    }
+}
+
+table {
+    position: relative;
+    width: 100%; /* ocupa el ancho del contenedor */
+    max-width: 800px; /* no se estira más de 700px en desktop */
+    color: rgb(var(--ink));
+    font-weight: bold;
+    background-color: rgb(var(--navy) / 0.94);
+    backdrop-filter: blur(10px); /* El efecto de vidrio borroso */
+    -webkit-backdrop-filter: blur(10px); /* Para Safari */
+    border-radius: 30px;
+    border: 2px solid rgb(var(--gold) / 0.5);
+    box-shadow:
+        0 35px 80px -30px rgba(0, 0, 0, 0.85),
+        0 0 55px -18px rgb(var(--gold) / 0.2);
+    overflow-x: auto; /* permite scroll si algo se pasa */
+    padding-bottom: 1em;
+}
+
+.tabla-wrapper {
+    position: relative;
+    width: 100%;
+    max-width: 800px;
+}
+
+.tabla-paused-overlay {
+    position: absolute;
+    top: 3px; left: 3px; right: 3px; bottom: 3px; /* deja ver el borde de la tabla */
+    background: rgba(10, 10, 10, 0.7);
+    backdrop-filter: blur(10px);
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 1.5rem;
+    font-weight: bold;
+    pointer-events: all;
+    border-radius: 27px; /* igual al de la tabla menos el inset */
+    transition: opacity 0.3s;
+}
+
+/* --- HUD flotante del juego en mobile: el reloj y el input+rendirse quedan
+   apilados como un solo grupo semitransparente cerca del borde inferior del
+   cuadro (el reloj arriba, mitad sobre la tabla y mitad tapando el input),
+   así nunca se pierde de vista y la tabla en sí ocupa casi toda la pantalla
+   disponible arriba. --- */
+@media (max-width: 768px) {
+    .tabla-container-compacta .tabla-wrapper {
+        margin-top: 1.2rem;
+        margin-bottom: 2.8rem;
+    }
+
+    .hud-bottom-group {
+        position: absolute;
+        left: 50%;
+        bottom: -1.15rem;
+        transform: translateX(-50%);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: calc(100% - 1.5rem);
+        z-index: 6;
+    }
+
+    .hud-timer,
+    .hud-bottom {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        border-radius: 999px;
+        box-shadow: 0 10px 24px -10px rgba(0, 0, 0, 0.65);
+    }
+
+    .hud-timer {
+        position: relative;
+        z-index: 2;
+        justify-content: center;
+        /* Mismo degradé líquido en movimiento que el resto de los relojes
+           (ver más abajo, junto a ".sopa-timer"/".cruci-timer"): acá nomás
+           se resetea el background-color sólido que traía antes, para que
+           no compita con ese degradé. */
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 1px solid rgb(var(--gold) / 0.5);
+        padding: 0.4rem 0.85rem;
+        gap: 0.6rem;
+        margin-bottom: -16px; /* mitad tapando el input de abajo */
+    }
+
+    .hud-timer .restart-icon,
+    .hud-timer .pause-icon {
+        height: 21px;
+        width: 21px;
+        flex-shrink: 0;
+        /* Navy (no --ink): el fondo pasó a ser el degradé líquido claro de
+           los relojes -ver más abajo-, y --ink es blanco en tema oscuro
+           (poco contraste ahí encima). */
+        fill: rgb(var(--navy));
+    }
+
+    .hud-timer .temporizador {
+        font-size: 0.95rem;
+        color: rgb(var(--navy));
+    }
+
+    .hud-timer #contador-presidentes {
+        background: none !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        height: auto !important;
+        border-radius: 0 !important;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: rgb(var(--navy) / 0.85) !important;
+    }
+
+    .hud-bottom {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        background-color: rgb(var(--navy) / 0.9);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgb(var(--blue) / 0.6);
+        padding: 0.35rem 0.35rem 0.35rem 1rem;
+    }
+
+    .hud-bottom .input-presidente {
+        flex: 1;
+        min-width: 0;
+        background: none;
+        border: none;
+        border-radius: 999px;
+        box-shadow: none;
+        height: auto;
+        padding: 0.4rem 0;
+        max-width: none;
+    }
+
+    .hud-bottom .input-presidente:focus {
+        border: none;
+        box-shadow: none;
+    }
+
+    .hud-bottom .rendirse-button {
+        flex-shrink: 0;
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        padding: 0;
+        overflow: hidden;
+        font-size: 0;
+        line-height: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .hud-bottom .rendirse-icon {
+        width: 18px;
+        height: 18px;
+        fill: rgb(var(--ink));
+    }
+}
+
+th, td {
+    padding: 0.4rem;
+}
+
+.imagen-presidente-desconocido-container {
+    border-radius: 50%;
+    overflow: hidden;
+    width: min(clamp(40px, 6vw, 60px),clamp(40px, 6vh, 60px));
+    height: min(clamp(40px, 6vw, 60px),clamp(40px, 6vh, 60px));
+    /* Mismo marco dorado, fino y sutil, que las fotos de presidentes en
+       otros modos (p. ej. ".sopa-pista-foto" en Sopa de letras). */
+    border: 1.5px solid rgb(var(--gold) / 0.5);
+}
+
+img {
+    object-fit: cover;
+    height: 100%;
+    width: 100%;
+}
+
+tbody {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;                 /* un poco menos de espacio para que encaje */
+    max-height: 60dvh;    /* altura máxima del tbody */
+    overflow-y: auto;          /* solo scroll vertical */
+    overflow-x: hidden;        /* oculta horizontal si sobra */
+    padding: 1rem 1rem 0 1rem; /* sin padding abajo */
+    box-sizing: border-box;
+}
+
+/* --- Mientras el juego está activo: todo el bloque (desde el badge hasta
+   RENDIRSE) entra en la pantalla sin scroll de página; solo la lista de
+   presidentes scrollea internamente si no entra completa. --- */
+/* Jugando cualquier modo: la partida ocupa el 100% del alto, sin footer
+   y sin scroll de página. */
+body.juego-activo footer {
+    display: none;
+}
+
+.main.juego-activo {
+    height: 100dvh;
+    overflow: hidden;
+}
+
+.main.juego-activo .tabla-container {
+    min-height: 0;
+    flex-shrink: 1;
+}
+
+.main.juego-activo .tabla-wrapper {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.main.juego-activo table {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    max-height: 100%;
+    box-sizing: border-box;
+}
+
+.main.juego-activo tbody {
+    flex: 1 1 auto;
+    min-height: 120px;
+    max-height: none;
+}
+
+.main.juego-activo .input-container {
+    flex-shrink: 0;
+}
+
+
+@media (max-width: 768px) {
+  tbody {
+    grid-template-columns: 1fr; /* una sola columna */
+    gap: 0.85rem;
+    padding: 0.75rem 0.75rem 0 0.75rem;
+  }
+
+  /* Cards y fotos un poco más chicas para que entren más filas en pantalla */
+  .imagen-presidente-desconocido-container {
+    width: 34px;
+    height: 34px;
+  }
+
+  .imagen-presidente-cell {
+    padding: 0 0.6em;
+  }
+
+  .imagen-presidente-cell::after {
+    width: 0.6em;
+  }
+
+  .nombre-presidente-cell {
+    padding: 0.4em;
+    min-height: 26px;
+    gap: 0.6em;
+  }
+
+  .nombre-presidente-texto {
+    min-height: 26px;
+    font-size: 0.95rem;
+  }
+
+  .periodo-presidente-cell {
+    padding: 0.2em 0;
+    font-size: 0.85rem;
+  }
+
+  .check-icon {
+    height: 1em;
+    width: 1em;
+  }
+}
+
+tr {
+    display: flex;
+    border-radius: 20px;
+    align-items: center;
+}
+
+td {
+    border: none;
+}
+
+.imagen-presidente-cell {
+    position: relative;
+    padding: 0 1em;
+}
+
+/* Lineíta celeste que conecta la foto del presidente con su card: ocupa
+   justo el ancho del padding-right de esta celda (de acá sale la imagen,
+   ahí empieza ".presidente-card"), a la altura del centro vertical de
+   ambas (ya centradas entre sí por "tr{align-items:center}"). Va acá, no
+   como ::after de ".imagen-presidente-desconocido-container" (el círculo
+   de la foto), porque ese tiene overflow:hidden para recortar la imagen
+   en círculo, y recortaría también la línea. */
+.imagen-presidente-cell::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    right: 0;
+    width: 1em;
+    height: 1px;
+    background-color: rgb(var(--blue));
+    transform: translateY(-50%);
+    pointer-events: none;
+}
+
+.presidente-card {
+    background-color: rgb(var(--navy-light) / 0.85);
+    backdrop-filter: blur(10px); /* El efecto de vidrio borroso */
+    border: 2px solid rgb(var(--blue));
+    box-shadow: 0 10px 25px -12px rgba(0, 0, 0, 0.6);
+    width: 100%;
+    border-radius: 10px;
+    padding: 0;
+}
+
+.nombre-presidente-cell {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1em;
+    padding: 0.5em;
+    min-height: 30px;   /* alto mínimo consistente */
+    min-width: unset;
+    width: 100%;
+    word-break: break-word; /* evita overflow de texto */
+}
+
+.check-icon {
+    height: 1.2em;
+    width: 1.2em;
+    background-color: rgb(var(--navy) / 0.75);
+    backdrop-filter: blur(10px); /* El efecto de vidrio borroso */
+    fill: rgb(var(--blue));
+    border-radius: 50%;
+}
+
+.nombre-presidente-texto {
+    min-height: 30px;   /* alto mínimo consistente */
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 75%;
+    margin-bottom: 0.25em;
+    color: rgb(var(--ink));
+    border-bottom: 2px solid rgb(var(--ink) / 0.4);
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.periodo-presidente-cell {
+    text-align: center;
+    border-top: 2px solid rgb(var(--blue));
+    background-color: rgb(var(--navy) / 0.9);
+    backdrop-filter: blur(10px); /* El efecto de vidrio borroso */
+    border-radius: 0 0 10px 10px;
+    padding: 0.25em 0;
+}
+
+/* --- Ventanas de escritorio (ancho >=769px), cualquier alto: varios
+   tamaños de texto/padding de las reglas y de las cards del juego solo se
+   achicaban con el ANCHO, no con el ALTO, así que en pantallas anchas
+   pero bajas (notebooks 16:10/16:9 como 1280x800, 1366x768, 1440x900)
+   todo se veía desproporcionadamente grande. Aplica a cualquier alto (no
+   solo a las bajas) porque estos ajustes son puro tipografía/padding fijo
+   de la tarjeta de modo y las cards del juego — no dependen de cuánto
+   sobrante haya, así que no hay razón para reservarlos a pantallas cortas. ---
+   */
+@media (min-width: 769px) {
+    .kicker {
+        padding-top: 1.2rem;
+    }
+
+    .rules-section {
+        gap: 0.6rem;
+        padding: 0.8rem;
+    }
+
+    .modo-actual-card {
+        padding: 0.8rem 1rem;
+    }
+
+    .modo-card-logo {
+        width: 68px;
+        height: 68px;
+        padding: 11px;
+        border-radius: 16px;
+    }
+
+    .modo-card-text h3 .modo-de-juego-seleccionado {
+        font-size: 0.95rem;
+    }
+
+    .rules-section p {
+        font-size: 0.8rem;
+    }
+
+    .modos-scroll-container .scroll-icon {
+        height: 32px;
+    }
+
+    .modos-de-juego-heading {
+        font-size: 1.1rem;
+    }
+
+    .modo-de-juego-seleccionado-heading {
+        font-size: 0.95rem;
+        padding: 0.35rem;
+    }
+
+    /* Cards del juego más compactas para que entren más filas */
+    tbody {
+        gap: 0.8rem;
+        padding: 0.6rem 0.6rem 0 0.6rem;
+    }
+
+    .imagen-presidente-desconocido-container {
+        width: 36px;
+        height: 36px;
+    }
+
+    .nombre-presidente-cell {
+        padding: 0.3em;
+        min-height: 22px;
+        gap: 0.5em;
+    }
+
+    .nombre-presidente-texto {
+        min-height: 22px;
+        font-size: 0.9rem;
+        margin-bottom: 0.15em;
+    }
+
+    .periodo-presidente-cell {
+        padding: 0.15em 0;
+        font-size: 0.8rem;
+    }
+
+    th, td {
+        padding: 0.25rem;
+    }
+}
+
+.input-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    padding: 0 1rem;  /* respiro en móviles */
+}
+
+.input-container-first-row{
+    border: 1px solid rgb(var(--navy));
+    border-radius: 10px;
+    padding: 1rem;
+    background-color: rgb(var(--blue-strong));
+    backdrop-filter: blur(10px); /* El efecto de vidrio borroso */
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    justify-content: center;
+}
+
+.restart-icon {
+    height: 32px;
+    width: 32px;
+    fill: rgb(var(--navy));
+    cursor: pointer;
+}
+
+.pause-icon {
+    height: 32px;
+    width: 32px;
+    fill: rgb(var(--navy));
+    cursor: pointer;
+}
+
+.input-container-second-row{
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    justify-content: center;
+}
+
+/* Mismo problema que el bloque "(min-width: 769px)" de más arriba (ver su
+   comentario), pero en celulares bajos (iPhone SE y
+   similares, ~667px de alto o menos): ".button-section{flex:1}" reparte
+   TODO el alto sobrante de ".main{min-height:100dvh}" arriba/abajo del
+   botón, pero un celular así de bajo casi no tiene sobrante que repartir
+   (el contenido ya ocupa casi toda la pantalla) — el resultado es lo
+   opuesto al de las notebooks bajas: en vez de un hueco enorme, el título,
+   el botón y la tarjeta de modos quedan pegoteados sin aire entre sí,
+   porque esa "distancia" dependía enteramente de un sobrante que acá no
+   existe. Se fuerza el mismo mínimo de aire fijo (padding) que ya usan las
+   notebooks bajas para este caso. */
+@media (max-height: 700px) and (max-width: 768px) {
+    .kicker {
+        padding-top: 1rem;
+    }
+
+    .button-section {
+        flex: 0 1 auto;
+        padding: 1.2rem 0;
+        gap: 0.6rem;
+    }
+
+    .rules-section {
+        gap: 0.8rem;
+        padding: 1rem;
+        padding-bottom: 1.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .input-container-first-row {
+        order: 2;
+    }
+    .input-container {
+        display: flex;
+        flex-direction: column;
+    }
+    .input-container-second-row {
+        order: 1;
+        gap: 0.25rem;
+    }
+    #input-presidente {
+        order: 0;
+        width: 100%;
+        max-width: 100%;
+        align-self: stretch;
+    }
+    .rendirse-button {
+        order: 4;
+    }
+    #contador-presidentes {
+        order:0;
+    }
+    .pluma-image-container {
+        display: none;
+    }
+}
+
+#contador-presidentes {
+    height: min(clamp(50px, 8vw, 70px), clamp(50px, 8vh, 70px));
+    padding: 1rem;
+    background-color: rgb(var(--navy) / 0.75);
+    backdrop-filter: blur(10px); /* El efecto de vidrio borroso */
+    display: flex;
+    justify-content: center;
+    font-weight: bold;
+    font-size: min(clamp(1rem, 4vw, 1.2rem), clamp(1rem, 4vh, 1.2rem));
+    color: rgb(var(--ink));
+    min-width: fit-content;
+    text-align: right;
+    border-radius: 20px 0 0 20px;
+
+    border: 2px solid #ccc;
+    border-color: #75AADB; box-shadow: 0 0 12px #75AADB; 
+}
+
+.pluma-image-container {
+    border-radius: 50%;
+    overflow: hidden;
+    height: 60px;
+    width: 60px;
+}
+
+.pluma-image {
+    object-fit: cover;
+    height: 100%;
+    width: 100%;
+}
+
+.input-presidente {
+    background-color: rgb(var(--navy) / 0.75);
+    backdrop-filter: blur(10px); /* El efecto de vidrio borroso */
+    color: rgb(var(--ink));
+    height: min(clamp(50px, 8vw, 70px), clamp(50px, 8vh, 70px));
+    border-radius: 0 20px 20px 0;
+    padding: 0 1rem;
+    width: 100%; /* ocupa todo el ancho disponible del container */
+    max-width: 400px; /* no más de 400px en desktop */
+    font-size: min(clamp(1rem, 4vw, 1.2rem), clamp(1rem, 4vh, 1.2rem));
+    font-weight: bold;
+    border: 2px solid #ccc;
+    transition: border 0.3s ease;
+}
+
+.input-presidente:focus {
+  outline: none;
+  border-color: #75AADB; box-shadow: 0 0 12px #75AADB; 
+}
+
+
+.rendirse-button {
+    color: white;
+    background: rgb(141, 3, 3) ;   /* elimina el fondo */
+    border: none;       /* elimina el borde (si no lo querés) */
+    border-radius: 15px;
+    cursor: pointer;
+    font-size: 1.1rem;
+    font-weight: bold;
+    margin-bottom: 2rem;
+}
+
+.rendirse-button:hover{
+    border: 1px solid white;
+    background: rgb(200, 0, 0);
+    transition: all 0.3s ease; /* Animación suave */
+}
+
+.rendirse-button:hover {
+    text-decoration: underline;
+}
+
+.tabla tbody tr {
+    background-color: none; /* Ejemplo: un gris muy claro. Puedes usar 'white' si lo prefieres */
+    transition: background-color 0.5s ease-in-out; /* ¡IMPORTANTE! Añade la transición aquí también. */
+}
+
+/* Estilo para la animación de acierto */
+.acierto-animacion {
+    background-color: #64dd17 !important; /* Verde brillante */
+}
+
+.felicitaciones {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: green;
+    text-align: center;
+    padding: 1rem;
+}
+
+.destello-verde {
+    animation: destelloVerde 2s ease;
+}
+
+@keyframes destelloVerde {
+    0%   { background-color: transparent; }
+    25%  { background-color: #90ee90; } /* verde claro */
+    50%  { background-color: #32cd32; } /* verde más fuerte */
+    75%  { background-color: #90ee90; }
+    100% { background-color: transparent; }
+}
+
+.ya-adivinado {
+    animation: destelloGris 2s ease;
+}
+
+@keyframes destelloGris {
+    0%   { background-color: transparent; }
+    25%  { background-color: #d3d3d3; }
+    50%  { background-color: #a9a9a9; }
+    75%  { background-color: #d3d3d3; }
+    100% { background-color: transparent; }
+}
+
+.temporizador {
+    font-size: min(clamp(1rem, 4vw, 1.5rem), clamp(1rem, 4vh, 1.5rem));
+    font-weight: bold;
+    color: rgb(var(--navy));
+    text-align: center;
+}
+
+/* ==== Scroll personalizado ==== */
+::-webkit-scrollbar {
+  width: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgb(var(--navy) / 0.7); /* mismo tono que tu tabla */
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgb(var(--blue)), rgb(var(--navy)));
+  border-radius: 10px;
+  border: 2px solid rgb(var(--navy) / 0.7);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, rgb(150, 210, 255), rgb(5, 20, 35));
+}
+
+.rendicion-animacion {
+    animation: shake-red 0.6s;
+    box-shadow: 0 0 10px 2px #ff2d2d;
+}
+
+@keyframes shake-red {
+    0% { transform: translateX(0); box-shadow: 0 0 0 0 #ff2d2d; }
+    20% { transform: translateX(-6px); box-shadow: 0 0 10px 4px #ff2d2d; }
+    40% { transform: translateX(6px); }
+    60% { transform: translateX(-4px); }
+    80% { transform: translateX(4px); }
+    100% { transform: translateX(0); box-shadow: 0 0 0 0 #ff2d2d; }
+}
+
+/* ==== MODO "ADIVINA LA IMAGEN" ==== */
+
+.juego-imagen-container {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+    padding: 1.5rem 1rem;
+    flex: 1;
+    min-height: 0;      /* que pueda encoger dentro de .main sin generar scroll */
+    overflow: hidden;
+}
+
+.juego-imagen-foto-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.6rem;
+    flex-shrink: 0;
+    min-height: 0;
+}
+
+.juego-imagen-card {
+    height: min(360px, 42vh);
+    aspect-ratio: 3 / 4;
+    width: auto;
+    border-radius: 20px;
+    overflow: hidden;
+    flex-shrink: 0;
+    background-color: rgb(var(--navy) / 0.94);
+    border: 2px solid rgb(var(--gold) / 0.5);
+    box-shadow:
+        0 35px 80px -30px rgba(0, 0, 0, 0.85),
+        0 0 55px -18px rgb(var(--gold) / 0.2);
+    transition: box-shadow 0.35s ease;
+}
+
+.juego-imagen-pista-btn {
+    border: 2px solid rgb(var(--gold) / 0.7);
+    background: transparent;
+    color: rgb(var(--gold-soft));
+    border-radius: 999px;
+    padding: 0.4rem 1rem;
+    font-size: 0.9rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+.juego-imagen-pista-btn:not(:disabled):hover {
+    background: rgb(var(--gold) / 0.15);
+}
+
+.juego-imagen-pista-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.juego-imagen-pista {
+    max-width: min(340px, 80vw);
+    text-align: center;
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: rgb(var(--ink));
+    background-color: rgb(var(--navy) / 0.8);
+    border: 1px solid rgb(var(--gold) / 0.5);
+    border-radius: 10px;
+    padding: 0.45rem 0.8rem;
+}
+
+.juego-imagen-pista[hidden] {
+    display: none;
+}
+
+.juego-imagen-foto {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top center;
+    display: block;
+}
+
+.juego-imagen-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    width: min(360px, 88vw);
+    padding: 1.5rem;
+    background-color: rgb(var(--navy-light) / 0.85);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 2px solid rgb(var(--blue));
+    border-radius: 16px;
+    box-shadow: 0 10px 25px -12px rgba(0, 0, 0, 0.6);
+}
+
+.juego-imagen-hud {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.juego-imagen-contador {
+    font-weight: bold;
+    font-size: 1.15rem;
+    color: rgb(var(--ink));
+    padding: 0.4rem 1.1rem;
+    background-color: rgb(var(--navy) / 0.75);
+    border: 2px solid rgb(var(--blue));
+    border-radius: 999px;
+}
+
+.juego-imagen-timer {
+    font-weight: 800;
+    font-size: 1.2rem;
+    letter-spacing: 0.03em;
+    color: rgb(var(--navy));
+    padding: 0.4rem 1.1rem;
+    background-color: rgb(var(--blue-strong));
+    border: 2px solid rgb(var(--navy));
+    border-radius: 999px;
+    font-variant-numeric: tabular-nums;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.juego-imagen-timer.por-terminar {
+    /* "background" (no solo background-color): el degradé líquido de más
+       abajo pinta con "background" también, así que si acá solo se
+       pisara el color, la imagen del degradé seguiría de fondo tapando
+       el rojo de urgencia. */
+    background: rgb(141, 3, 3);
+    color: #fff;
+    border-color: #fff;
+    animation: pulso-timer 1s ease-in-out infinite;
+}
+
+@keyframes pulso-timer {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.06); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .juego-imagen-timer.por-terminar { animation: none; }
+}
+
+.juego-imagen-label {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: rgb(var(--ink));
+    text-align: center;
+}
+
+.juego-imagen-input {
+    border-radius: 12px;
+    text-align: center;
+    max-width: 100%;
+}
+
+.juego-imagen-feedback {
+    min-height: 1.6rem;
+    font-weight: 700;
+    font-size: 1rem;
+    text-align: center;
+    color: rgb(var(--ink) / 0.8);
+    word-break: break-word;
+}
+
+.juego-imagen-feedback.correcto {
+    color: #2ecc71;
+}
+
+.juego-imagen-feedback.incorrecto {
+    color: #ff6b6b;
+}
+
+.juego-imagen-acciones {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.juego-imagen-saltar,
+.juego-imagen-rendirse {
+    border: none;
+    border-radius: 12px;
+    padding: 0.6rem 1.2rem;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.juego-imagen-saltar {
+    color: rgb(5, 20, 35);
+    background: rgb(var(--gold-soft));
+}
+
+.juego-imagen-saltar:not(:disabled):hover {
+    background: rgb(var(--gold));
+    transform: translateY(-2px);
+}
+
+.juego-imagen-rendirse {
+    color: white;
+    background: rgb(141, 3, 3);
+}
+
+.juego-imagen-rendirse:not(:disabled):hover {
+    background: rgb(200, 0, 0);
+    border: 1px solid white;
+}
+
+.juego-imagen-saltar:disabled,
+.juego-imagen-rendirse:disabled {
+    background: gray;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.juego-imagen-card.acierto {
+    box-shadow: 0 0 0 4px #2ecc71, 0 0 45px 6px rgba(46, 204, 113, 0.55);
+}
+
+.juego-imagen-card.error {
+    animation: shake-red 0.6s;
+}
+
+@media (max-width: 768px) {
+    .juego-imagen-container {
+        flex-direction: column;
+        flex-wrap: nowrap;
+        gap: 0.9rem;
+        padding: 0.75rem;
+    }
+
+    .juego-imagen-card {
+        height: min(260px, 30vh);
+    }
+
+    .juego-imagen-foto-col {
+        gap: 0.4rem;
+    }
+
+    .juego-imagen-pista-btn {
+        font-size: 0.82rem;
+        padding: 0.3rem 0.8rem;
+    }
+
+    .juego-imagen-pista {
+        font-size: 0.85rem;
+        padding: 0.35rem 0.6rem;
+    }
+
+    .juego-imagen-panel {
+        width: min(360px, 92vw);
+        padding: 1rem;
+        gap: 0.7rem;
+    }
+
+    .juego-imagen-label {
+        font-size: 1rem;
+    }
+
+    .juego-imagen-feedback {
+        min-height: 1.3rem;
+    }
+}
+
+/* Pantallas muy bajas: achicar aún más la foto para que nunca aparezca scroll. */
+@media (max-height: 620px) {
+    .juego-imagen-card {
+        height: min(210px, 34vh);
+    }
+}
+
+/* ==== MODO "SOPA DE LETRAS" ==== */
+
+.sopa-container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+    padding: 1.25rem 1rem;
+    flex: 1;
+    /* ".main" usa align-items:center (no stretch): sin ancho explícito este
+       contenedor se dimensiona por su propio contenido y puede desbordar la
+       pantalla unos px parejos a cada lado (queda centrado, pero desborda). */
+    width: 100%;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+    box-sizing: border-box;
+}
+
+.sopa-grid-col {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 0;
+    min-width: 0;
+    flex-shrink: 1;
+}
+
+.sopa-grid {
+    display: grid;
+    grid-auto-rows: 1fr;
+    gap: 2px;
+    width: min(62vh, 90vw, 560px);
+    aspect-ratio: 1;
+    padding: 10px;
+    background-color: rgb(var(--navy) / 0.94);
+    border: 2px solid rgb(var(--gold) / 0.5);
+    border-radius: 16px;
+    box-shadow: 0 30px 70px -30px rgba(0, 0, 0, 0.85);
+    touch-action: none;   /* el arrastre no debe scrollear la página */
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.sopa-celda {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    aspect-ratio: 1;
+    padding: 0;
+    border: none;
+    border-radius: 4px;
+    background: transparent;
+    color: rgb(var(--ink) / 0.82);
+    font-weight: 700;
+    font-size: clamp(0.55rem, 2.2vh, 1.05rem);
+    line-height: 1;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background-color 0.12s ease, color 0.12s ease;
+}
+
+.sopa-celda.marcando {
+    background-color: rgb(var(--blue-strong) / 0.85);
+    color: rgb(var(--navy));
+}
+
+.sopa-celda.encontrada {
+    /* el color de fondo lo pone JS: uno distinto por presidente */
+    box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.22);
+    font-weight: 800;
+}
+
+.sopa-celda.revelada {
+    background-color: rgb(141, 3, 3, 0.85);
+    color: #fff;
+}
+
+.sopa-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.9rem;
+    width: min(340px, 90vw);
+    max-height: 100%;
+    padding: 1.25rem;
+    background-color: rgb(var(--navy-light) / 0.85);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 2px solid rgb(var(--blue));
+    border-radius: 16px;
+    box-shadow: 0 10px 25px -12px rgba(0, 0, 0, 0.6);
+}
+
+.sopa-hud {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+}
+
+.sopa-timer {
+    font-weight: 800;
+    font-size: 1.2rem;
+    letter-spacing: 0.03em;
+    color: rgb(var(--navy));
+    padding: 0.35rem 1rem;
+    background-color: rgb(var(--blue-strong));
+    border: 2px solid rgb(var(--navy));
+    border-radius: 999px;
+    font-variant-numeric: tabular-nums;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.sopa-contador {
+    font-weight: bold;
+    font-size: 1.05rem;
+    color: rgb(var(--ink));
+    padding: 0.35rem 1rem;
+    background-color: rgb(var(--navy) / 0.75);
+    border: 2px solid rgb(var(--blue));
+    border-radius: 999px;
+}
+
+.sopa-instruccion {
+    text-align: center;
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: rgb(var(--ink) / 0.85);
+    margin: 0;
+}
+
+.sopa-pistas {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    overflow-y: auto;
+    min-height: 0;
+}
+
+.sopa-pista {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    padding: 0.45rem 0.6rem;
+    background-color: rgb(var(--navy) / 0.55);
+    border: 1px solid rgb(var(--gold) / 0.3);
+    border-radius: 10px;
+    transition: opacity 0.25s ease;
+}
+
+/* Antes 34px y circular: se veía tan chica que era casi imposible
+   reconocer al presidente. Un poco más grande y con el mismo tratamiento
+   "cuadro con marco dorado" que ".juego-imagen-card" (modo "Adivina la
+   imagen") en vez de círculo: recorta menos cara y mantiene la estética
+   ya establecida para "reconocer por foto" en el resto de la app. */
+.sopa-pista-foto {
+    width: 52px;
+    height: 64px;
+    flex-shrink: 0;
+    object-fit: cover;
+    object-position: top center;
+    border-radius: 8px;
+    border: 1px solid rgb(var(--gold) / 0.55);
+    box-shadow: 0 6px 14px -6px rgba(0, 0, 0, 0.6);
+}
+
+.sopa-pista-datos {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.sopa-pista-anios {
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: rgb(var(--ink) / 0.9);
+    font-variant-numeric: tabular-nums;
+}
+
+.sopa-pista-nombre {
+    font-size: 0.8rem;
+    color: rgb(var(--gold-soft));
+}
+
+.sopa-pista.resuelta {
+    border-color: rgb(46, 204, 113, 0.7);
+}
+
+.sopa-pista.resuelta .sopa-pista-anios {
+    text-decoration: line-through;
+    opacity: 0.6;
+}
+
+.sopa-pista.revelada {
+    border-color: rgb(141, 3, 3, 0.7);
+}
+
+.sopa-pista.revelada .sopa-pista-nombre {
+    color: #ff9b9b;
+}
+
+.sopa-rendirse {
+    border: none;
+    border-radius: 12px;
+    padding: 0.55rem 1.2rem;
+    font-size: 1rem;
+    font-weight: bold;
+    color: #fff;
+    background: rgb(141, 3, 3);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.sopa-rendirse:not(:disabled):hover {
+    background: rgb(200, 0, 0);
+}
+
+.sopa-rendirse:disabled {
+    background: gray;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+/* Vista ampliada de la foto de una pista al pasar el mouse (o tocarla en
+   mobile) -ver wireZoomFotosSopa() en script.js-. El overlay solo ubica la
+   imagen y da el área táctil para cerrar en mobile: el resto de la
+   página se ve normal, sin oscurecer ni desenfocar nada detrás (la
+   imagen agrandada se distingue sola, por su propio marco/sombra). La
+   imagen es una COPIA fija, aparte de la miniatura real (que no se toca
+   ni se agranda), animada con un transform calculado en JS para que
+   "vuele" desde el lugar exacto de la miniatura hasta el centro. */
+.sopa-foto-zoom-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    pointer-events: none;
+}
+
+.sopa-foto-zoom-overlay.activo {
+    pointer-events: auto;
+}
+
+/* En desktop cerrar es siempre por mouseleave de la card original: si el
+   overlay interceptara clicks acá también, aparecer encima de esa card
+   dispararía un mouseleave falso (el navegador pasa a considerar que el
+   mouse está sobre el overlay, no sobre la card) apenas se abre. */
+@media (hover: hover) and (pointer: fine) {
+    .sopa-foto-zoom-overlay.activo {
+        pointer-events: none;
+    }
+}
+
+.sopa-foto-zoom-img {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    height: min(360px, 55vh);
+    aspect-ratio: 3 / 4;
+    width: auto;
+    object-fit: cover;
+    object-position: top center;
+    border-radius: 16px;
+    border: 2px solid rgb(var(--gold) / 0.6);
+    background-color: rgb(var(--navy) / 0.94);
+    box-shadow:
+        0 35px 80px -25px rgba(0, 0, 0, 0.85),
+        0 0 55px -15px rgb(var(--gold) / 0.25);
+    opacity: 0;
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+    transition: opacity 0.2s ease;
+    will-change: transform;
+}
+
+.sopa-foto-zoom-overlay.activo .sopa-foto-zoom-img {
+    opacity: 1;
+}
+
+@media (max-width: 768px) {
+    .sopa-container {
+        flex-direction: column;
+        gap: 0.75rem;
+        padding: 0.6rem;
+    }
+
+    .sopa-grid {
+        width: min(46vh, 94vw);
+        padding: 6px;
+    }
+
+    .sopa-panel {
+        width: min(420px, 96vw);
+        padding: 0.8rem;
+        gap: 0.6rem;
+        flex-shrink: 1;
+        min-height: 0;
+    }
+
+    .sopa-pistas {
+        flex: 0 0 auto;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        overflow-y: hidden;
+        gap: 0.4rem;
+        padding-bottom: 0.35rem;
+    }
+
+    .sopa-pista {
+        flex-direction: column;
+        flex-shrink: 0;
+        width: 5.4rem;
+        gap: 0.3rem;
+        padding: 0.4rem 0.3rem;
+        text-align: center;
+    }
+
+    .sopa-pista-foto {
+        width: 48px;
+        height: 60px;
+    }
+
+    .sopa-pista-datos {
+        align-items: center;
+    }
+
+    .sopa-pista-anios {
+        font-size: 0.68rem;
+        white-space: nowrap;
+    }
+
+    .sopa-pista-nombre {
+        display: none;
+    }
+
+    .sopa-instruccion {
+        font-size: 0.8rem;
+    }
+}
+
+/* ==== MODO "CRUCIGRAMA" ==== */
+
+.cruci-container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+    padding: 1.25rem 1rem;
+    flex: 1;
+    /* Ancho del panel de pistas, en una sola variable: la usan tanto
+       ".cruci-panel" (su propio ancho) como ".cruci-grid" de abajo (para
+       descontarlo del viewport y saber cuánto le queda libre a la
+       grilla), así los dos números nunca se desincronizan. */
+    --cruci-panel-w: min(340px, 92vw);
+    /* ".main" usa align-items:center (no stretch), así que sin un ancho
+       explícito este contenedor se dimensiona por su propio contenido
+       (shrink-to-fit) en vez de ocupar el 100% disponible — si ese contenido
+       mide un poco más que la pantalla, queda centrado pero desbordado por
+       igual a ambos lados. width:100% lo fija al ancho real disponible. */
+    width: 100%;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+    box-sizing: border-box;
+}
+
+.cruci-grid-col {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 0;
+    min-width: 0;
+    flex-shrink: 1;
+}
+
+.cruci-grid {
+    display: grid;
+    grid-auto-rows: 1fr;
+    gap: 2px;
+    /* Ancho = el menor entre "lo que queda libre en la fila" (todo el
+       viewport, menos el panel de pistas, el gap entre los dos y el padding
+       horizontal de ".cruci-container") y "lo que le corresponde por el
+       techo de alto de 64vh, convertido a ancho según su relación de
+       aspecto". Calcularlo así (en vez de darle flex-grow a la columna de
+       la grilla para que "se coma" todo el sobrante) es lo que mantiene el
+       panel PEGADO al lado de la grilla en pantallas anchas: si la columna
+       creciera para llenar todo el espacio, la grilla (más chica, limitada
+       por el alto) quedaría centrada ahí en el medio y el panel se iría
+       solo hasta el borde derecho de la pantalla. */
+    width: min(
+        calc(100vw - var(--cruci-panel-w) - 2rem - 2rem),
+        calc(64vh * var(--c) / var(--r))
+    );
+    aspect-ratio: var(--c) / var(--r);
+    padding: 4px;
+    background-color: rgb(var(--navy) / 0.55);
+    border: 2px solid rgb(var(--gold) / 0.5);
+    border-radius: 12px;
+    box-shadow: 0 30px 70px -30px rgba(0, 0, 0, 0.85);
+}
+
+.cruci-celda {
+    position: relative;
+    aspect-ratio: 1;
+    background-color: #eef1f5;
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.cruci-celda--bloque {
+    background-color: #0a0f16;
+}
+
+.cruci-num {
+    position: absolute;
+    top: 0;
+    left: 1px;
+    padding: 1px 2px 2px;
+    font-size: clamp(0.4rem, 1.35vh, 0.6rem);
+    font-weight: 700;
+    line-height: 1.1;
+    color: #5a6b7d;
+    cursor: pointer;
+    z-index: 2;
+}
+
+.cruci-num:hover {
+    color: #12263a;
+}
+
+.cruci-input {
+    width: 100%;
+    height: 100%;
+    border: none;
+    background: transparent;
+    text-align: center;
+    text-transform: uppercase;
+    font-weight: 800;
+    font-size: clamp(0.7rem, 2.6vh, 1.15rem);
+    color: #12263a;
+    caret-color: transparent;
+    padding: 0;
+}
+
+.cruci-input:focus {
+    outline: none;
+}
+
+.cruci-celda--ok {
+    background-color: #a8e0bd;
+}
+
+.cruci-celda--activa {
+    background-color: #b6d8f5;
+}
+
+.cruci-celda--ok.cruci-celda--activa {
+    background-color: #9bd6c0;
+}
+
+.cruci-celda--foco {
+    background-color: #f2c94c;
+}
+
+.cruci-celda--pop {
+    animation: cruci-pop 0.4s ease;
+    z-index: 3;
+}
+
+@keyframes cruci-pop {
+    0% { transform: scale(1); }
+    45% { transform: scale(1.18); }
+    100% { transform: scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .cruci-celda--pop { animation: none; }
+}
+
+.cruci-input--mal {
+    color: #c0392b !important;
+    background-color: rgb(192 57 43 / 0.2);
+}
+
+.cruci-input--revelada {
+    color: #c0392b !important;
+}
+
+.cruci-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    width: var(--cruci-panel-w);
+    max-height: 100%;
+    padding: 1.1rem;
+    background-color: rgb(var(--navy-light) / 0.85);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 2px solid rgb(var(--blue));
+    border-radius: 16px;
+    box-shadow: 0 10px 25px -12px rgba(0, 0, 0, 0.6);
+}
+
+.cruci-hud {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+
+.cruci-fecha {
+    margin: 0;
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: rgb(var(--gold-soft));
+}
+
+.cruci-timer {
+    flex-shrink: 0;
+    font-weight: 800;
+    font-size: 1rem;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.03em;
+    color: rgb(var(--navy));
+    background-color: rgb(var(--blue-strong));
+    padding: 0.25rem 0.7rem;
+    border-radius: 999px;
+}
+
+/* Mismo degradé "líquido" en movimiento del botón de Iniciar Juego (misma
+   paleta/keyframe: --iniciar-*, iniciar-juego-liquido), aplicado a los
+   relojes de los 4 modos de juego, para que se sientan parte del mismo
+   lenguaje visual. Va DESPUÉS de las reglas de arriba (mismo selector
+   simple, así que el orden decide) para pisar su background-color con
+   este degradé. Sin el reflejo diagonal del botón (::after): ahí el
+   texto vive en un span con z-index propio para no taparse con el
+   reflejo; acá el texto de los relojes se actualiza directo con
+   textContent, sin ese span, así que el reflejo pasaría por encima de
+   los números — el degradé moviéndose ya es el efecto principal. */
+.input-container-first-row,
+.hud-timer,
+.juego-imagen-timer,
+.sopa-timer,
+.cruci-timer {
+    background: linear-gradient(115deg, var(--iniciar-c1) 0%, var(--iniciar-c2) 22%, var(--iniciar-c3) 45%, var(--iniciar-c4) 68%, var(--iniciar-c5) 88%, var(--iniciar-c2) 100%);
+    background-size: 320% 320%;
+    animation: iniciar-juego-liquido 7s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .input-container-first-row,
+    .hud-timer,
+    .juego-imagen-timer,
+    .sopa-timer,
+    .cruci-timer {
+        animation: none;
+    }
+}
+
+.cruci-hud-right {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
+}
+
+.cruci-racha {
+    font-weight: 800;
+    font-size: 0.9rem;
+    color: rgb(var(--gold-soft));
+    white-space: nowrap;
+}
+
+.cruci-rejugada-banner {
+    margin: 0;
+    padding: 0.4rem 0.6rem;
+    border-radius: 8px;
+    background-color: rgb(var(--gold) / 0.14);
+    border: 1px solid rgb(var(--gold) / 0.35);
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: rgb(var(--ink) / 0.85);
+    text-align: center;
+}
+
+/* --- Panel de fin del crucigrama (dentro del dialog) --- */
+.cruci-fin-panel {
+    margin: 0.8rem 0 0.2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.cruci-fin-tiempo {
+    margin: 0;
+    text-align: center;
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: rgb(var(--gold-soft));
+}
+
+.cruci-fin-rejugada {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: rgb(var(--ink) / 0.6);
+}
+
+.cruci-fin-record {
+    margin: 0;
+    text-align: center;
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: rgb(var(--ink));
+}
+
+.cruci-fin-racha {
+    margin: 0;
+    text-align: center;
+    font-weight: 800;
+    font-size: 1rem;
+    color: rgb(var(--gold-soft));
+}
+
+/* --- Confetti --- */
+.confetti-cont {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 9999;
+}
+
+.confetti-p {
+    position: absolute;
+    top: -14px;
+    width: 9px;
+    height: 15px;
+    border-radius: 2px;
+    opacity: 0.95;
+    animation-name: confetti-fall;
+    animation-timing-function: linear;
+    animation-fill-mode: forwards;
+}
+
+@keyframes confetti-fall {
+    0% { transform: translateY(0) rotate(0); }
+    100% { transform: translateY(106vh) rotate(720deg); opacity: 0.9; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .confetti-cont { display: none; }
+}
+
+.cruci-pistas-scroll {
+    overflow-y: auto;
+    min-height: 0;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.cruci-pistas-titulo {
+    margin: 0.3rem 0 0.1rem;
+    font-size: 0.8rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgb(var(--ink) / 0.7);
+}
+
+.cruci-pistas {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+
+.cruci-pista {
+    display: flex;
+    gap: 0.5rem;
+    padding: 0.3rem 0.45rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    color: rgb(var(--ink) / 0.9);
+    cursor: pointer;
+}
+
+.cruci-pista:hover {
+    background-color: rgb(var(--blue) / 0.12);
+}
+
+.cruci-pista--activa {
+    background-color: rgb(var(--blue-strong) / 0.22);
+    color: rgb(var(--ink));
+}
+
+.cruci-pista--resuelta {
+    opacity: 0.5;
+}
+
+.cruci-pista--resuelta .cruci-pista-texto {
+    text-decoration: line-through;
+}
+
+.cruci-pista--resuelta .cruci-pista-num {
+    color: #3fb56b;
+}
+
+.cruci-pista-num {
+    font-weight: 800;
+    color: rgb(var(--gold-soft));
+    flex-shrink: 0;
+    min-width: 1.2em;
+}
+
+.cruci-pista-texto {
+    font-variant-numeric: tabular-nums;
+}
+
+.cruci-acciones {
+    display: flex;
+    flex-shrink: 0;
+}
+
+.cruci-rendirse {
+    flex: 1;
+    border: none;
+    border-radius: 12px;
+    padding: 0.6rem 0.8rem;
+    font-size: 0.95rem;
+    font-weight: bold;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    color: #fff;
+    background: rgb(141, 3, 3);
+}
+
+.cruci-rendirse:not(:disabled):hover {
+    background: rgb(200, 0, 0);
+}
+
+.cruci-rendirse:disabled {
+    background: gray;
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+    .cruci-container {
+        flex-direction: column;
+        /* "justify-content:center" (heredado de la regla base) centraba el
+           conjunto grid+panel cuando entre los dos no entraban en el alto
+           disponible: el sobrante se recortaba invisible mitad arriba (tapado
+           por el header) y mitad abajo (tapado por las pistas). Anclando
+           arriba, lo que no entra queda solo abajo, dentro del panel de
+           pistas, que ya tiene su propio scroll interno para eso. */
+        justify-content: flex-start;
+        gap: 0.6rem;
+        padding: 0.6rem;
+    }
+
+    .cruci-grid-col {
+        flex: 0 1 auto;
+        /* En columna (apilado), ".cruci-grid" ya no comparte fila con el
+           panel de pistas — pero necesita igual una base de "100%" real
+           para su propio cálculo de ancho de abajo, y sin esto el ítem
+           flex se encoge a su contenido (align-items:center heredado). */
+        width: 100%;
+    }
+
+    .cruci-grid {
+        /* Más chico que antes (era 46vh) para dejarle aire real al panel de
+           pistas de abajo; el grid nunca es lo único que hay que ver. Mismo
+           esquema "el menor entre ancho disponible y ancho por techo de
+           alto" que la regla base, con el techo de alto más bajo. */
+        width: min(100%, calc(34vh * var(--c) / var(--r)));
+    }
+
+    .cruci-panel {
+        width: min(460px, 96vw);
+        padding: 0.7rem;
+        gap: 0.5rem;
+        flex: 1 1 auto;
+        min-height: 0;
+        /* Techo explícito: sin esto el panel crece a su alto natural (todas
+           las pistas sin scroll) y ese alto extra es lo que desbordaba abajo.
+           Con el techo puesto, ".cruci-pistas-scroll" (que ya tiene flex:1 y
+           overflow-y:auto) absorbe el sobrante con scroll interno. */
+        max-height: 44vh;
+    }
+
+    .cruci-pistas-scroll {
+        gap: 0.2rem;
+    }
+
+    .cruci-pista {
+        padding: 0.25rem 0.4rem;
+        font-size: 0.82rem;
+    }
+}
+
+/* ACERCA HTML */
+
+.acerca-body {
+    background-image:
+        radial-gradient(ellipse 70% 45% at 50% 0%, rgb(var(--blue-strong) / 0.14), transparent 65%),
+        linear-gradient(165deg, rgb(var(--bg-top)) 0%, rgb(var(--bg-mid)) 45%, rgb(var(--bg-bottom)) 100%);
+    background-color: rgb(var(--bg-mid));
+    background-size: cover, cover;
+    background-position: center, center;
+    background-repeat: no-repeat, no-repeat;
+    background-attachment: fixed, fixed;
+    min-height: 100vh; /* Cambiá de height a min-height */
+    display: flex; /* Agregá flexbox */
+    flex-direction: column; /* Dirección vertical */
+    align-items: center;
+}
+
+/* CONTACTO HTML */
+
+.contacto-body {
+    background-image:
+        radial-gradient(ellipse 70% 45% at 50% 0%, rgb(var(--blue-strong) / 0.14), transparent 65%),
+        linear-gradient(165deg, rgb(var(--bg-top)) 0%, rgb(var(--bg-mid)) 45%, rgb(var(--bg-bottom)) 100%);
+    background-color: rgb(var(--bg-mid));
+    background-size: cover, cover;
+    background-position: center, center;
+    background-repeat: no-repeat, no-repeat;
+    background-attachment: fixed, fixed;
+    min-height: 100vh; /* Cambiá de height a min-height */
+    display: flex; /* Agregá flexbox */
+    flex-direction: column; /* Dirección vertical */
+    align-items: center;
+}
+
+/* Responsive para páginas estáticas en mobile (más reglas específicas de
+   ".info-*" al final de este bloque, junto a los estilos de esos componentes) */
+@media (max-width: 768px) {
+    footer {
+        padding: 1rem;
+        text-align: center;
+    }
+
+    footer p {
+        font-size: 0.9rem;
+        width: 100%;
+        text-align: center;
+    }
+}
+
+/* PRIVACIDAD HTML */
+
+.privacidad-body {
+    background-image:
+        radial-gradient(ellipse 70% 45% at 50% 0%, rgb(var(--blue-strong) / 0.14), transparent 65%),
+        linear-gradient(165deg, rgb(var(--bg-top)) 0%, rgb(var(--bg-mid)) 45%, rgb(var(--bg-bottom)) 100%);
+    background-color: rgb(var(--bg-mid));
+    background-size: cover, cover;
+    background-position: center, center;
+    background-repeat: no-repeat, no-repeat;
+    background-attachment: fixed, fixed;
+    min-height: 100vh; /* Cambiá de height a min-height */
+    display: flex; /* Agregá flexbox */
+    flex-direction: column; /* Dirección vertical */
+    align-items: center;
+}
+
+/* ==========================================================================
+   PÁGINAS INSTITUCIONALES (Acerca / Contacto / Privacidad)
+   Componentes compartidos por las tres páginas: hero con medallón + título
+   en degradé (mismo lenguaje visual que el título de la home), tarjetas de
+   vidrio esmerilado a tono con ".rule-container", y algunos bloques propios
+   de cada página (stats en Acerca, tarjeta de mail en Contacto, lista de
+   políticas en Privacidad).
+   ========================================================================== */
+
+.info-main {
+    width: 100%;
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 1.5rem 1.2rem 3rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2.2rem;
+    flex: 1;
+}
+
+.info-hero {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 0.5rem;
+    padding-top: 1rem;
+}
+
+.info-hero-medallon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    margin-bottom: 0.6rem;
+    background: linear-gradient(160deg, rgb(var(--navy-light)) 0%, rgb(var(--navy)) 100%);
+    border: 2px solid rgb(var(--gold) / 0.7);
+    box-shadow: 0 0 30px -6px rgb(var(--gold) / 0.5), inset 0 0 14px rgb(var(--gold) / 0.12);
+}
+
+.info-hero-medallon svg {
+    width: 30px;
+    height: 30px;
+    fill: rgb(var(--gold-soft));
+}
+
+.info-kicker {
+    padding-top: 0;
+}
+
+.info-title {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.15rem;
+    line-height: 1.15;
+}
+
+.info-title-chica {
+    font-size: min(clamp(1rem, 3vw, 1.3rem), clamp(1rem, 3vh, 1.3rem));
+    font-weight: 600;
+    color: rgb(var(--ink) / 0.7);
+}
+
+.info-title-grande {
+    font-size: min(clamp(1.7rem, 5.2vw, 2.6rem), clamp(1.7rem, 5.2vh, 2.6rem));
+    font-weight: 800;
+    background: linear-gradient(180deg, rgb(var(--ink)) 0%, rgb(var(--gold-soft)) 130%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    text-wrap: balance;
+}
+
+.info-subtitulo {
+    max-width: 46ch;
+    font-size: 1.05rem;
+    line-height: 1.6;
+    color: rgb(var(--ink) / 0.8);
+}
+
+.info-subtitulo strong {
+    color: rgb(var(--gold-soft));
+}
+
+/* --- Franja de estadísticas (Acerca) --- */
+.info-stats {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.info-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.2rem;
+    min-width: 120px;
+    padding: 1rem 1.4rem;
+    background-color: rgb(var(--glass-soft) / 0.6);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    border: 1px solid rgb(var(--gold) / 0.25);
+}
+
+.info-stat-numero {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: rgb(var(--gold-soft));
+}
+
+.info-stat-label {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: rgb(var(--ink) / 0.65);
+}
+
+/* --- Grilla de tarjetas (Acerca) --- */
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.2rem;
+}
+
+.info-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    padding: 1.5rem;
+    background-color: rgb(var(--glass) / 0.65);
+    backdrop-filter: blur(10px);
+    border-radius: 14px;
+    border: 1px solid rgb(var(--ink) / 0.12);
+    transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.info-card:hover {
+    transform: translateY(-4px);
+    border-color: rgb(var(--gold) / 0.5);
+    box-shadow: 0 18px 34px -18px rgba(0, 0, 0, 0.6);
+}
+
+.info-card-icono {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    color: rgb(var(--gold-soft));
+    background-color: rgb(var(--gold) / 0.12);
+}
+
+.info-card-icono svg {
+    width: 24px;
+    height: 24px;
+}
+
+.info-card h2 {
+    font-size: 1.15rem;
+    color: rgb(var(--ink));
+}
+
+.info-card p {
+    font-size: 0.95rem;
+    line-height: 1.55;
+    color: rgb(var(--ink) / 0.8);
+}
+
+/* --- Bloque final de invitación a jugar (Acerca) --- */
+.info-cta {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 0.5rem;
+    padding: 2rem 1.5rem;
+    background-color: rgb(var(--glass-soft) / 0.5);
+    border-radius: 16px;
+    border: 1px solid rgb(var(--gold) / 0.3);
+}
+
+.info-cta h2 {
+    font-size: 1.3rem;
+    color: rgb(var(--gold-soft));
+}
+
+.info-cta p {
+    color: rgb(var(--ink) / 0.8);
+    max-width: 40ch;
+}
+
+.info-cta-boton {
+    margin-top: 0.6rem;
+    padding: 0.75em 2.2em;
+    border-radius: 999px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-size: 0.95rem;
+    text-decoration: none;
+    color: rgb(var(--navy));
+    background: linear-gradient(135deg, rgb(var(--gold-soft)) 0%, rgb(var(--gold)) 60%, rgb(var(--gold-soft)) 100%);
+    box-shadow: 0 14px 30px -12px rgba(0, 0, 0, 0.6), 0 0 24px -6px rgb(var(--gold) / 0.5);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.info-cta-boton:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 18px 36px -12px rgba(0, 0, 0, 0.65), 0 0 32px -4px rgb(var(--gold) / 0.7);
+}
+
+/* --- Tarjeta de contacto (Contacto) --- */
+.info-contacto-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 0.7rem;
+    padding: 2.2rem 1.5rem;
+    background-color: rgb(var(--glass) / 0.65);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    border: 1px solid rgb(var(--gold) / 0.3);
+}
+
+.info-contacto-icono {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    color: rgb(var(--gold-soft));
+    background-color: rgb(var(--gold) / 0.12);
+    margin-bottom: 0.3rem;
+}
+
+.info-contacto-icono svg {
+    width: 28px;
+    height: 28px;
+}
+
+.info-contacto-label {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    font-size: 0.8rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgb(var(--ink) / 0.6);
+}
+
+.info-email-boton {
+    font-size: clamp(1rem, 3.4vw, 1.3rem);
+    font-weight: 700;
+    color: rgb(var(--gold-soft));
+    text-decoration: none;
+    padding: 0.5em 1em;
+    border-radius: 999px;
+    border: 1px solid rgb(var(--gold) / 0.5);
+    overflow-wrap: break-word;
+    max-width: 100%;
+    transition: all 0.25s ease;
+}
+
+.info-email-boton:hover {
+    background-color: rgb(var(--gold) / 0.12);
+    border-color: rgb(var(--gold));
+}
+
+.info-contacto-nota {
+    font-size: 0.9rem;
+    color: rgb(var(--ink) / 0.6);
+}
+
+/* --- Redes sociales (Contacto) --- */
+.info-redes {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    text-align: center;
+}
+
+.info-redes-titulo {
+    font-size: 1rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: rgb(var(--ink) / 0.6);
+}
+
+.info-redes-lista {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.8rem;
+}
+
+.info-red-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1.1rem;
+    border-radius: 999px;
+    background-color: rgb(var(--glass-soft) / 0.5);
+    border: 1px solid rgb(var(--ink) / 0.15);
+    color: rgb(var(--ink) / 0.85);
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-decoration: none;
+    transition: all 0.25s ease;
+}
+
+.info-red-badge:hover {
+    background-color: rgb(var(--gold) / 0.12);
+    border-color: rgb(var(--gold) / 0.6);
+    color: rgb(var(--gold-soft));
+}
+
+.info-red-badge svg {
+    width: 18px;
+    height: 18px;
+    fill: currentColor;
+    opacity: 0.85;
+}
+
+/* --- Lista de políticas (Privacidad) --- */
+.info-politica-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    background-color: rgb(var(--glass) / 0.55);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    border: 1px solid rgb(var(--ink) / 0.12);
+    overflow: hidden;
+}
+
+.info-politica-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1.1rem;
+    padding: 1.6rem;
+    border-bottom: 1px solid rgb(var(--ink) / 0.12);
+}
+
+.info-politica-item:last-child {
+    border-bottom: none;
+}
+
+.info-politica-icono {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    color: rgb(var(--gold-soft));
+    background-color: rgb(var(--gold) / 0.12);
+}
+
+.info-politica-icono svg {
+    width: 22px;
+    height: 22px;
+}
+
+.info-politica-texto h2 {
+    font-size: 1.05rem;
+    margin-bottom: 0.35rem;
+    color: rgb(var(--ink));
+}
+
+.info-politica-texto p {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: rgb(var(--ink) / 0.8);
+}
+
+.info-politica-texto a {
+    color: rgb(var(--blue));
+    text-decoration: underline;
+    overflow-wrap: break-word;
+}
+
+@media (max-width: 640px) {
+    .info-main {
+        padding: 1rem 0.9rem 2.5rem;
+        gap: 1.6rem;
+    }
+
+    .info-subtitulo {
+        font-size: 0.95rem;
+    }
+
+    .info-politica-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.6rem;
+    }
+
+    .info-email-boton {
+        font-size: 0.95rem;
+        word-break: break-word;
+    }
+}
+
+/* LINEA DE TIEMPO (también usada en presidencias.html, "Ver Presidencias") */
+
+.linea-tiempo-body {
+    background-image:
+        url("../images/backgrounds/sol-watermark.svg"),
+        radial-gradient(ellipse 70% 45% at 50% 0%, rgb(var(--blue-strong) / 0.14), transparent 65%),
+        linear-gradient(165deg, rgb(var(--bg-top)) 0%, rgb(var(--bg-mid)) 45%, rgb(var(--bg-bottom)) 100%);
+    background-color: rgb(var(--bg-mid));
+    background-size: min(820px, 85vw) auto, cover, cover;
+    background-position: center 6%, center, center;
+    background-repeat: no-repeat, no-repeat, no-repeat;
+    background-attachment: fixed, fixed, fixed;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.linea-tiempo-heading {
+    display: flex;
+    background-color: rgb(var(--glass) / 0.75);
+    backdrop-filter: blur(50px);
+    -webkit-backdrop-filter: blur(10px);
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 0.5rem 0.75rem;
+    width: 100%;
+    box-sizing: border-box;
+    /* En una sola línea siempre: en mobile, script.js (ajustarTituloLineaDeTiempo)
+       achica la fuente hasta que entre; sin nowrap ese cálculo por
+       scrollWidth/clientWidth no detecta el desborde. */
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.linea-tiempo-subheading {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    text-align: center;
+    color: rgb(var(--ink) / 0.7);
+    font-size: 0.9rem;
+    padding: 0.75rem 1rem 0;
+}
+
+.noscript-lista-presidentes {
+    list-style: none;
+    max-width: 500px;
+    margin: 2rem auto;
+    padding: 1.5rem;
+    text-align: center;
+    line-height: 2;
+}
+
+.linea-tiempo-body main {
+    width: 100%;
+    flex: 1;
+    display: flex;
+    justify-content: center;
+}
+
+.timeline-container {
+    position: relative;
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 2.5rem 1rem 4rem;
+}
+
+/* eje: línea tenue con tramos que miden la duración de cada mandato */
+.timeline-eje {
+    position: absolute;
+    left: 50%;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background-color: rgb(var(--gold) / 0.22);
+}
+
+.presidencia-fila {
+    position: relative;
+    display: flex;
+    margin-bottom: 2.5rem;
+}
+
+.presidencia-fila:last-child { margin-bottom: 0; }
+
+.presidencia-fila.es-izquierda { justify-content: flex-start; }
+.presidencia-fila.es-derecha { justify-content: flex-end; }
+
+/* tramo del eje proporcional a la duración: el alto lo pone el JS */
+.presidencia-tramo {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    top: 8px;
+    width: 4px;
+    border-radius: 2px;
+    background-color: var(--tipo-color);
+}
+
+/* puntito en el momento exacto en que asume: coincide con el arranque
+   del tramo de color en el eje. */
+.presidencia-punto {
+    position: absolute;
+    left: 50%;
+    top: 8px;
+    transform: translate(-50%, -50%);
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    background-color: var(--tipo-color);
+    border: 2px solid rgb(var(--navy));
+    z-index: 2;
+}
+
+/* año en que asume, pegado al puntito, del lado del eje que queda libre
+   (el opuesto a donde cae la tarjeta). */
+.presidencia-anio {
+    position: absolute;
+    top: 8px;
+    transform: translateY(-50%);
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.03em;
+    color: rgb(var(--gold-soft));
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.presidencia-fila.es-izquierda .presidencia-anio { left: calc(50% + 11px); }
+.presidencia-fila.es-derecha .presidencia-anio { right: calc(50% + 11px); text-align: right; }
+
+.presidencia-lado {
+    width: 50%;
+    display: flex;
+    box-sizing: border-box;
+}
+
+.es-izquierda .presidencia-lado {
+    justify-content: flex-end;
+    padding-right: 26px;
+}
+
+.es-derecha .presidencia-lado {
+    justify-content: flex-start;
+    padding-left: 26px;
+}
+
+.presidencia-card {
+    display: flex;
+    flex-direction: column;
+    width: 380px;
+    max-width: 100%;
+    box-sizing: border-box;
+    padding: 12px 15px;
+    border-radius: 12px;
+    background-color: rgb(var(--navy-light) / 0.92);
+    border: 1px solid var(--tipo-borde);
+    box-shadow: 0 12px 30px -18px rgb(0 0 0 / 0.8);
+    cursor: pointer;
+    transition: border-color 0.18s ease, box-shadow 0.18s ease;
+    font: inherit;
+    color: inherit;
+    text-align: left;
+}
+
+.presidencia-card.esta-abierta,
+.presidencia-card:focus-visible {
+    border-color: rgb(var(--gold) / 0.5);
+    box-shadow: 0 16px 36px -16px rgb(0 0 0 / 0.85);
+}
+
+.presidencia-card:focus-visible {
+    outline: 2px solid rgb(var(--gold-soft));
+    outline-offset: 2px;
+}
+
+.presidencia-cabecera {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+}
+
+/* el retrato siempre queda del lado de la tarjeta más cercano al eje */
+.presidencia-fila.es-izquierda .presidencia-cabecera {
+    flex-direction: row-reverse;
+}
+
+.presidencia-retrato {
+    width: 54px;
+    height: 54px;
+    flex-shrink: 0;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 2px solid rgb(var(--gold) / 0.75);
+    box-shadow: 0 0 0 1px rgb(var(--gold) / 0.2);
+    background-color: #241d15;
+    cursor: pointer;
+    transition: box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+.presidencia-retrato:hover,
+.presidencia-retrato:focus-visible {
+    border-color: rgb(var(--gold));
+    box-shadow: 0 0 0 3px rgb(var(--gold) / 0.3);
+}
+
+.presidencia-retrato:focus-visible {
+    outline: 2px solid rgb(var(--gold-soft));
+    outline-offset: 2px;
+}
+
+.presidencia-retrato img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+    object-position: center 22%; /* los retratos históricos traen mucho aire arriba */
+}
+
+.presidencia-datos {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    min-width: 0;
+    flex: 1;
+}
+
+.presidencia-card h3 {
+    margin: 0;
+    font-family: 'Cinzel', serif;
+    font-weight: 700;
+    font-size: 1rem;
+    line-height: 1.15;
+    color: rgb(var(--ink));
+    text-wrap: pretty;
+    text-align: left;
+}
+
+.presidencia-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.presidencia-periodo {
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: rgb(var(--gold-soft));
+    font-variant-numeric: tabular-nums;
+}
+
+.presidencia-tipo {
+    display: inline-block;
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    font-size: 0.6rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.18rem 0.5rem;
+    border-radius: 3px;
+    background-color: var(--tipo-color);
+    color: rgb(var(--navy));
+}
+
+.presidencia-chevron {
+    flex-shrink: 0;
+    font-size: 1rem;
+    line-height: 1;
+    color: rgb(var(--ink) / 0.35);
+    transition: transform 0.18s ease, color 0.18s ease;
+}
+
+.presidencia-card.esta-abierta .presidencia-chevron {
+    color: rgb(var(--gold));
+    transform: rotate(90deg);
+}
+
+.presidencia-descripcion {
+    margin: 0;
+    margin-top: 0;
+    padding-top: 0;
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    border-top: 1px solid transparent;
+    font-family: 'Fredoka', system-ui, sans-serif;
+    font-size: 0.83rem;
+    line-height: 1.5;
+    color: rgb(var(--ink) / 0.78);
+    text-wrap: pretty;
+    text-align: left;
+    transition: max-height 0.4s ease, opacity 0.3s ease, margin-top 0.4s ease, padding-top 0.4s ease, border-color 0.4s ease;
+}
+
+.presidencia-card.esta-abierta .presidencia-descripcion,
+.presidencia-card:focus-visible .presidencia-descripcion {
+    max-height: 400px;
+    opacity: 1;
+    margin-top: 11px;
+    padding-top: 11px;
+    border-top-color: rgb(var(--ink) / 0.1);
+}
+
+/* El hover solo se activa con mouse real: en touch, ":hover" queda
+   "pegado" después de tocar y no dejaba volver a cerrar la tarjeta con
+   un segundo toque. En touch manda únicamente la clase "esta-abierta". */
+@media (hover: hover) and (pointer: fine) {
+    .presidencia-card:hover {
+        border-color: rgb(var(--gold) / 0.5);
+        box-shadow: 0 16px 36px -16px rgb(0 0 0 / 0.85);
+    }
+
+    .presidencia-card:hover .presidencia-chevron {
+        color: rgb(var(--gold));
+        transform: rotate(90deg);
+    }
+
+    .presidencia-card:hover .presidencia-descripcion {
+        max-height: 400px;
+        opacity: 1;
+        margin-top: 11px;
+        padding-top: 11px;
+        border-top-color: rgb(var(--ink) / 0.1);
+    }
+}
+
+/* colores por tipo de mandato */
+.presidencia-card,
+.presidencia-tramo,
+.presidencia-punto {
+    --tipo-color: rgb(var(--blue));
+    --tipo-borde: rgb(var(--blue) / 0.22);
+}
+
+.es-de-facto {
+    --tipo-color: rgb(var(--terracota));
+    --tipo-borde: rgb(var(--terracota) / 0.28);
+}
+
+.es-interino {
+    --tipo-color: rgb(var(--gold));
+    --tipo-borde: rgb(var(--gold) / 0.3);
+}
+
+@media (max-width: 768px) {
+    /* una sola columna: el eje va al borde izquierdo.
+       ".timeline-eje" es hijo directo de ".timeline-container" (se posiciona
+       relativo a su padding-box), mientras que tramo/punto son hijos de
+       ".presidencia-fila" (sin padding propio, o sea relativos al content-box
+       del container, ya corrido por el "padding: 1rem" del container). Por
+       eso "left" tiene que valer distinto en cada uno para caer en el mismo
+       píxel real: sin este ajuste quedaban desfasados por ese padding. */
+    .timeline-eje { left: calc(1rem + 14px); }
+    .presidencia-tramo { left: 14px; }
+    .presidencia-punto { left: 14px; }
+    .presidencia-fila.es-izquierda,
+    .presidencia-fila.es-derecha { justify-content: flex-start; }
+    .presidencia-fila.es-izquierda .presidencia-lado,
+    .presidencia-fila.es-derecha .presidencia-lado {
+        width: 100%;
+        justify-content: flex-start;
+        padding-left: 46px;
+        padding-right: 0;
+    }
+    .presidencia-card { width: 100%; }
+
+    /* todas las tarjetas quedan del mismo lado del eje (a su derecha):
+       el retrato va siempre a la izquierda de la cabecera, pegado al eje. */
+    .presidencia-fila.es-izquierda .presidencia-cabecera {
+        flex-direction: row;
+    }
+
+    .presidencia-fila.es-izquierda .presidencia-anio,
+    .presidencia-fila.es-derecha .presidencia-anio {
+        left: 26px;
+        right: auto;
+        text-align: left;
+        font-size: 0.6rem;
+    }
+}
+
+/* Modal con el retrato en grande, al tocar la foto en una tarjeta de
+   "Ver Presidencias". Mismo patrón de <dialog> nativo que #modoModal. */
+.retrato-modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    margin: 0;
+    padding: 1.5rem;
+    padding-top: 2.5rem;
+    border: 2px solid rgb(var(--blue) / 0.8);
+    border-radius: 16px;
+    background-color: rgb(var(--navy-light));
+    box-shadow: 0 20px 60px -15px rgba(0, 0, 0, 0.7), 0 0 0 1px rgb(var(--blue) / 0.2);
+    max-width: min(420px, calc(100vw - 2rem));
+    max-height: calc(100vh - 2rem);
+    box-sizing: border-box;
+}
+
+.retrato-modal:not([open]) {
+    display: none;
+}
+
+/* El "grow" del modal (de la miniatura al tamaño final) lo maneja JS con
+   estilos inline sobre "transform"/"opacity" (ver abrirRetratoModal /
+   cerrarRetratoModal en script.js); acá solo el fondo se anima con CSS,
+   sincronizado con esa animación vía la clase "retrato-modal-visible". */
+.retrato-modal::backdrop {
+    background: rgba(0, 0, 0, 0);
+    backdrop-filter: blur(0px);
+    transition: background 0.3s ease, backdrop-filter 0.3s ease;
+}
+
+.retrato-modal.retrato-modal-visible::backdrop {
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(3px);
+}
+
+.retrato-modal-img {
+    display: block;
+    width: 100%;
+    max-height: 65vh;
+    object-fit: contain;
+    border-radius: 10px;
+    border: 2px solid rgb(var(--gold) / 0.75);
+    box-shadow: 0 0 0 1px rgb(var(--gold) / 0.2);
+    background-color: #241d15;
+    box-sizing: border-box;
+}
+
+.retrato-modal-nombre {
+    margin: 0.9rem 0 0;
+    font-family: 'Cinzel', serif;
+    font-weight: 700;
+    font-size: 1.05rem;
+    text-align: center;
+    color: rgb(var(--ink));
+}
+
+.retrato-modal-periodo {
+    margin: 0.3rem 0 0;
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-align: center;
+    color: rgb(var(--gold-soft));
+    font-variant-numeric: tabular-nums;
+}
+
+.retrato-modal-cerrar {
+    position: absolute;
+    top: 0.6rem;
+    right: 0.6rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    padding: 0.4rem;
+    background: none;
+    border: none;
+    border-radius: 50%;
+    color: rgb(var(--ink) / 0.55);
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+.retrato-modal-cerrar svg {
+    width: 100%;
+    height: 100%;
+    fill: currentColor;
+}
+
+.retrato-modal-cerrar:hover {
+    color: rgb(var(--gold-soft));
+    background-color: rgb(var(--glass-soft) / 0.4);
+}
+
+/* MODOS DE JUEGO (página modos.html) */
+
+/* Envuelve TODO lo de arriba del footer (header incluido, como ".main" en
+   index.html), aparte del footer: eso permite que ocupe una pantalla
+   completa como mínimo sin que ese mínimo le sume el alto del header al
+   de la pantalla, cosa que si ese min-height se pusiera en ".modos-container"
+   (adentro del header) pasaba: el total terminaba siendo 100dvh + el alto
+   del header, y quedaba un tramo de scroll de más antes de que apareciera
+   el footer. Así, en vez, el footer queda a un solo scroll de 1px del
+   final de esa primera pantalla, igual que en el inicio. */
+.modos-pantalla {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    min-height: 100dvh;
+}
+
+.modos-container {
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 2.5rem 1rem 4rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem;
+}
+
+.modos-grupo-heading {
+    font-size: 1.1rem;
+    letter-spacing: 0.04em;
+    color: rgb(var(--gold-soft));
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+}
+
+.modos-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.2rem;
+}
+
+.modo-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background-color: rgb(var(--navy) / 0.85);
+    backdrop-filter: blur(10px);
+    border: 2px solid rgb(var(--blue));
+    border-radius: 14px;
+    padding: 1rem;
+    text-decoration: none;
+    box-shadow: 0 10px 25px -12px rgba(0, 0, 0, 0.6);
+    transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .modo-card:hover {
+        border-color: rgb(var(--gold));
+        box-shadow: 0 14px 32px -14px rgba(0, 0, 0, 0.7), 0 0 24px -8px rgb(var(--gold) / 0.35);
+        transform: translateY(-3px);
+    }
+}
+
+.modo-card:focus-visible {
+    outline: 2px solid rgb(var(--gold-soft));
+    outline-offset: 2px;
+    border-color: rgb(var(--gold));
+}
+
+.modo-card-icono {
+    position: relative;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 68px;
+    height: 68px;
+    border-radius: 12px;
+    background-color: rgb(var(--blue) / 0.15);
+    border: 2px solid rgb(var(--blue) / 0.6);
+}
+
+.modo-card-icono svg {
+    width: 38px;
+    height: 38px;
+    fill: rgb(var(--blue));
+}
+
+/* Estado del desafío diario (sopa / crucigrama) en la grilla de "Ver modos
+   de juego": mismas clases/estilos que ya usa la tarjeta del carrusel del
+   inicio (".modo-card-badge-estado", ".modo-card-estado", etc., definidas
+   más arriba) — acá solo hace falta que el ícono se atenúe al resolver. */
+.modo-card.is-resuelto .modo-card-icono img {
+    opacity: 0.75;
+}
+
+/* Logos personalizados por modo: son SVG inline en el objeto "logoModo"
+   de js/script.js (no archivos aparte), y traen sus propios colores, a
+   diferencia de los íconos genéricos de arriba. */
+.modo-card-icono img {
+    width: 38px;
+    height: 38px;
+}
+
+.modo-card-texto {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    min-width: 0;
+}
+
+.modo-card-texto h3 {
+    font-size: 1.05rem;
+}
+
+.modo-card-texto p {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    line-height: 1.4;
+    color: rgb(var(--ink) / 0.75);
+}
+
+/* Cuenta regresiva "Se reinicia en HH:MM:SS" dentro de las tarjetas de los
+   modos diarios (Sopa de letras / Crucigrama). El texto lo pinta en vivo
+   actualizarContadoresReinicioDiario() en script.js. */
+.modo-card-contador {
+    margin-top: 0.4rem;
+}
+
+/* Racha de días consecutivos jugados (Sopa de letras / Crucigrama): la
+   pinta actualizarRachaEnTarjetas() en script.js, tanto acá (grilla de
+   "Ver modos de juego") como en la tarjeta del carrusel del inicio. Antes
+   solo se veía adentro de la partida. */
+.modo-card-racha {
+    display: block;
+    margin-top: 0.3rem;
+    font-weight: 800;
+    font-size: 0.8rem;
+    color: rgb(var(--gold-soft));
+}
+
+@media (max-width: 768px) {
+    .modos-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .modo-card-icono {
+        width: 56px;
+        height: 56px;
+    }
+
+    .modo-card-icono svg,
+    .modo-card-icono img {
+        width: 30px;
+        height: 30px;
+    }
+}
+
+/* Modal de vista previa (al tocar una tarjeta en "Ver modos de juego") */
+#modoModal {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.9rem;
+    background-color: rgb(var(--navy) / 0.9);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 3px solid rgb(var(--blue));
+    border-radius: 12px;
+    padding: 2rem 1.8rem 1.8rem;
+    /* "width" fijo (no solo max-width): al ser position:fixed sin ancho
+       explícito, el modal se autoajusta al contenido ("shrink-to-fit"), y
+       como la fila del título tiene una columna que puede achicarse a 0
+       (minmax(0, auto), para poder detectar cuándo no entra y achicar la
+       fuente), ese shrink-to-fit terminaba resolviendo un modal mucho más
+       angosto de lo que se ve/necesita. Con un ancho fijo, la fila del
+       título siempre mide lo mismo (no depende de su propio contenido) y
+       el cálculo de cuánto achicar la fuente deja de ser un problema
+       circular. */
+    width: min(360px, calc(100vw - 2rem));
+    max-width: min(360px, calc(100vw - 2rem));
+    box-sizing: border-box;
+    color: rgb(var(--ink));
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    text-align: center;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    margin: 0;
+}
+
+#modoModal:not([open]) {
+    display: none;
+}
+
+#modoModal::backdrop {
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(2px);
+}
+
+/* Cruz de cerrar, arriba a la derecha (como en cualquier modal estándar) en
+   vez de un botón "Cerrar" más en la fila de acciones. */
+.modo-modal-cerrar {
+    position: absolute;
+    top: 0.6rem;
+    right: 0.6rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    padding: 0.4rem;
+    background: none;
+    border: none;
+    border-radius: 50%;
+    color: rgb(var(--ink) / 0.55);
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+.modo-modal-cerrar svg {
+    width: 100%;
+    height: 100%;
+    fill: currentColor;
+}
+
+.modo-modal-cerrar:hover {
+    color: rgb(var(--gold-soft));
+    background-color: rgb(var(--glass-soft) / 0.4);
+}
+
+.modo-modal-icono {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 68px;
+    height: 68px;
+    border-radius: 12px;
+    background-color: rgb(var(--blue) / 0.15);
+    border: 2px solid rgb(var(--blue) / 0.6);
+}
+
+.modo-modal-icono svg,
+.modo-modal-icono img {
+    width: 38px;
+    height: 38px;
+    fill: rgb(var(--blue));
+}
+
+/* Título (placa dorada) centrado debajo del ícono del modo, con la
+   rosquita de "Configurar" acomodada a la derecha SIN correr el centrado
+   de la placa. Grid de 3 columnas donde las de los costados miden lo
+   mismo (1fr cada una): con la rosquita únicamente en la columna derecha,
+   la placa (columna del medio) queda con su propio centro exactamente en
+   el centro del modal, sea cual sea su ancho. Si la rosquita está oculta
+   (modos sin configuración) las dos columnas de afuera quedan vacías por
+   igual, así que el centrado no cambia. */
+.modo-modal-fila-titulo {
+    display: grid;
+    grid-template-columns: 1fr minmax(0, auto) 1fr;
+    align-items: center;
+    width: 100%;
+}
+
+/* minmax(0, auto) en la columna deja que se achique por debajo de su ancho
+   natural si no entra; overflow:hidden + nowrap en la placa es lo que
+   permite medir el desborde (scrollWidth vs. clientWidth) en
+   ajustarModoModalTitulo() y achicar la fuente hasta que entre en una sola
+   línea, en vez de recortarse o pasarse del modal. */
+.modo-modal-titulo {
+    grid-column: 2;
+    margin: 0;
+    justify-self: center;
+    max-width: 100%;
+    overflow: hidden;
+}
+
+.modo-modal-titulo .modo-de-juego-seleccionado {
+    display: inline-block;
+    max-width: 100%;
+    /* Mismo tamaño fijo para todos los modos (antes cada uno arrancaba de
+       un tamaño más grande y "Adivina la imagen" terminaba más chico que
+       el resto por ser el único que necesitaba achicarse para entrar).
+       ajustarModoModalTitulo() en script.js lo sigue pudiendo achicar más
+       todavía como red de seguridad en pantallas muy angostas, pero de
+       partida ya arranca en el tamaño que se veía mejor. */
+    font-size: 1.1rem;
+    white-space: nowrap;
+}
+
+.modo-modal-configurar-gear {
+    grid-column: 3;
+    justify-self: start;
+    margin-left: 0.4rem;
+}
+
+.modo-modal-descripcion {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    color: rgb(var(--ink) / 0.8);
+}
+
+.modo-modal-buttons {
+    display: flex;
+    gap: 0.8rem;
+    margin-top: 0.4rem;
+}
+
+footer {
+    display: flex;
+    min-height: fit-content;
+    background-color: rgb(var(--glass) / 0.75);
+    backdrop-filter: blur(10px); /* El efecto de vidrio borroso */
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    padding: 1rem 0;
+    font-size: 1rem;
+}
+
+.footer-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+    text-align: center;
+    padding: 0 1rem;
+}
+
+.footer-nav {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+}
+
+.footer-nav a {
+    color: rgb(var(--ink) / 0.55);
+    text-decoration: none;
+    padding: 0.15rem 0.2rem;
+    transition: color 0.2s ease;
+}
+
+.footer-nav a:hover {
+    color: rgb(var(--blue));
+    text-decoration: underline;
+}
+
+.footer-nav a.pagina-actual {
+    color: rgb(var(--ink) / 0.85);
+    border: none;
+    background: none;
+    text-decoration: underline;
+    font-weight: 700;
+}
+
+.footer-nav span {
+    color: rgb(var(--ink) / 0.3);
+    font-size: 0.7rem;
+}
+
+.footer-disclaimer {
+    font-size: 0.65rem;
+    color: rgb(var(--ink) / 0.45);
+    max-width: 46ch;
+    line-height: 1.4;
+}
+
+/* Dialog de fin de juego */
+#finJuegoDialog {
+    background-color: rgb(var(--navy) / 0.75);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 3px rgb(var(--blue)) solid;
+    border-radius: 12px;
+    padding: 30px;
+    max-width: min(450px, calc(100vw - 2rem));
+    width: 100%;
+    box-sizing: border-box;
+    color: rgb(var(--ink));
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    text-align: center;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    margin: 0;
+    max-height: 85vh;
+    overflow-y: auto;
+}
+
+#finJuegoDialog:not([open]) {
+    display: none;
+}
+
+#finJuegoDialog::backdrop {
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(2px);
+}
+
+/* Mismo truco de centrado manual que el resto de los <dialog> del sitio
+   (#configDialog, #modoModal, #finJuegoDialog): la clase ".modal" les pone
+   display:flex, que rompe el centrado automático del navegador y sin esto
+   el modal cae pegado a la esquina superior izquierda.
+   z-index por encima del header (z-index:100): se abre con show(), no
+   showModal() (ver wireReanudarBotones() en script.js — así el header
+   sigue clickeable mientras está abierto), así que no hay top layer real
+   acá y el z-index sí importa. */
+#reanudarDialog {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    margin: 0;
+    z-index: 200;
+    max-width: min(400px, calc(100vw - 2rem));
+    width: 100%;
+    box-sizing: border-box;
+}
+
+#reanudarDialog:not([open]) {
+    display: none;
+}
+
+/* Sin ::backdrop a propósito: al abrirse con show() (no showModal()) el
+   navegador no genera ::backdrop de todos modos. El tablero de fondo se ve
+   borroso vía ".juego-preparandose" en ".main" (que excluye al header). */
+
+/* Mismo truco de centrado manual que el resto de los <dialog> del sitio.
+   z-index por encima del header (z-index:100) por si en pantallas muy
+   bajas llegan a superponerse verticalmente. Se abre con show() (no
+   showModal()), así que no hay top layer real acá: el z-index sí importa. */
+#listoDialog {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    margin: 0;
+    z-index: 200;
+    max-width: min(380px, calc(100vw - 2rem));
+    width: 100%;
+    box-sizing: border-box;
+}
+
+#listoDialog:not([open]) {
+    display: none;
+}
+
+/* Sin ::backdrop a propósito: al abrirse con show() (no showModal()) el
+   navegador no genera ::backdrop de todos modos, y tampoco lo queremos acá
+   — ver el comentario en index.html sobre por qué este modal no usa
+   showModal(). */
+
+#listoDialog .listo-dialog-fecha {
+    margin: 0;
+    font-size: 0.85rem;
+    color: rgb(var(--ink) / 0.7);
+}
+
+#listoDialog .buttons {
+    justify-content: center;
+    width: 100%;
+    margin-top: 0.6rem;
+}
+
+/* Tablero de sopa/crucigrama ya armado detrás de #listoDialog: se ve pero
+   borroso, para que quede claro que el juego está listo sin llegar a
+   distinguirse letras ni pistas antes de arrancar el cronómetro. Se excluye
+   ".header" a propósito: así "volver" y el logo (ir al inicio) se pueden
+   seguir tocando para salir sin arrancar el juego. El segundo selector
+   (redundante en la práctica, porque a esta altura ".hero-content" ya fue
+   removido por iniciarJuegoSopa()/iniciarJuegoCrucigrama()) cubre además
+   sus hijos por si algún día este modal se llegara a mostrar antes de esa
+   remoción: ">*" solo ve un nivel del DOM y ".hero-content" tiene
+   "display:contents" (no genera caja, así que un blur en él no pinta
+   nada). */
+.main.juego-preparandose > *:not(.header),
+.main.juego-preparandose > .hero-content > * {
+    filter: blur(10px);
+    pointer-events: none;
+    user-select: none;
+    transition: filter 0.25s ease;
+}
+
+#tituloFinJuego {
+    font-size: 1.8rem;
+    margin-bottom: 1.5rem;
+    color: rgb(var(--ink));
+}
+
+.resultado-container {
+    margin: 2rem 0;
+    padding: 1.5rem;
+    background-color: rgb(var(--blue) / 0.1);
+    border-radius: 10px;
+    border: 1px solid rgb(var(--blue));
+}
+
+#mensajeResultado {
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+    line-height: 1.4;
+}
+
+#aciertosFinales, #totalPresidentes {
+    font-weight: bold;
+    color: rgb(var(--blue));
+    font-size: 1.3rem;
+}
+
+#finJuegoDialog .buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+#finJuegoDialog .buttons button {
+    flex: 1 1 auto;
+    min-width: fit-content;
+}
+
+@media (max-width: 480px) {
+    #finJuegoDialog {
+        padding: 20px;
+    }
+
+    #finJuegoDialog .buttons {
+        flex-direction: column;
+    }
+}
+
+#porcentajeContainer {
+    margin-top: 1rem;
+}
+
+#porcentaje {
+    font-size: 2rem;
+    font-weight: bold;
+    color: rgb(var(--blue));
+    text-shadow: 0 0 10px rgb(var(--blue) / 0.5);
+}
+
+.resumen-partida-imagen {
+    margin-top: 1.5rem;
+    text-align: left;
+}
+
+.resumen-partida-titulo {
+    font-size: 1rem;
+    margin-bottom: 0.75rem;
+    color: rgb(var(--ink));
+    text-align: center;
+}
+
+.resumen-partida-lista {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    max-height: 260px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.resumen-partida-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.4rem 0.6rem;
+    border-radius: 8px;
+    background-color: rgb(var(--blue) / 0.08);
+    border: 1px solid rgb(var(--blue) / 0.25);
+}
+
+.resumen-partida-foto {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.resumen-partida-color {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-left: -0.35rem;
+    box-shadow: 0 0 0 1px rgb(0 0 0 / 0.25);
+}
+
+.resumen-partida-nombre {
+    flex: 1;
+    font-size: 0.9rem;
+    color: rgb(var(--ink));
+}
+
+.resumen-partida-icono {
+    font-weight: bold;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+.resumen-partida-item.acierto {
+    border-color: rgb(46 204 113 / 0.5);
+}
+
+.resumen-partida-item.acierto .resumen-partida-icono {
+    color: #2ecc71;
+}
+
+.resumen-partida-item.error {
+    border-color: rgb(231 76 60 / 0.5);
+}
+
+.resumen-partida-item.error .resumen-partida-icono {
+    color: #e74c3c;
+}
+
+.jugar-otra-vez {
+    background: #2ecc71;
+    color: #fff;
+    font-size: 0.9rem;
+}
+
+.volver-inicio {
+    background: #3498db;
+    color: #fff;
+    font-size: 0.9rem;
+}
+
+.jugar-otra-vez:hover {
+    background: #27ae60;
+}
+
+.volver-inicio:hover {
+    background: #2980b9;
+}
+
+.cerrar-modal {
+    background: #e74c3c;
+    color: #fff;
+    font-size: 0.9rem;
+}
+
+.cerrar-modal:hover {
+    background: #c0392b;
+}

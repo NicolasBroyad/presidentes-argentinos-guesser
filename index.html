@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <script src="theme-init.js?v=20260821g"></script>
+    <script src="js/theme-init.js?v=20260821g"></script>
     <!-- Al llegar acá con "?...&accion=jugar" (el botón "Jugar" del modal de
          "Ver modos de juego") el juego arranca recién al final de todo el
          script.js, así que sin esto se alcanza a ver la pantalla de inicio
@@ -26,23 +26,23 @@
     <link rel="canonical" href="https://presidentes-argentinos-guesser.vercel.app/" /> <!-- Cambia por tu dominio real -->
     <meta property="og:title" content="Presidentes Argentinos Guesser - Juego de Historia Argentina">
     <meta property="og:description" content="Juego online para adivinar los presidentes argentinos por período. Compite contra el reloj y poné a prueba tu conocimiento de historia argentina.">
-    <meta property="og:image" content="https://presidentes-argentinos-guesser.vercel.app/images/logo.png?v=20260907a"> <!-- Cambia por tu dominio real -->
+    <meta property="og:image" content="https://presidentes-argentinos-guesser.vercel.app/images/logo/logo.png?v=20260907a"> <!-- Cambia por tu dominio real -->
     <meta property="og:url" content="https://presidentes-argentinos-guesser.vercel.app/">
     <meta property="og:type" content="website">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Presidentes Argentinos Guesser - Juego de Historia Argentina">
     <meta name="twitter:description" content="Juego online para adivinar los presidentes argentinos por período. Compite contra el reloj y poné a prueba tu conocimiento de historia argentina.">
-    <meta name="twitter:image" content="https://presidentes-argentinos-guesser.vercel.app/images/logo.png?v=20260907a">
-    <link rel="stylesheet" href="styles.css?v=20260916p">
-    <link rel="icon" type="image/png" sizes="32x32" href="images/icon-32.png?v=20260907b">
-    <link rel="icon" type="image/png" sizes="16x16" href="images/icon-16.png?v=20260907b">
-    <script src="Periodo.js?v=20260821g" defer></script>
-    <script src="Presidente.js?v=20260913a" defer></script>
-    <script src="script.js?v=20260916u" defer></script>
+    <meta name="twitter:image" content="https://presidentes-argentinos-guesser.vercel.app/images/logo/logo.png?v=20260907a">
+    <link rel="stylesheet" href="css/styles.css?v=20260916q">
+    <link rel="icon" type="image/png" sizes="32x32" href="images/icons/icon-32.png?v=20260907b">
+    <link rel="icon" type="image/png" sizes="16x16" href="images/icons/icon-16.png?v=20260907b">
+    <script src="js/models/Periodo.js?v=20260821g" defer></script>
+    <script src="js/models/Presidente.js?v=20260913a" defer></script>
+    <script src="js/script.js?v=20260916v" defer></script>
     <meta name="google-site-verification" content="fMgml6oX73QYLoVnA3bRJ7J2GKl5UpMl0TMGMZHBIq4" /> <!-- Google Search Console -->
     <link rel="manifest" href="manifest.json?v=20260907a">
     <meta name="theme-color" content="#0a1626">
-    <link rel="apple-touch-icon" href="images/apple-touch-icon.png?v=20260907a">
+    <link rel="apple-touch-icon" href="images/icons/apple-touch-icon.png?v=20260907a">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Presidentes AR">
@@ -63,7 +63,7 @@
     <div class="main">
         <header class="header">
                         <a href="index.html" class="header-logo" aria-label="Presidentes Argentinos Guesser - Inicio">
-                <img src="images/logo-nav-64.png?v=20260907a" srcset="images/logo-nav-64.png?v=20260907a 64w, images/logo-nav-128.png?v=20260907a 128w, images/logo-nav-256.png?v=20260907a 256w" sizes="32px" width="32" height="32" alt="">
+                <img src="images/logo/logo-nav-64.png?v=20260907a" srcset="images/logo/logo-nav-64.png?v=20260907a 64w, images/logo/logo-nav-128.png?v=20260907a 128w, images/logo/logo-nav-256.png?v=20260907a 256w" sizes="32px" width="32" height="32" alt="">
             </a>
             <button class="volver-atras-juego" type="button" aria-label="Volver">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg>
