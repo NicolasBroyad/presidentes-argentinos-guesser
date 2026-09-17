@@ -1786,16 +1786,21 @@ td {
     padding: 0.25em 0;
 }
 
-/* --- Ventanas de escritorio (ancho >=769px), cualquier alto: varios
-   tamaños de texto/padding de las reglas y de las cards del juego solo se
-   achicaban con el ANCHO, no con el ALTO, así que en pantallas anchas
-   pero bajas (notebooks 16:10/16:9 como 1280x800, 1366x768, 1440x900)
-   todo se veía desproporcionadamente grande. Aplica a cualquier alto (no
-   solo a las bajas) porque estos ajustes son puro tipografía/padding fijo
-   de la tarjeta de modo y las cards del juego — no dependen de cuánto
-   sobrante haya, así que no hay razón para reservarlos a pantallas cortas. ---
-   */
-@media (min-width: 769px) {
+/* --- Notebooks anchas pero bajas (ej. 1280x720, 1366x768, y relaciones de
+   aspecto como 16:10 -1280x800, 1440x900, 1680x1050- que tienen bastante
+   menos alto que un 1920x1080 típico): varios tamaños de texto/padding de
+   las reglas y de las cards del juego solo se achicaban con el ANCHO, no
+   con el ALTO, así que en pantallas cortas pero no angostas (no entran en
+   el breakpoint mobile) todo se veía desproporcionadamente grande. El corte
+   en 920px cubre 1440x900 (16:10) además de los notebooks 720/768 de antes,
+   sin afectar monitores altos típicos (1080px+ de alto).
+
+   Importante: esto tiene que seguir acotado a "max-height:920px". Un
+   commit posterior lo sacó (quedó "@media (min-width:769px)" a secas)
+   pensando que era solo tipografía/padding fijo, sin depender del alto —
+   pero achicaba también ".rules-section"/".modo-actual-card" en monitores
+   normales de 1920x1080, donde nunca hizo falta achicarlos. --- */
+@media (max-height: 920px) and (min-width: 769px) {
     .kicker {
         padding-top: 1.2rem;
     }
@@ -1870,6 +1875,117 @@ td {
     }
 }
 
+/* --- Monitores muy altos (2560x1600, 2560x1440 y similares): el hero y la
+   tarjeta de modo usan "clamp(Xrem, Yvh, Zrem)" para el tamaño de fuente,
+   pero el techo "Z" de cada clamp ya se toca a 1920x1080 (Yvh a esa altura
+   da más que Z) — así que esos elementos YA estaban en su tamaño máximo en
+   una pantalla 1080p común, y en una pantalla más alta todavía (2560x1600)
+   siguen mostrando ese mismo tamaño tope en vez de seguir creciendo. Con
+   más alto de por medio pero el mismo tamaño de letra/ícono, todo queda
+   proporcionalmente más chico y con más aire entre los elementos.
+
+   Acá se escala cada tamaño que ya estaba topeado a 1920x1080 por
+   1600/1080 ≈ 1.4815 (la relación entre el alto de este breakpoint y el de
+   un 1080p típico), para que el conjunto se vea como el mismo diseño de
+   1920x1080 pero agrandado en la misma proporción — no una versión nueva,
+   más chica en relación a la pantalla. El corte en 1300px deja afuera a
+   los monitores comunes (1080p, 1440x900), que ya se ven bien tal cual. --- */
+@media (min-height: 1300px) and (min-width: 769px) {
+    /* El sol de fondo ("sol-watermark.svg") tiene "background-size" topeado
+       en 820px fijos, sin relación con el alto de pantalla — a diferencia
+       de todo lo demás en este bloque, no crecía nada entre 1080p y este
+       breakpoint. Como además usa "background-position: center 6%" con
+       "background-attachment:fixed" (el % se calcula sobre el ALTO TOTAL
+       del viewport menos el alto de la imagen), un sol del mismo tamaño en
+       una pantalla más alta cae proporcionalmente más arriba — es
+       matemática pura: cuanto más alto el viewport frente a un alto de
+       imagen fijo, más chica es la porción de ese "6%" que realmente se
+       nota. La solución es escalar el tamaño de la imagen en la misma
+       proporción (820px × 1.4815 ≈ 1216px): al crecer imagen y viewport
+       en la misma proporción, el mismo "6%" cae exactamente en el mismo
+       lugar relativo que en 1920x1080 (es una propiedad matemática del
+       cálculo de "background-position", no hace falta tocar el 6%). */
+    .index-body {
+        background-size: min(1216px, 85vw) auto, cover, cover;
+    }
+
+    .kicker {
+        font-size: 1.19rem;
+        /* Fijo en la regla base (no escala con clamp): sin ajustarlo acá
+           quedaba proporcionalmente más pegado al header que a 1920x1080. */
+        padding-top: 50px;
+    }
+
+    .titulo-linea1 {
+        font-size: 2.52rem;
+    }
+
+    .titulo-linea2 {
+        font-size: 5.33rem;
+    }
+
+    .iniciar-juego-button {
+        padding: 1.7em 2.8em;
+    }
+
+    .iniciar-juego-texto {
+        font-size: 2rem;
+    }
+
+    .modo-de-juego-seleccionado-heading {
+        font-size: 1.63rem;
+        padding: 0.52rem 1.04rem;
+    }
+
+    .rules-section {
+        gap: 1.78rem;
+        padding: 1.78rem;
+        padding-bottom: 3.7rem;
+    }
+
+    .modo-carrusel {
+        max-width: 830px;
+    }
+
+    .modo-carrusel-flecha {
+        width: 3.26rem;
+        height: 3.26rem;
+    }
+
+    .modo-carrusel-flecha svg {
+        width: 1.78rem;
+        height: 1.78rem;
+    }
+
+    .modo-carrusel-puntos {
+        gap: 0.82rem;
+    }
+
+    .modo-carrusel-punto {
+        width: 12px;
+        height: 12px;
+    }
+
+    .modo-actual-card {
+        gap: 2.37rem;
+        padding: 1.63rem 2.07rem;
+    }
+
+    .modo-card-logo {
+        width: 142px;
+        height: 142px;
+        padding: 21px;
+    }
+
+    .modo-card-text h3 .modo-de-juego-seleccionado {
+        font-size: 1.7rem;
+    }
+
+    .rules-section p {
+        font-size: 1.48rem;
+    }
+}
+
 .input-container {
     display: flex;
     flex-direction: column;
@@ -1911,8 +2027,8 @@ td {
     justify-content: center;
 }
 
-/* Mismo problema que el bloque "(min-width: 769px)" de más arriba (ver su
-   comentario), pero en celulares bajos (iPhone SE y
+/* Mismo problema que el bloque "(max-height: 920px) and (min-width: 769px)"
+   de más arriba (ver su comentario), pero en celulares bajos (iPhone SE y
    similares, ~667px de alto o menos): ".button-section{flex:1}" reparte
    TODO el alto sobrante de ".main{min-height:100dvh}" arriba/abajo del
    botón, pero un celular así de bajo casi no tiene sobrante que repartir
