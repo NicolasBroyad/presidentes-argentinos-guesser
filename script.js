@@ -2,12 +2,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- ELEMENTOS DEL DOM ---
     const body = document.querySelector("body");
-    const buttonSection = document.querySelector(".button-section");
-    const rulesSection = document.querySelector(".rules-section");
+    const heroContent = document.querySelector(".hero-content");
     const botonIniciar = document.querySelector(".iniciar-juego-button");
     const main = document.querySelector(".main");
-    const h1 = document.querySelector("h1");
-    const kicker = document.querySelector(".kicker");
 
     // --- Sonido de acierto ---
     // Archivo de audio (correct.mp3). Se llama a reproducirSonidoAcierto()
@@ -1014,10 +1011,7 @@ const listaPresidentes = [
     // --- Iniciar juego ---
     function iniciarJuego() {
         modoActual = 'clasico';
-        buttonSection.remove();
-        rulesSection.remove();
-        h1.remove();
-        if (kicker) kicker.remove();
+        if (heroContent) heroContent.remove();
         main.classList.add("juego-activo");
         // En cualquier modo, jugando: sin footer y sin scroll de página.
         body.classList.add("juego-activo");
@@ -1368,10 +1362,7 @@ const listaPresidentes = [
     function iniciarJuegoImagen() {
         modoActual = 'imagen';
 
-        buttonSection.remove();
-        rulesSection.remove();
-        h1.remove();
-        if (kicker) kicker.remove();
+        if (heroContent) heroContent.remove();
         main.classList.add("juego-activo");
         // En cualquier modo, jugando: sin footer y sin scroll de página.
         body.classList.add("juego-activo");
@@ -1911,10 +1902,7 @@ const listaPresidentes = [
 
     function iniciarJuegoSopa() {
         modoActual = 'sopa';
-        buttonSection.remove();
-        rulesSection.remove();
-        h1.remove();
-        if (kicker) kicker.remove();
+        if (heroContent) heroContent.remove();
         main.classList.add("juego-activo");
         body.classList.add("juego-activo");
 
@@ -3321,10 +3309,7 @@ const listaPresidentes = [
 
     function iniciarJuegoCrucigrama() {
         modoActual = 'crucigrama';
-        buttonSection.remove();
-        rulesSection.remove();
-        h1.remove();
-        if (kicker) kicker.remove();
+        if (heroContent) heroContent.remove();
         main.classList.add("juego-activo");
         body.classList.add("juego-activo");
 

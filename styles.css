@@ -110,6 +110,19 @@ html[data-cargando-juego] body {
     gap: 0;
 }
 
+/* Envuelve kicker+título+botón+tarjeta de modo (todo el contenido del
+   inicio salvo el header) solo para que script.js pueda sacarlos del DOM
+   con un único ".remove()" al arrancar una partida, en vez de cuatro
+   ".remove()" sueltos. "display:contents" saca al wrapper del layout por
+   completo: sus hijos se comportan como si fueran hijos directos de
+   ".main" (mismo flex, mismo ancho, mismo todo) — a propósito, porque
+   dejarlo como flex item real (con su propio "flex:1"/centrado) rompía la
+   alineación del botón con el sol de fondo (ver comentario de
+   ".button-section" más abajo) y el ancho en mobile. */
+.hero-content {
+    display: contents;
+}
+
 .kicker {
     font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
     font-size: min(clamp(0.65rem, 1.8vw, 0.8rem), clamp(0.65rem, 1.8vh, 0.8rem));
@@ -1773,38 +1786,18 @@ td {
     padding: 0.25em 0;
 }
 
-/* --- Ventanas de escritorio (ancho >=769px): varios tamaños de texto/
-   padding de las reglas y de las cards del juego solo se achicaban con el
-   ANCHO, no con el ALTO, así que en pantallas anchas pero bajas (notebooks
-   16:10/16:9 como 1280x800, 1366x768, 1440x900) todo se veía
-   desproporcionadamente grande. Antes este bloque solo se aplicaba hasta
-   920px de alto, asumiendo que los monitores más altos no lo necesitaban,
-   pero ".button-section{flex:1}" (ver más abajo) sigue estirándose con
-   CUALQUIER alto sobrante de ".main{min-height:100dvh}": en una ventana
-   angosta en ancho relativo pero muy alta (ventana sin maximizar en un
-   monitor grande, o un monitor de escritorio alto) deja un hueco enorme
-   entre el botón y la tarjeta de modo, igual de "perdidos" que en las
-   notebooks bajas. Por eso ahora se aplica a cualquier alto en desktop: el
-   sobrante que quede se acumula como espacio vacío al final de la sección
-   (antes del footer) en vez de partir el hero en dos. --- */
+/* --- Ventanas de escritorio (ancho >=769px), cualquier alto: varios
+   tamaños de texto/padding de las reglas y de las cards del juego solo se
+   achicaban con el ANCHO, no con el ALTO, así que en pantallas anchas
+   pero bajas (notebooks 16:10/16:9 como 1280x800, 1366x768, 1440x900)
+   todo se veía desproporcionadamente grande. Aplica a cualquier alto (no
+   solo a las bajas) porque estos ajustes son puro tipografía/padding fijo
+   de la tarjeta de modo y las cards del juego — no dependen de cuánto
+   sobrante haya, así que no hay razón para reservarlos a pantallas cortas. ---
+   */
 @media (min-width: 769px) {
-    /* El hero (kicker + título + botón "Iniciar Juego") usaba
-       ".button-section{flex:1}" para centrarse en todo el alto sobrante de
-       ".main{min-height:100dvh}" — eso deja un hueco enorme y vacío arriba y
-       abajo del botón, con el título y la tarjeta del carrusel quedando
-       como "perdidos" lejos uno del otro. Acá se aprieta ese ritmo
-       vertical: el botón ya no fuerza a ocupar TODO el sobrante, así que el
-       título, el botón y la tarjeta del modo quedan agrupados en vez de
-       dispersos. Los tamaños de fuente no se tocan (ya se achican solos vía
-       los clamp(vw,vh) de cada uno).*/
     .kicker {
         padding-top: 1.2rem;
-    }
-
-    .button-section {
-        flex: 0 1 auto;
-        padding: 1.4rem 0;
-        gap: 0.6rem;
     }
 
     .rules-section {
@@ -4661,8 +4654,15 @@ footer {
    borroso, para que quede claro que el juego está listo sin llegar a
    distinguirse letras ni pistas antes de arrancar el cronómetro. Se excluye
    ".header" a propósito: así "volver" y el logo (ir al inicio) se pueden
-   seguir tocando para salir sin arrancar el juego. */
-.main.juego-preparandose > *:not(.header) {
+   seguir tocando para salir sin arrancar el juego. El segundo selector
+   (redundante en la práctica, porque a esta altura ".hero-content" ya fue
+   removido por iniciarJuegoSopa()/iniciarJuegoCrucigrama()) cubre además
+   sus hijos por si algún día este modal se llegara a mostrar antes de esa
+   remoción: ">*" solo ve un nivel del DOM y ".hero-content" tiene
+   "display:contents" (no genera caja, así que un blur en él no pinta
+   nada). */
+.main.juego-preparandose > *:not(.header),
+.main.juego-preparandose > .hero-content > * {
     filter: blur(10px);
     pointer-events: none;
     user-select: none;

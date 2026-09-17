@@ -33,12 +33,12 @@
     <meta name="twitter:title" content="Presidentes Argentinos Guesser - Juego de Historia Argentina">
     <meta name="twitter:description" content="Juego online para adivinar los presidentes argentinos por período. Compite contra el reloj y poné a prueba tu conocimiento de historia argentina.">
     <meta name="twitter:image" content="https://presidentes-argentinos-guesser.vercel.app/images/logo.png?v=20260907a">
-    <link rel="stylesheet" href="styles.css?v=20260916m">
+    <link rel="stylesheet" href="styles.css?v=20260916p">
     <link rel="icon" type="image/png" sizes="32x32" href="images/icon-32.png?v=20260907b">
     <link rel="icon" type="image/png" sizes="16x16" href="images/icon-16.png?v=20260907b">
     <script src="Periodo.js?v=20260821g" defer></script>
     <script src="Presidente.js?v=20260913a" defer></script>
-    <script src="script.js?v=20260916r" defer></script>
+    <script src="script.js?v=20260916u" defer></script>
     <meta name="google-site-verification" content="fMgml6oX73QYLoVnA3bRJ7J2GKl5UpMl0TMGMZHBIq4" /> <!-- Google Search Console -->
     <link rel="manifest" href="manifest.json?v=20260907a">
     <meta name="theme-color" content="#0a1626">
@@ -87,36 +87,38 @@
                 </button>
             </div>
         </header>
-        <p class="kicker">Juegos de Historia Argentina</p>
-        <h1>
-            <a href="index.html">
-                <span class="titulo-linea2">Presidentes Argentinos</span>
-                <span class="titulo-linea1">Guesser</span>
-            </a>
-        </h1>
-        <div class="button-section">
-            <button class="iniciar-juego-button" type="button">
-                <span class="iniciar-juego-texto">Iniciar Juego</span>
-            </button>
-        </div>
-
-        <div class="rules-section">
-            <div class="modo-de-juego-seleccionado-heading">
-                <span class="modo-de-juego-seleccionado-label">MODO DE JUEGO SELECCIONADO:</span>
+        <div class="hero-content">
+            <p class="kicker">Juegos de Historia Argentina</p>
+            <h1>
+                <a href="index.html">
+                    <span class="titulo-linea2">Presidentes Argentinos</span>
+                    <span class="titulo-linea1">Guesser</span>
+                </a>
+            </h1>
+            <div class="button-section">
+                <button class="iniciar-juego-button" type="button">
+                    <span class="iniciar-juego-texto">Iniciar Juego</span>
+                </button>
             </div>
 
-            <div class="modo-carrusel">
-                <button class="modo-carrusel-flecha modo-carrusel-flecha-izq" type="button" aria-label="Modo anterior">
-                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15.41,16.59L10.83,12L15.41,7.41L14,6L8,12L14,18Z" /></svg>
-                </button>
-                <div class="modo-carrusel-viewport">
-                    <div class="modo-carrusel-track"></div>
+            <div class="rules-section">
+                <div class="modo-de-juego-seleccionado-heading">
+                    <span class="modo-de-juego-seleccionado-label">MODO DE JUEGO SELECCIONADO:</span>
                 </div>
-                <button class="modo-carrusel-flecha modo-carrusel-flecha-der" type="button" aria-label="Modo siguiente">
-                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8.59,16.59L13.17,12L8.59,7.41L10,6L16,12L10,18Z" /></svg>
-                </button>
+
+                <div class="modo-carrusel">
+                    <button class="modo-carrusel-flecha modo-carrusel-flecha-izq" type="button" aria-label="Modo anterior">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15.41,16.59L10.83,12L15.41,7.41L14,6L8,12L14,18Z" /></svg>
+                    </button>
+                    <div class="modo-carrusel-viewport">
+                        <div class="modo-carrusel-track"></div>
+                    </div>
+                    <button class="modo-carrusel-flecha modo-carrusel-flecha-der" type="button" aria-label="Modo siguiente">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8.59,16.59L13.17,12L8.59,7.41L10,6L16,12L10,18Z" /></svg>
+                    </button>
+                </div>
+                <div class="modo-carrusel-puntos" role="tablist" aria-label="Elegir modo de juego"></div>
             </div>
-            <div class="modo-carrusel-puntos" role="tablist" aria-label="Elegir modo de juego"></div>
         </div>
     </div>
 
