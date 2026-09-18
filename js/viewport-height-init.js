@@ -28,6 +28,16 @@
         return !!el && /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName);
     }
 
+    // Al cerrar el teclado el motor dispara varios "resize" mientras el
+    // teclado se va escondiendo, con alturas intermedias (por ejemplo un 85%
+    // de la real): si se aplicaran, la pantalla de juego se encogería un
+    // instante (crucigrama y pistas "saltan" hacia arriba, tapados por el
+    // header) y recién al terminar la animación volvería a su lugar. Por eso
+    // (a) después de soltar un campo se congela la medición un rato y (b)
+    // los eventos de resize no miden al instante: esperan a que se calmen.
+    var congeladoHasta = 0;
+    var timerCalma = null;
+
     function fijarAlturaViewport() {
         if (hayCampoEnfocado()) return;
         var alto = window.innerHeight;
@@ -39,6 +49,18 @@
         document.documentElement.style.setProperty("--app-vh", (alto * 0.01) + "px");
     }
 
+    function medirCuandoSeCalme() {
+        clearTimeout(timerCalma);
+        var espera = Math.max(350, congeladoHasta - Date.now());
+        timerCalma = setTimeout(function () {
+            if (Date.now() < congeladoHasta) {
+                medirCuandoSeCalme();
+                return;
+            }
+            fijarAlturaViewport();
+        }, espera);
+    }
+
     fijarAlturaViewport();
     // En el primer pintado el motor a veces todavía no terminó de resolver
     // el alto real visible — una segunda medición lo corrige. El setTimeout
@@ -46,10 +68,14 @@
     // (pestaña en segundo plano), donde requestAnimationFrame no dispara.
     requestAnimationFrame(fijarAlturaViewport);
     setTimeout(fijarAlturaViewport, 100);
-    window.addEventListener("resize", fijarAlturaViewport);
-    window.addEventListener("orientationchange", fijarAlturaViewport);
+    window.addEventListener("resize", medirCuandoSeCalme);
+    window.addEventListener("orientationchange", medirCuandoSeCalme);
     window.addEventListener("pageshow", fijarAlturaViewport);
+    document.addEventListener("focusout", function () {
+        congeladoHasta = Date.now() + 1200;
+        medirCuandoSeCalme();
+    });
     document.addEventListener("visibilitychange", function () {
-        if (document.visibilityState === "visible") fijarAlturaViewport();
+        if (document.visibilityState === "visible") medirCuandoSeCalme();
     });
 })();
