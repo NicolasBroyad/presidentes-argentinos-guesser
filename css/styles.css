@@ -104,7 +104,19 @@ html[data-cargando-juego] body {
 }
 
 .main {
+    /* Tres capas, de la más al menos compatible: "vh" como piso universal,
+       "dvh" lo sobreescribe donde el motor lo soporta y lo calcula bien, y
+       "--app-vh" (medido en JS con visualViewport, ver
+       viewport-height-init.js) tiene la última palabra: en Safari/iOS,
+       sobre todo dentro de navegadores embebidos (el de WhatsApp, por
+       ejemplo), "100dvh" puede no reflejar el alto realmente visible en ese
+       momento y dejar el footer pegado al final de ".rules-section" sin el
+       scroll de por medio que debería haber. Si el script no llegó a
+       correr, "var(--app-vh, 1vh)" cae en "1vh" y esta línea equivale a la
+       de arriba, sin regresión. */
+    min-height: 100vh;
     min-height: 100dvh;
+    min-height: calc(var(--app-vh, 1vh) * 100);
     display: flex;
     flex-direction: column;
     gap: 0;
@@ -178,7 +190,7 @@ h1 a {
     align-items: center;
     background-color: rgb(var(--glass) / 0.75);
     backdrop-filter: blur(50px); /* El efecto de vidrio borroso */
-    -webkit-backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(50px); /* Para Safari */
     justify-content: center;
     z-index: 100; /* para que quede arriba del contenido */
     width: 100%;
@@ -1603,7 +1615,9 @@ tbody {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 2rem;                 /* un poco menos de espacio para que encaje */
+    max-height: 60vh;     /* fallback para motores sin soporte de "dvh" */
     max-height: 60dvh;    /* altura máxima del tbody */
+    max-height: calc(var(--app-vh, 1vh) * 60); /* alto real medido en JS, ver .main */
     overflow-y: auto;          /* solo scroll vertical */
     overflow-x: hidden;        /* oculta horizontal si sobra */
     padding: 1rem 1rem 0 1rem; /* sin padding abajo */
@@ -1620,7 +1634,9 @@ body.juego-activo footer {
 }
 
 .main.juego-activo {
+    height: 100vh; /* fallback para motores sin soporte de "dvh" */
     height: 100dvh;
+    height: calc(var(--app-vh, 1vh) * 100); /* alto real medido en JS, ver .main */
     overflow: hidden;
 }
 
@@ -3833,7 +3849,7 @@ td {
     display: flex;
     background-color: rgb(var(--glass) / 0.75);
     backdrop-filter: blur(50px);
-    -webkit-backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(50px); /* Para Safari */
     justify-content: center;
     align-items: center;
     text-align: center;
@@ -4309,7 +4325,9 @@ td {
     flex-direction: column;
     align-items: center;
     width: 100%;
+    min-height: 100vh; /* fallback para motores sin soporte de "dvh" */
     min-height: 100dvh;
+    min-height: calc(var(--app-vh, 1vh) * 100); /* alto real medido en JS, ver .main */
 }
 
 .modos-container {
