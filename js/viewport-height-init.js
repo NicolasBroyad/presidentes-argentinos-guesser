@@ -9,7 +9,17 @@
 // css usa "calc(var(--app-vh) * 100)" como última palabra, por encima de
 // los fallbacks en vh/dvh.
 (function () {
+    function hayCampoEnfocado() {
+        var el = document.activeElement;
+        return !!el && /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName);
+    }
     function fijarAlturaViewport() {
+        // Con el teclado abierto (campo enfocado), visualViewport se achica
+        // por el teclado: si lo siguiéramos, ".main.juego-activo" se
+        // encogería a lo que queda visible y el crucigrama/la sopa quedarían
+        // apretados y tapados por el header y el panel de pistas. Se
+        // conserva el último alto medido sin teclado.
+        if (hayCampoEnfocado()) return;
         var altura = (window.visualViewport && window.visualViewport.height) || window.innerHeight;
         document.documentElement.style.setProperty("--app-vh", (altura * 0.01) + "px");
     }
@@ -27,6 +37,9 @@
     window.addEventListener("resize", fijarAlturaViewport);
     window.addEventListener("orientationchange", fijarAlturaViewport);
     window.addEventListener("pageshow", fijarAlturaViewport);
+    document.addEventListener("focusout", function () {
+        setTimeout(fijarAlturaViewport, 400);
+    });
     document.addEventListener("visibilitychange", function () {
         if (document.visibilityState === "visible") fijarAlturaViewport();
     });
