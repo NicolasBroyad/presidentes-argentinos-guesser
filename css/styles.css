@@ -2976,6 +2976,10 @@ td {
 }
 
 .cruci-input {
+    /* En bloque, si no el input (inline) se apoya sobre la línea de texto de
+       la celda, cuyo alto lo fija el font-size heredado del contenedor, y en
+       casillas chicas queda desplazado hacia abajo y recortado. */
+    display: block;
     width: 100%;
     height: 100%;
     border: none;
@@ -3325,6 +3329,18 @@ td {
            esquema "el menor entre ancho disponible y ancho por techo de
            alto" que la regla base, con el techo de alto más bajo. */
         width: min(100%, calc(34vh * var(--c) / var(--r)));
+        /* Las letras y los números se dimensionan según el ancho real de la
+           grilla (unidades "cqw"), no según el alto de la pantalla: así
+           bajan junto con las casillas cuando la grilla se achica. */
+        container-type: inline-size;
+    }
+
+    .cruci-input {
+        font-size: clamp(0.3rem, calc(100cqw / var(--c) * 0.52), 1.15rem);
+    }
+
+    .cruci-num {
+        font-size: clamp(0.2rem, calc(100cqw / var(--c) * 0.26), 0.6rem);
     }
 
     .cruci-panel {
