@@ -2053,14 +2053,25 @@ td {
    el botón y la tarjeta de modos quedan pegoteados sin aire entre sí,
    porque esa "distancia" dependía enteramente de un sobrante que acá no
    existe. Se fuerza el mismo mínimo de aire fijo (padding) que ya usan las
-   notebooks bajas para este caso. */
+   notebooks bajas para este caso.
+
+   El padding es lo único que hace falta para eso: ".button-section" tiene
+   que CONSERVAR su "flex:1" de la regla base. Antes acá se le ponía
+   "flex:0 1 auto", y eso rompía la pantalla en cualquier celular que cayera
+   en este breakpoint SIN ser tan bajo como un SE (un iPhone 16 o un Android
+   con la barra del navegador ocupando lugar quedan en ~690px de alto útil):
+   al no crecer el botón, el alto sobrante no se repartía alrededor suyo
+   sino que quedaba TODO al final, así que el título, el botón y la tarjeta
+   de modos se amontonaban arriba y aparecía un hueco entre la tarjeta y el
+   footer. Con "flex:1" los dos casos quedan bien: si hay sobrante se
+   reparte (la tarjeta baja hasta el final de la pantalla) y si no lo hay
+   —el caso del SE— el padding garantiza igual el aire mínimo. */
 @media (max-height: 700px) and (max-width: 768px) {
     .kicker {
         padding-top: 1rem;
     }
 
     .button-section {
-        flex: 0 1 auto;
         padding: 1.2rem 0;
         gap: 0.6rem;
     }
