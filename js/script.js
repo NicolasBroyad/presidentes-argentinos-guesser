@@ -1715,6 +1715,10 @@ const listaPresidentes = [
     let zoomFotoOverlayEl = null;
     let zoomFotoImgEl = null;
     let zoomFotoCardAbierta = null;
+    let zoomFotoHoverTimeout = null;
+    // Espera antes de agrandar la foto al pasar el mouse: evita que se
+    // dispare con un simple paso de cursor por la card.
+    const ZOOM_FOTO_HOVER_DELAY_MS = 500;
 
     function obtenerZoomFotoOverlay() {
         if (zoomFotoOverlayEl) return zoomFotoOverlayEl;
@@ -1789,8 +1793,14 @@ const listaPresidentes = [
         const esHoverCapaz = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
         document.querySelectorAll(".sopa-pista").forEach(card => {
             if (esHoverCapaz) {
-                card.addEventListener("mouseenter", () => abrirZoomFoto(card));
-                card.addEventListener("mouseleave", cerrarZoomFoto);
+                card.addEventListener("mouseenter", () => {
+                    clearTimeout(zoomFotoHoverTimeout);
+                    zoomFotoHoverTimeout = setTimeout(() => abrirZoomFoto(card), ZOOM_FOTO_HOVER_DELAY_MS);
+                });
+                card.addEventListener("mouseleave", () => {
+                    clearTimeout(zoomFotoHoverTimeout);
+                    cerrarZoomFoto();
+                });
             } else {
                 const foto = card.querySelector(".sopa-pista-foto");
                 if (foto) foto.addEventListener("click", (e) => {
