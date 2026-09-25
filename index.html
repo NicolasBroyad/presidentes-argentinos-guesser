@@ -4,22 +4,7 @@
     <meta charset="UTF-8">
     <script src="js/theme-init.js?v=20260821g"></script>
     <script src="js/viewport-height-init.js?v=20260918c"></script>
-    <!-- Al llegar acá con "?...&accion=jugar" (el botón "Jugar" del modal de
-         "Ver modos de juego") el juego arranca recién al final de todo el
-         script.js, así que sin esto se alcanza a ver la pantalla de inicio
-         durante unos milisegundos antes de que la partida la reemplace.
-         Oculta la página entera apenas se sabe (antes del primer pintado,
-         igual que theme-init.js con el tema) y script.js la vuelve a
-         mostrar recién cuando el juego ya está armado. -->
-    <script>
-        (function () {
-            try {
-                if (new URLSearchParams(window.location.search).get("accion") === "jugar") {
-                    document.documentElement.setAttribute("data-cargando-juego", "");
-                }
-            } catch (e) {}
-        })();
-    </script>
+    <script src="js/juego-carga-init.js?v=20260925a"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content, viewport-fit=cover">
     <title>Presidentes Argentinos Guesser - Juego de Historia Argentina</title>
     <meta name="description" content="Juego online para adivinar los presidentes argentinos por período. Compite contra el reloj y poné a prueba tu conocimiento de historia argentina.">
@@ -82,18 +67,11 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Presidentes AR">
+    <!-- Vercel Speed Insights + Web Analytics -->
+    <script src="js/vercel-analytics-init.js?v=20260925a"></script>
+    <script defer src="/_vercel/speed-insights/script.js"></script>
+    <script defer src="/_vercel/insights/script.js"></script>
 </head>
-
-<!-- START: Web Vitals collection -->
- <script>
-  window.si = window.si || function () { (window.siq = window.siq || []).push(arguments); };
-</script>
-<script defer src="/_vercel/speed-insights/script.js"></script>
-
-<script>
-  window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
-</script>
-<script defer src="/_vercel/insights/script.js"></script>
 
 <body class="index-body">
     <div class="main">
