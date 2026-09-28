@@ -590,8 +590,27 @@ const listaPresidentes = [
         "Lonardi", "Lastiri", "Viola", "Ram\u00edrez", "Levingston", "Castillo",
         "Guido", "Lanusse"
     ].map(normalizarTexto);
+
+    // Farrell, de la Plaza, Bignone y Quintana dejaron de estar en la lista
+    // de arriba, pero reci\u00e9n cuentan como incluidos a partir de esta fecha
+    // (no antes): el desaf\u00edo de un d\u00eda ya generado no puede depender de
+    // CU\u00c1NDO se despliega el c\u00f3digo, porque dos personas que entran el
+    // mismo d\u00eda ver\u00edan crucigramas/sopas distintos entre s\u00ed. Se puede
+    // borrar este bloque (y mover estos 4 apellidos directamente arriba)
+    // una vez que la fecha de corte ya pas\u00f3 y no tiene sentido seguir
+    // revis\u00e1ndola.
+    const FECHA_DESDE_REINCLUSION = "2026-09-29";
+    const APELLIDOS_REINCLUIDOS_DESDE = [
+        "Farrell", "de la Plaza", "Bignone", "Quintana"
+    ].map(normalizarTexto);
+
     function estaEnListaExclusionFija(presidente) {
-        return APELLIDOS_EXCLUSION_FIJA.includes(normalizarTexto(presidente.apellido));
+        const apellido = normalizarTexto(presidente.apellido);
+        if (APELLIDOS_EXCLUSION_FIJA.includes(apellido)) return true;
+        if (APELLIDOS_REINCLUIDOS_DESDE.includes(apellido)) {
+            return fechaHoyISO() < FECHA_DESDE_REINCLUSION;
+        }
+        return false;
     }
 
     // Como normalizarTexto pero preservando la \u00d1 (que normalize("NFD") tambi\u00e9n
