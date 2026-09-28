@@ -588,7 +588,7 @@ const listaPresidentes = [
     const APELLIDOS_EXCLUSION_FIJA = [
         "Cama\u00f1o", "Puerta", "Rawson", "Rodr\u00edguez Sa\u00e1", "Lacoste", "L\u00f3pez",
         "Lonardi", "Lastiri", "Viola", "Ram\u00edrez", "Levingston", "Castillo",
-        "Quintana", "Bignone", "Guido", "Lanusse", "de la Plaza", "Farrell"
+        "Guido", "Lanusse"
     ].map(normalizarTexto);
     function estaEnListaExclusionFija(presidente) {
         return APELLIDOS_EXCLUSION_FIJA.includes(normalizarTexto(presidente.apellido));
@@ -2720,9 +2720,10 @@ const listaPresidentes = [
     }
 
     // Apellidos compuestos que en crucigrama/sopa se juegan distinto a como
-    // figuran en u.apellido (sin el "de" delante, en el caso de Alvear).
+    // figuran en u.apellido (sin el "de"/"de la" delante).
     const PALABRA_GRILLA_ESPECIAL = {
-        [normalizarTexto("Marcelo Torcuato de Alvear")]: "Alvear"
+        [normalizarTexto("Marcelo Torcuato de Alvear")]: "Alvear",
+        [normalizarTexto("Victorino de la Plaza")]: "Plaza"
     };
 
     // Apellidos aptos para el crucigrama: sin tildes, 4–15 letras (los
