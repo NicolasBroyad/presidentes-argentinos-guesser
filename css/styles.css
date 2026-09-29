@@ -4730,8 +4730,7 @@ footer {
     left: 50%;
     transform: translate(-50%, -50%);
     margin: 0;
-    max-height: 85vh;
-    overflow-y: auto;
+    max-height: 85vh; /* layout de columna y alto real: ver más abajo, junto al resumen */
 }
 
 #finJuegoDialog:not([open]) {
@@ -4873,10 +4872,6 @@ footer {
     #finJuegoDialog {
         padding: 20px;
     }
-
-    #finJuegoDialog .buttons {
-        flex-direction: column;
-    }
 }
 
 #porcentajeContainer {
@@ -4966,6 +4961,154 @@ footer {
 
 .resumen-partida-item.error .resumen-partida-icono {
     color: #e74c3c;
+}
+
+/* Fin de juego: el modal NUNCA scrollea (ni en PC ni en celular); lo único
+   que scrollea es la lista de presidentes del resumen. El modal es una
+   columna donde título, resultado y botones van siempre enteros y la lista
+   es lo único que se achica cuando no entra todo. El contenedor del resumen
+   usa "display: contents" para que su título y la lista sean hijos directos
+   de la columna: así el mínimo de la lista se respeta y no se superpone
+   con los botones. Va después de los estilos base del modal y del resumen
+   para pisarlos. */
+#finJuegoDialog {
+    max-height: 85dvh;
+    max-height: calc(var(--app-vh, 1vh) * 85);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+#finJuegoDialog > * {
+    flex-shrink: 0;
+}
+
+#finJuegoDialog .resumen-partida-imagen:not([hidden]) {
+    display: contents;
+}
+
+/* Nunca por debajo de un presidente y medio: que se asome el siguiente
+   deja claro que la lista scrollea. */
+#finJuegoDialog .resumen-partida-lista {
+    flex: 0 1 auto;
+    min-height: 4.5rem;
+}
+
+/* En una columna flex los márgenes verticales se suman en vez de
+   superponerse (como pasaba con el modal en bloque), así que van todos
+   "hacia arriba" y con el valor de la separación que quedaba antes. Ojo:
+   el panel diario (#cruciFinPanel) se dibuja SIEMPRE, aunque tenga
+   "hidden" (su display:flex le gana al del atributo): en los modos sin
+   panel queda como una caja vacía de alto 0 que igual separa 2rem arriba
+   y 1.5rem abajo, así que las separaciones son las mismas en todos los
+   modos. */
+#finJuegoDialog #tituloFinJuego {
+    margin-bottom: 0;
+}
+
+#finJuegoDialog .resultado-container {
+    margin: 2rem 0 0;
+}
+
+#finJuegoDialog .cruci-fin-panel {
+    margin: 2rem 0 0;
+}
+
+#finJuegoDialog .resumen-partida-titulo {
+    flex-shrink: 0;
+    margin: 1.5rem 0 0.75rem;
+}
+
+/* En celular y en pantallas bajas (PC con poco alto de ventana), todo más
+   compacto: con los márgenes de arriba el título, el resultado, el panel
+   diario y los botones ya no entran enteros por debajo de ~760px de alto,
+   y el modal no puede scrollear. */
+@media (max-width: 480px), (max-height: 760px) {
+    #finJuegoDialog {
+        padding: 20px;
+        max-height: 92dvh;
+        max-height: calc(var(--app-vh, 1vh) * 92);
+    }
+
+    #finJuegoDialog #tituloFinJuego {
+        font-size: 1.5rem;
+    }
+
+    #finJuegoDialog .resultado-container {
+        margin-top: 0.75rem;
+        padding: 0.9rem;
+    }
+
+    #mensajeResultado {
+        font-size: 1.05rem;
+        margin-bottom: 0.4rem;
+    }
+
+    #aciertosFinales, #totalPresidentes {
+        font-size: 1.15rem;
+    }
+
+    #porcentajeContainer {
+        margin-top: 0.4rem;
+    }
+
+    #porcentaje {
+        font-size: 1.7rem;
+    }
+
+    /* Panel de tiempo/récord/racha de sopa y crucigrama. */
+    #finJuegoDialog .cruci-fin-panel {
+        margin-top: 0.6rem;
+        gap: 0.25rem;
+    }
+
+    .cruci-fin-tiempo {
+        font-size: 0.92rem;
+    }
+
+    .cruci-fin-record,
+    .cruci-fin-racha {
+        font-size: 0.85rem;
+    }
+
+    #finJuegoDialog .resumen-partida-titulo {
+        margin: 0.75rem 0 0.6rem;
+    }
+
+    #finJuegoDialog .buttons {
+        gap: 0.6rem;
+        margin-top: 1rem;
+    }
+}
+
+/* Solo celular: "JUGAR OTRA VEZ" ocupa toda la fila y los otros dos van
+   lado a lado. */
+@media (max-width: 480px) {
+    #finJuegoDialog .buttons .jugar-otra-vez {
+        flex-basis: 100%;
+    }
+
+    #finJuegoDialog .buttons button {
+        padding: 10px 12px;
+    }
+}
+
+/* Celulares angostos (~320px): sin esto "VOLVER AL INICIO" y "CERRAR" no
+   entran lado a lado, los botones pasan a tres filas y "CERRAR" queda
+   fuera de la vista. */
+@media (max-width: 360px) {
+    #finJuegoDialog {
+        padding: 16px;
+    }
+
+    #finJuegoDialog .buttons {
+        gap: 0.5rem;
+    }
+
+    #finJuegoDialog .buttons button {
+        padding: 10px 8px;
+        font-size: 0.82rem;
+    }
 }
 
 .jugar-otra-vez {
