@@ -2749,14 +2749,29 @@ const listaPresidentes = [
     // compuestos se juegan como una sola palabra, sin el espacio).
     // NO se aplican los filtros de configuración (el del día es fijo).
     // Los de la lista de exclusión fija (APELLIDOS_EXCLUSION_FIJA) nunca entran.
+    // La lista base (sin el sorteo del día) se cachea: la rotación de pistas
+    // (pistasCrucigramaDelDia) re-simula muchos días y no conviene rehacerla
+    // cada vez. Se invalida si cambia la fecha (la exclusión depende de ella).
+    let cruciCandidatosCache = null;
+    function candidatosCrucigrama() {
+        const hoy = fechaHoyISO();
+        if (cruciCandidatosCache && cruciCandidatosCache.fecha === hoy) return cruciCandidatosCache.lista;
+        const lista = [];
+        presidentesUnicos.forEach(u => {
+            if (estaEnListaExclusionFija(u)) return;
+            const clave = normalizarTexto(nombreCompletoPresidente(u));
+            const palabra = letraGrillaDe(PALABRA_GRILLA_ESPECIAL[clave] || u.apellido);
+            if (palabra.length < 4 || palabra.length > 15) return;
+            lista.push({ u, palabra, clave });
+        });
+        cruciCandidatosCache = { fecha: hoy, lista };
+        return lista;
+    }
+
     function poolCrucigrama(rng) {
         const vistas = new Map(); // palabra -> índice en pool
         const pool = [];
-        presidentesUnicos.forEach(u => {
-            if (estaEnListaExclusionFija(u)) return;
-            const especial = PALABRA_GRILLA_ESPECIAL[normalizarTexto(nombreCompletoPresidente(u))];
-            const palabra = letraGrillaDe(especial || u.apellido);
-            if (palabra.length < 4 || palabra.length > 15) return;
+        candidatosCrucigrama().forEach(({ u, palabra }) => {
             if (vistas.has(palabra)) {
                 // Dos presidentes distintos con la misma palabra de grilla
                 // (ambos Sáenz Peña, o Cristina/Alberto Fernández): en vez de
@@ -2925,9 +2940,9 @@ const listaPresidentes = [
 
     // --- Pistas del crucigrama ---
     // Lista curada a mano (una entrada por presidente único, con varias
-    // pistas equivalentes cada una). La del día se elige con el PRNG
-    // sembrado por fecha: el mismo presidente en otra fecha trae otra pista
-    // (no memorizable). Incluye también a los presidentes de la lista de
+    // pistas equivalentes cada una). La del día rota con cooldown (ver
+    // pistasCrucigramaDelDia): el mismo presidente en días cercanos trae
+    // siempre otra pista (no memorizable). Incluye también a los presidentes de la lista de
     // exclusión fija (ver APELLIDOS_EXCLUSION_FIJA): quedan cargados por si
     // en el futuro se decide incluirlos, aunque hoy no se usan.
     const CRUCI_PISTAS_CURADAS = {
@@ -3212,10 +3227,108 @@ const listaPresidentes = [
         ]
     };
 
-    function pistaCrucigramaDe(u, rng) {
-        const pistas = CRUCI_PISTAS_CURADAS[normalizarTexto(nombreCompletoPresidente(u))];
-        if (!pistas || !pistas.length) return `Presidente ${nombreCompletoPresidente(u)}`;
-        return pistas[Math.floor(rng() * pistas.length)];
+    // Presidentes del crucigrama de un día (los 11 candidatos, antes de
+    // armar la grilla). Devuelve también el PRNG, que sigue usándose para
+    // armar el tablero, así el crucigrama de cada fecha no cambia.
+    function seleccionCrucigramaDelDia(iso) {
+        const rng = mulberry32(hashCadena("cruci-" + iso));
+        const pool = mezclarConRng(poolCrucigrama(rng), rng).slice(0, 11);
+        return { rng, pool };
+    }
+
+    // --- Rotación de pistas con cooldown ---
+    // Una pista que salió un día no puede volver a salir los 3 días
+    // siguientes (recién al 4.º); entre las disponibles se elige al azar,
+    // con más chances cuanto más tiempo lleva sin salir. Así un presidente
+    // puede aparecer días seguidos, pero siempre con otra pista.
+    // Para saber qué salió los días anteriores sin guardar nada (tiene que
+    // dar igual para todos), se re-simulan los días desde la fecha ancla:
+    // alcanza con elegir los 11 presidentes de cada día (barato), sin armar
+    // la grilla. Si alguno de esos 11 no entra en el tablero, su pista
+    // igual cuenta como usada (solo la enfría de más, nunca rompe la regla).
+    // Rige desde la fecha ancla: los días anteriores conservan el sorteo
+    // viejo (ver pistasLegadoDelDia) para que un crucigrama ya publicado no
+    // cambie, y las pistas del día previo al ancla cuentan como historial.
+    const CRUCI_PISTA_COOLDOWN = 3;
+    const CRUCI_PISTA_DIAS_SIN_USO = 30; // peso de una pista que nunca salió
+    const CRUCI_PISTAS_FECHA_ANCLA = "2026-09-30";
+
+    function diaNumeroISO(iso) {
+        const [y, m, d] = iso.split("-").map(Number);
+        return Math.round(Date.UTC(y, m - 1, d) / 86400000);
+    }
+    function isoDeDiaNumero(n) {
+        return new Date(n * 86400000).toISOString().slice(0, 10);
+    }
+
+    function elegirPistaConCooldown(cantidad, ultimoUso, dia, rng) {
+        const indices = Array.from({ length: cantidad }, (_, j) => j);
+        const diasSinSalir = j => ultimoUso[j] == null ? CRUCI_PISTA_DIAS_SIN_USO : dia - ultimoUso[j];
+        const disponibles = indices.filter(j => diasSinSalir(j) > CRUCI_PISTA_COOLDOWN);
+        if (!disponibles.length) {
+            // Presidente con pocas pistas que salió varios días seguidos:
+            // todas en cooldown, va la que hace más que no sale (que nunca
+            // es la de ayer, porque todos tienen al menos 2 pistas).
+            return indices.reduce((a, b) => diasSinSalir(b) > diasSinSalir(a) ? b : a);
+        }
+        const total = disponibles.reduce((s, j) => s + diasSinSalir(j), 0);
+        let r = rng() * total;
+        for (const j of disponibles) {
+            r -= diasSinSalir(j);
+            if (r < 0) return j;
+        }
+        return disponibles[disponibles.length - 1];
+    }
+
+    // Sorteo anterior a la rotación con cooldown (días previos al ancla):
+    // una pista al azar por entrada de la grilla, con el mismo PRNG que armó
+    // el tablero y en el mismo orden, así da exactamente lo que se publicó.
+    function pistasLegadoDelDia(iso) {
+        const { rng, pool } = seleccionCrucigramaDelDia(iso);
+        const elegidas = new Map();
+        construirCrucigrama(pool, rng).entradas.forEach(e => {
+            const clave = normalizarTexto(nombreCompletoPresidente(e.u));
+            const pistas = CRUCI_PISTAS_CURADAS[clave];
+            if (!pistas || !pistas.length) return;
+            elegidas.set(clave, pistas[Math.floor(rng() * pistas.length)]);
+        });
+        return elegidas;
+    }
+
+    // Pistas del crucigrama de la fecha dada: Map clave de presidente -> pista.
+    function pistasCrucigramaDelDia(iso) {
+        const hoy = diaNumeroISO(iso);
+        const ancla = diaNumeroISO(CRUCI_PISTAS_FECHA_ANCLA);
+        if (hoy < ancla) return pistasLegadoDelDia(iso);
+        const ultimoUso = new Map(); // clave -> [día en que salió cada pista]
+        const claveDePresidente = new Map(candidatosCrucigrama().map(c => [c.u, c.clave]));
+        pistasLegadoDelDia(isoDeDiaNumero(ancla - 1)).forEach((pista, clave) => {
+            const usos = [];
+            usos[CRUCI_PISTAS_CURADAS[clave].indexOf(pista)] = ancla - 1;
+            ultimoUso.set(clave, usos);
+        });
+        let elegidas = new Map();
+        for (let dia = ancla; dia <= hoy; dia++) {
+            const isoDia = isoDeDiaNumero(dia);
+            const rng = mulberry32(hashCadena("cruci-pistas-" + isoDia));
+            elegidas = new Map();
+            seleccionCrucigramaDelDia(isoDia).pool.forEach(({ u }) => {
+                const clave = claveDePresidente.get(u);
+                const pistas = CRUCI_PISTAS_CURADAS[clave];
+                if (!pistas || !pistas.length) return;
+                if (!ultimoUso.has(clave)) ultimoUso.set(clave, []);
+                const usos = ultimoUso.get(clave);
+                const i = elegirPistaConCooldown(pistas.length, usos, dia, rng);
+                usos[i] = dia;
+                elegidas.set(clave, pistas[i]);
+            });
+        }
+        return elegidas;
+    }
+
+    function pistaCrucigramaDe(u, pistasDelDia) {
+        const nombre = nombreCompletoPresidente(u);
+        return pistasDelDia.get(normalizarTexto(nombre)) || `Presidente ${nombre}`;
     }
 
     // --- Cronómetro del crucigrama (cuenta hacia arriba) ---
@@ -3344,8 +3457,7 @@ const listaPresidentes = [
         cruciEsRejugada = !!cruciResultadoOficial;
         const racha = rachaVigente(CRUCI_LS_STREAK, hoyISO);
 
-        const rng = mulberry32(hashCadena("cruci-" + hoyISO));
-        const pool = mezclarConRng(poolCrucigrama(rng), rng).slice(0, 11);
+        const { rng, pool } = seleccionCrucigramaDelDia(hoyISO);
         cruciData = construirCrucigrama(pool, rng);
         cruciEntradas = cruciData.entradas;
 
@@ -3353,8 +3465,10 @@ const listaPresidentes = [
             e.u.imagen = e.u.imagenes[0];
             e.u.resultadoPartida = null;
         });
-        // Pista del día para cada entrada (tipo elegido con el PRNG sembrado).
-        cruciEntradas.forEach(e => { e.pista = pistaCrucigramaDe(e.u, rng); });
+        // Pista del día para cada entrada (rotación con cooldown, ver
+        // pistasCrucigramaDelDia).
+        const pistasDelDia = pistasCrucigramaDelDia(hoyISO);
+        cruciEntradas.forEach(e => { e.pista = pistaCrucigramaDe(e.u, pistasDelDia); });
 
         // mostrarFinJuego() + historial usan window.listaFiltrada + aciertos
         window.listaFiltrada = cruciEntradas.map(e => e.u);
